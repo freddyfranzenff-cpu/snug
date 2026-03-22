@@ -395,6 +395,8 @@
 
   let ME = null, OTHER = null;
   let myTz = null, otherTz = null;
+  let myCity = null, otherCity = null;
+  const DEFAULT_CITIES = { Freddy: "Bonn", Sarah: "Kaohsiung" };
   let db = null, dbPush = null, dbSet = null, dbRef = null;
 
   // ── Demo-mode note store ───────────────────────────────────────────────────
@@ -421,13 +423,14 @@
         onValue(ref(db, `presence/${OTHER}`), (snap) => {
           const data = snap.val();
           otherTz = (data && data.timezone) ? data.timezone : DEFAULTS[OTHER];
-          document.getElementById("other-city").textContent = cityLabel(OTHER, otherTz);
+          otherCity = (data && data.city) ? data.city : DEFAULT_CITIES[OTHER];
+          document.getElementById("other-city").textContent = `${OTHER} · ${otherCity}`;
         });
       }
       window._watchOther = watchOther;
       // Push my presence
-      window._pushPresence = (tz) => {
-        set(ref(db, `presence/${ME}`), { timezone: tz, updatedAt: serverTimestamp() });
+      window._pushPresence = (tz, city) => {
+        set(ref(db, `presence/${ME}`), { timezone: tz, city: city, updatedAt: serverTimestamp() });
       };
       return true;
     } catch (e) {
@@ -445,15 +448,24 @@
     } catch { return null; }
   }
 
+  async function cityFromCoords(lat, lng) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const j = await r.json();
+      return j.address?.city || j.address?.town || j.address?.village || j.address?.county || null;
+    } catch { return null; }
+  }
+
   async function detectMyLocation() {
     return new Promise((resolve) => {
-      if (!navigator.geolocation) { resolve(null); return; }
+      if (!navigator.geolocation) { resolve({ tz: null, city: null }); return; }
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          const tz = await tzFromCoords(pos.coords.latitude, pos.coords.longitude);
-          resolve(tz);
+          const { latitude: lat, longitude: lng } = pos.coords;
+          const [tz, city] = await Promise.all([tzFromCoords(lat, lng), cityFromCoords(lat, lng)]);
+          resolve({ tz, city });
         },
-        () => resolve(null),
+        () => resolve({ tz: null, city: null }),
         { timeout: 8000 }
       );
     });
@@ -490,10 +502,9 @@
   };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  function cityLabel(name, tz) {
-    if (!tz) return name;
-    const city = tz.split("/").pop().replace(/_/g, " ");
-    return `${name} · ${city}`;
+  function cityLabel(name, city, tz) {
+    const label = city || (tz ? tz.split("/").pop().replace(/_/g, " ") : null);
+    return label ? `${name} · ${label}` : name;
   }
   function fmtTime(tz) {
     return new Date().toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -510,8 +521,8 @@
     document.getElementById("demo-banner").style.display   = isDemo ? "block" : "none";
     document.getElementById("main").style.display          = "block";
 
-    document.getElementById("my-city").textContent    = cityLabel(ME, myTz);
-    document.getElementById("other-city").textContent = cityLabel(OTHER, otherTz || DEFAULTS[OTHER]);
+    document.getElementById("my-city").textContent    = cityLabel(ME, myCity, myTz);
+    document.getElementById("other-city").textContent = cityLabel(OTHER, otherCity || DEFAULT_CITIES[OTHER], otherTz || DEFAULTS[OTHER]);
     document.getElementById("note-author-name").textContent = ME;
 
     if (window._watchOther) window._watchOther();
@@ -560,12 +571,14 @@
     const firebaseOk = await tryInitFirebase();
 
     // Detect location
-    const detectedTz = await detectMyLocation();
+    const { tz: detectedTz, city: detectedCity } = await detectMyLocation();
     myTz    = detectedTz || Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULTS[ME];
+    myCity  = detectedCity || DEFAULT_CITIES[ME];
     otherTz = DEFAULTS[OTHER];
+    otherCity = DEFAULT_CITIES[OTHER];
 
     // Push presence if Firebase is live
-    if (firebaseOk && window._pushPresence) window._pushPresence(myTz);
+    if (firebaseOk && window._pushPresence) window._pushPresence(myTz, myCity);
 
     startUI(!firebaseOk);
   };
