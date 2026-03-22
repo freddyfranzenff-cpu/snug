@@ -540,7 +540,7 @@
 
     // Days together
     const start = new Date("2026-01-01");
-    document.getElementById("days-together").textContent = Math.floor((Date.now() - start) / 86400000);
+    document.getElementById("days-together").textContent = Math.floor((Date.now() - start) / 86400000) + 1;
 
     // Countdown
     const meetup = new Date("2026-07-04T00:00:00+02:00");
