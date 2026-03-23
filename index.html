@@ -71,7 +71,11 @@
     .sidebar-cd-num{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:rgba(255,255,255,.4);display:block;line-height:1}
     .sidebar-cd-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.18)}
     .sidebar-cd-caption{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.15);margin-top:.5rem}
-    .hamburger{display:none;position:fixed;top:1rem;left:1rem;z-index:300;background:var(--sidebar-bg);border:none;border-radius:10px;padding:.5rem .6rem;cursor:pointer;flex-direction:column;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+    .mobile-header{display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:var(--sidebar-bg);height:52px;align-items:center;padding:0 1.25rem;border-bottom:1px solid rgba(255,255,255,.06)}
+    .mobile-header-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;color:rgba(255,255,255,.8);flex:1;text-align:center}
+    .mobile-header-title em{font-style:italic;color:var(--gold)}
+    .hamburger{background:none;border:none;cursor:pointer;padding:.25rem;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+    .hamburger span{display:block;width:18px;height:1.5px;background:rgba(255,255,255,.6);border-radius:2px}
     .hamburger span{display:block;width:18px;height:1.5px;background:rgba(255,255,255,.6);border-radius:2px}
     .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
     .main{margin-left:var(--sidebar-w);flex:1;padding:3rem 3rem 5rem;min-width:0}
@@ -175,8 +179,8 @@
       .sidebar{transform:translateX(-100%)}
       .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
       .sidebar-overlay.open{display:block}
-      .hamburger{display:flex}
-      .main{margin-left:0;padding:4.5rem 1.25rem 4rem}
+      .mobile-header{display:flex}
+      .main{margin-left:0;padding:4rem 1.25rem 4rem}
       .grid-2{grid-template-columns:1fr}
       .weather-row{grid-template-columns:1fr}
       .weather-cell:first-child{border-right:none;border-bottom:1px solid var(--border)}
@@ -258,7 +262,11 @@
 
 <!-- Sidebar overlay + hamburger -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-<button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+<div class="mobile-header" id="mobile-header">
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+  <p class="mobile-header-title">Freddy <em>&</em> Sarah</p>
+  <div style="width:26px;flex-shrink:0;"></div>
+</div>
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
@@ -558,8 +566,8 @@
 
   // Nav
   window.showPage=function(name){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));document.getElementById(`page-${name}`).classList.add("active");document.getElementById(`nav-${name}`).classList.add("active");closeSidebar();};
-  window.toggleSidebar=function(){const s=document.getElementById("sidebar");const o=document.getElementById("sidebar-overlay");const h=document.getElementById("hamburger");s.classList.toggle("open");o.classList.toggle("open");h.style.display=s.classList.contains("open")?"none":"flex";};
-  window.registerThisDevice=async function(){const btn=document.getElementById("register-bio-btn");btn.textContent="⬡ Registering…";const ok=await registerBiometric(ME);btn.textContent=ok?"✓ Registered!":"⬡ Registration failed";setTimeout(()=>{if(ok)btn.style.display="none";else btn.textContent="⬡ Try again";},2000);};window.closeSidebar=function(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sidebar-overlay").classList.remove("open");document.getElementById("hamburger").style.display="flex";};
+  window.toggleSidebar=function(){const s=document.getElementById("sidebar");const o=document.getElementById("sidebar-overlay");s.classList.toggle("open");o.classList.toggle("open");};
+  window.registerThisDevice=async function(){const btn=document.getElementById("register-bio-btn");btn.textContent="⬡ Registering…";const ok=await registerBiometric(ME);btn.textContent=ok?"✓ Registered!":"⬡ Registration failed";setTimeout(()=>{if(ok)btn.style.display="none";else btn.textContent="⬡ Try again";},2000);};window.closeSidebar=function(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sidebar-overlay").classList.remove("open");};
 
   // Start UI
   function startUI(){
