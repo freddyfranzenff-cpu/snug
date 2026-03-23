@@ -248,7 +248,7 @@
       .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
       .sidebar-overlay.open{display:block}
       .mobile-header{display:flex}
-      .main{margin-left:0;padding:4rem 1.25rem 4rem}
+      .main{margin-left:0;padding:4rem 1.25rem 4rem}#map{height:160px;}
       .grid-2{grid-template-columns:1fr}
       .weather-row{grid-template-columns:1fr}
       .weather-cell:first-child{border-right:none;border-bottom:1px solid var(--border)}
@@ -718,13 +718,13 @@
   // Map
   function initMap(myCo,oCo,myL,oL){
     if(mapInstance){mapInstance.remove();mapInstance=null;}
-    mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:2,worldCopyJump:false}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],2);
+    const isMobile=window.innerWidth<680;mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:1,worldCopyJump:false}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],isMobile?1:2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:18}).addTo(mapInstance);
     const mkI=color=>L.divIcon({className:"",html:`<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
     myMarker=L.marker(myCo,{icon:mkI("#c4856a")}).addTo(mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
     otherMarker=L.marker(oCo,{icon:mkI("#8aabaa")}).addTo(mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
     connectLine=L.polyline([myCo,oCo],{color:"#c4856a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(mapInstance);
-    const midLat=(myCo[0]+oCo[0])/2;const midLng=(myCo[1]+oCo[1])/2;mapInstance.setView([midLat,midLng],2);
+    
   }
   function updateOtherMarker(coords,label){if(!mapInstance)return;otherMarker.setLatLng(coords);otherMarker.setTooltipContent(label);connectLine.setLatLngs([myCoords,coords]);}
 
