@@ -724,7 +724,7 @@
     myMarker=L.marker(myCo,{icon:mkI("#c4856a")}).addTo(mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
     otherMarker=L.marker(oCo,{icon:mkI("#8aabaa")}).addTo(mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
     connectLine=L.polyline([myCo,oCo],{color:"#c4856a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(mapInstance);
-    mapInstance.fitBounds(L.latLngBounds([myCo,oCo]).pad(0.3),{maxZoom:5});
+    mapInstance.fitBounds(L.latLngBounds([myCo,oCo]).pad(0.3),{maxZoom:3});
   }
   function updateOtherMarker(coords,label){if(!mapInstance)return;otherMarker.setLatLng(coords);otherMarker.setTooltipContent(label);connectLine.setLatLngs([myCoords,coords]);mapInstance.fitBounds(L.latLngBounds([myCoords,coords]).pad(0.3));}
 
