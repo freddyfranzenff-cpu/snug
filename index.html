@@ -1,818 +1,599 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Freddy & Sarah</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@200;300;400&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <style>
-    :root {
-      --bg:      #faf8f5;
-      --surface: #ffffff;
-      --text:    #2d2620;
-      --muted:   #9e9189;
-      --border:  #ede8e2;
-      --accent:  #c4856a;
-      --accent2: #8aabaa;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .page {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 3.5rem 1.5rem 5rem;
-    }
-
-    /* ── Login / locating ── */
-    #login-screen, #locating {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 80vh;
-      gap: 1.5rem;
-      animation: fadeUp .5s ease both;
-    }
-    #locating { display: none; }
-
-    .login-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem;
-      font-weight: 300;
-      color: var(--text);
-      text-align: center;
-    }
-    .login-title em { font-style: italic; color: var(--accent); }
-
-    .login-sub {
-      font-size: .75rem;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .login-btns { display: flex; gap: 1rem; }
-
-    .login-btn {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 12px;
-      padding: .75rem 2.2rem;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.3rem;
-      font-weight: 300;
-      color: var(--text);
-      cursor: pointer;
-      transition: border-color .2s, transform .15s;
-    }
-    .login-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
-
-    .locating-text { font-size: .82rem; color: var(--muted); letter-spacing: .1em; }
-
-    #demo-banner {
-      background: #f0f7f6;
-      border: 1px solid #b8d8d6;
-      border-radius: 10px;
-      padding: .65rem 1.1rem;
-      font-size: .78rem;
-      color: #3a6e6b;
-      margin-bottom: 1.75rem;
-      text-align: center;
-      display: none;
-    }
-
-    /* ── Main ── */
-    #main { display: none; animation: fadeUp .5s ease both; }
-
-    header { margin-bottom: 3rem; }
-
-    .eyebrow {
-      font-size: .72rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .6rem;
-    }
-
-    h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300;
-      font-size: clamp(2.4rem, 6vw, 3.6rem);
-      color: var(--text);
-      line-height: 1;
-    }
-    h1 em { font-style: italic; color: var(--accent); }
-
-    .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
-
-    .section-label {
-      font-size: .7rem;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1.25rem;
-    }
-
-    /* ── Map ── */
-    .map-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    #map {
-      height: 220px;
-      width: 100%;
-      z-index: 1;
-    }
-
-    /* Leaflet tooltip styling */
-    .map-tooltip {
-      background: white !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 6px !important;
-      padding: 3px 8px !important;
-      font-family: 'DM Sans', sans-serif !important;
-      font-size: 11px !important;
-      color: #2d2620 !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
-      white-space: nowrap;
-    }
-    .map-tooltip::before { display: none !important; }
-
-    .leaflet-control-attribution {
-      font-size: 9px !important;
-      background: rgba(255,255,255,0.6) !important;
-    }
-
-    /* ── Weather ── */
-    .weather-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-top: 1px solid var(--border);
-    }
-
-    .weather-cell { padding: 1.1rem 1.25rem; }
-    .weather-cell:first-child { border-right: 1px solid var(--border); }
-
-    .weather-city {
-      font-size: .68rem;
-      letter-spacing: .13em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .5rem;
-    }
-
-    .weather-main {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: .3rem;
-    }
-
-    .weather-temp {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2rem;
-      font-weight: 300;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .weather-desc { font-size: .78rem; color: var(--muted); }
-    .weather-details { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
-
-    /* ── Clocks ── */
-    .clocks { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-    .clock-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem 1.25rem;
-    }
-    .clock-card.mine { border-color: #d8ccc6; }
-
-    .clock-city { font-size: .7rem; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
-    .clock-time { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 300; color: var(--text); line-height: 1; }
-    .clock-date { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
-
-    /* ── Stats ── */
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem 1.25rem;
-    }
-
-    .stat-label { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
-    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--accent); line-height: 1; }
-    .stat-unit { font-size: .78rem; color: var(--muted); margin-top: .25rem; }
-
-    .stat-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: .5rem;
-    }
-
-    .meetup-date-input {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: .25rem .5rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .7rem;
-      color: var(--muted);
-      background: var(--bg);
-      outline: none;
-      cursor: pointer;
-    }
-    .meetup-date-input:focus { border-color: var(--accent2); }
-
-    .cd-row { display: flex; gap: 1.2rem; align-items: baseline; }
-    .cd-cell { text-align: left; }
-    .cd-num { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; color: var(--accent2); display: block; line-height: 1; }
-    .cd-lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-    .cd-caption { font-size: .78rem; color: var(--muted); margin-top: .4rem; }
-
-    /* ── Notes ── */
-    .notes-compose {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-    }
-
-    .notes-compose textarea {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: .75rem 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      color: var(--text);
-      background: var(--bg);
-      resize: none;
-      outline: none;
-      transition: border-color .2s;
-      line-height: 1.5;
-    }
-    .notes-compose textarea:focus { border-color: var(--accent); }
-
-    .compose-footer { display: flex; align-items: center; gap: .75rem; margin-top: .75rem; }
-    .author-tag { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-
-    .send-btn {
-      margin-left: auto;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: .48rem 1.2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .85rem;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-    .send-btn:hover { opacity: .82; }
-
-    #notes-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; }
-
-    .note-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.1rem 1rem;
-      animation: fadeUp .3s ease both;
-    }
-
-    .note-text {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1rem;
-      color: var(--text);
-      line-height: 1.55;
-      margin-bottom: .6rem;
-    }
-
-    .note-footer { display: flex; justify-content: space-between; align-items: center; }
-    .note-author { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
-    .note-time { font-size: .7rem; color: var(--muted); }
-
-    .empty { color: var(--muted); font-size: .9rem; padding: 1rem 0; font-style: italic; }
-
-    footer { margin-top: 4rem; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--border); text-align: center; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 480px) {
-      .clocks, .stats, .weather-row { grid-template-columns: 1fr; }
-      .weather-cell:first-child { border-right: none; border-bottom: 1px solid var(--border); }
-      .login-btns { flex-direction: column; }
-      .stat-card-header { flex-direction: column; align-items: flex-start; gap: .4rem; }
+    :root{--sidebar-bg:#1c1814;--sidebar-w:230px;--cream:#faf6f0;--warm:#f3ece0;--surface:#ffffff;--text:#1c1814;--muted:#9e9189;--border:#e8e0d4;--accent:#c4856a;--accent2:#8aabaa;--gold:#c9a96e}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;display:flex}
+    #login-screen{position:fixed;inset:0;background:var(--cream);display:flex;align-items:center;justify-content:center;z-index:1000}
+    #login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 15% 50%,rgba(196,133,106,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 85% 30%,rgba(138,171,170,.06) 0%,transparent 70%);pointer-events:none}
+    .corner-bracket{position:fixed;opacity:.2;pointer-events:none}
+    .cb-tl{top:2rem;left:2rem}.cb-tr{top:2rem;right:2rem;transform:scaleX(-1)}.cb-bl{bottom:2rem;left:2rem;transform:scaleY(-1)}.cb-br{bottom:2rem;right:2rem;transform:scale(-1)}
+    .login-card{position:relative;text-align:center;padding:4rem 3.5rem;max-width:460px;width:90%;animation:fadeUp .7s ease both}
+    .login-card::before{content:'';position:absolute;inset:0;border:1px solid rgba(201,169,110,.2);border-radius:28px;pointer-events:none}
+    .login-orn-row{display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:2.5rem}
+    .orn-line{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.45))}
+    .orn-line.r{background:linear-gradient(90deg,rgba(201,169,110,.45),transparent)}
+    .login-eyebrow{font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+    .login-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.8rem,8vw,4rem);font-weight:300;color:var(--text);line-height:1}
+    .login-title em{font-style:italic;color:var(--accent)}
+    .login-sub-row{display:flex;align-items:center;justify-content:center;gap:.75rem;margin:1.75rem 0 2.5rem}
+    .login-sub-line{flex:1;max-width:55px;height:1px;background:var(--border)}
+    .login-sub{font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+    .login-btns{display:flex;gap:1rem;justify-content:center;margin-bottom:2rem}
+    .login-btn{flex:1;max-width:160px;padding:1rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--text);cursor:pointer;transition:all .22s}
+    .login-btn:hover{border-color:rgba(201,169,110,.5);color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,133,106,.1)}
+    .login-btn-label{display:block;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:'Jost',sans-serif;margin-bottom:.35rem}
+    .login-biometric{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);opacity:.6;margin-bottom:1.5rem}
+    .login-bottom-orn{display:flex;justify-content:center;margin-top:1rem}
+    #auth-screen{position:fixed;inset:0;background:var(--cream);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:1.5rem;text-align:center;padding:2rem}
+    .auth-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--text)}
+    .auth-title em{font-style:italic;color:var(--accent)}
+    .auth-sub{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);max-width:300px;line-height:1.6}
+    .auth-icon{width:60px;height:60px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto;background:var(--surface)}
+    .auth-btn{background:var(--accent);color:white;border:none;border-radius:12px;padding:.75rem 2rem;font-family:'Jost',sans-serif;font-size:.85rem;letter-spacing:.08em;cursor:pointer;transition:opacity .2s}
+    .auth-btn:hover{opacity:.85}
+    .auth-link{font-size:.72rem;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;background:none;border:none;font-family:'Jost',sans-serif}
+    .auth-input{border:1px solid var(--border);border-radius:12px;padding:.75rem 1.25rem;font-family:'Jost',sans-serif;font-size:.9rem;color:var(--text);background:var(--surface);outline:none;width:100%;max-width:300px;text-align:center;letter-spacing:.1em;transition:border-color .2s}
+    .auth-input:focus{border-color:var(--accent2)}
+    .auth-error{font-size:.72rem;color:#b04040;display:none}
+    .auth-step{display:none;flex-direction:column;align-items:center;gap:1rem;width:100%;max-width:360px}
+    .auth-step.active{display:flex}
+    #locating{position:fixed;inset:0;background:var(--cream);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:1rem;text-align:center}
+    .locating-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--text)}
+    .locating-title em{font-style:italic;color:var(--accent)}
+    .locating-sub{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+    .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--sidebar-bg);display:flex;flex-direction:column;padding:2.5rem 0 2rem;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:transform .3s ease}
+    .sidebar-logo{padding:0 1.75rem 2rem;border-bottom:1px solid rgba(255,255,255,.06)}
+    .sidebar-eyebrow{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:.4rem}
+    .sidebar-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:rgba(255,255,255,.88);line-height:1.1}
+    .sidebar-title em{font-style:italic;color:var(--gold)}
+    .sidebar-ornament{display:block;margin:.8rem 0 0;opacity:.22}
+    .user-badge{margin:1.25rem 1.75rem 0;display:flex;align-items:center;gap:.6rem}
+    .user-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    .user-name{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .sidebar-nav{flex:1;padding:1.5rem 0 1rem;display:flex;flex-direction:column}
+    .nav-section-label{font-size:.54rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.18);padding:.8rem 1.75rem .4rem}
+    .nav-item{display:flex;align-items:center;gap:.75rem;padding:.62rem 1.75rem;font-size:.72rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.38);cursor:pointer;border-left:2px solid transparent;transition:all .2s;text-decoration:none;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;font-family:'Jost',sans-serif}
+    .nav-item:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.03)}
+    .nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,169,110,.07)}
+    .nav-icon{width:14px;height:14px;flex-shrink:0;opacity:.75}
+    .nav-spacer{height:1px;background:rgba(255,255,255,.05);margin:.75rem 1.75rem}
+    .sidebar-footer{padding:1.5rem 1.75rem 0;border-top:1px solid rgba(255,255,255,.06)}
+    .sidebar-cd-label{font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:.5rem}
+    .sidebar-cd-row{display:flex;gap:.85rem;align-items:baseline}
+    .sidebar-cd-num{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:rgba(255,255,255,.4);display:block;line-height:1}
+    .sidebar-cd-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.18)}
+    .sidebar-cd-caption{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.15);margin-top:.5rem}
+    .hamburger{display:none;position:fixed;top:1.25rem;left:1.25rem;z-index:300;background:var(--sidebar-bg);border:none;border-radius:10px;padding:.5rem .6rem;cursor:pointer;flex-direction:column;gap:4px}
+    .hamburger span{display:block;width:18px;height:1.5px;background:rgba(255,255,255,.6);border-radius:2px}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:3rem 3rem 5rem;min-width:0}
+    .page{display:none;animation:fadeUp .4s ease both}
+    .page.active{display:block}
+    .page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);position:relative}
+    .page-eyebrow{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:300;color:var(--text);line-height:1}
+    .page-title em{font-style:italic;color:var(--accent)}
+    .page-corner-orn{position:absolute;right:0;bottom:-1px;opacity:.18}
+    .section-heading{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+    .orn-divider{display:flex;align-items:center;gap:.75rem;margin:2rem 0 1.5rem}
+    .orn-divider::before,.orn-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.5rem 1.4rem;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:1.4rem;right:1.4rem;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.3}
+    .card.mine{border-color:#ddd0c8}
+    .card-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+    .clock-time{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--text);line-height:1}
+    .clock-date{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+    .stat-value{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--accent);line-height:1}
+    .stat-unit{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+    .stat-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+    .meetup-input{border:1px solid var(--border);border-radius:8px;padding:.25rem .5rem;font-family:'Jost',sans-serif;font-size:.68rem;color:var(--muted);background:var(--warm);outline:none;cursor:pointer}
+    .meetup-input:focus{border-color:var(--accent2)}
+    .cd-row{display:flex;gap:1rem;align-items:baseline;margin-top:.2rem}
+    .cd-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--accent2);display:block;line-height:1}
+    .cd-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .cd-caption{font-size:.68rem;color:var(--muted);margin-top:.4rem}
+    .map-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:1.25rem}
+    #map{height:220px;width:100%;z-index:1}
+    .map-tooltip{background:white!important;border:1px solid var(--border)!important;border-radius:6px!important;padding:3px 8px!important;font-family:'Jost',sans-serif!important;font-size:11px!important;color:var(--text)!important;box-shadow:0 2px 8px rgba(0,0,0,.08)!important}
+    .map-tooltip::before{display:none!important}
+    .leaflet-control-attribution{font-size:9px!important}
+    .weather-row{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+    .weather-cell{padding:1rem 1.4rem}
+    .weather-cell:first-child{border-right:1px solid var(--border)}
+    .weather-city{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+    .weather-main{display:flex;align-items:center;gap:8px;margin-bottom:.25rem}
+    .weather-temp{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--text);line-height:1}
+    .weather-desc{font-size:.75rem;color:var(--muted)}
+    .weather-details{font-size:.68rem;color:var(--muted)}
+    .notes-compose{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.25rem;margin-bottom:1.25rem;position:relative;overflow:hidden}
+    .notes-compose::before{content:'';position:absolute;top:0;left:1.4rem;right:1.4rem;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.25}
+    .notes-compose textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:var(--text);background:var(--warm);resize:none;outline:none;transition:border-color .2s;line-height:1.5}
+    .notes-compose textarea:focus{border-color:var(--accent)}
+    .compose-footer{display:flex;align-items:center;margin-top:.75rem}
+    .author-tag{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .send-btn{margin-left:auto;background:var(--accent);color:white;border:none;border-radius:9px;padding:.45rem 1.2rem;font-family:'Jost',sans-serif;font-size:.8rem;cursor:pointer;transition:opacity .2s;letter-spacing:.05em}
+    .send-btn:hover{opacity:.85}
+    #notes-wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem}
+    .note-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1rem;animation:fadeUp .3s ease both}
+    .note-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:var(--text);line-height:1.55;margin-bottom:.55rem}
+    .note-footer{display:flex;justify-content:space-between;align-items:center}
+    .note-author{font-size:.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+    .note-time{font-size:.63rem;color:var(--muted)}
+    .milestone-add-btn{display:flex;align-items:center;gap:.4rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:.38rem .9rem;cursor:pointer;transition:all .2s;font-family:'Jost',sans-serif}
+    .milestone-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .timeline{position:relative;padding-left:2.25rem}
+    .timeline::before{content:'';position:absolute;left:8px;top:10px;bottom:10px;width:1px;background:linear-gradient(to bottom,var(--gold),var(--border) 60%,transparent);opacity:.4}
+    .milestone{position:relative;margin-bottom:1.75rem;animation:fadeUp .4s ease both}
+    .m-dot{position:absolute;left:-2rem;top:7px;width:11px;height:11px;border-radius:50%;border:2px solid white;flex-shrink:0}
+    .m-dot.a{background:var(--accent);box-shadow:0 0 0 1.5px var(--accent)}
+    .m-dot.b{background:var(--accent2);box-shadow:0 0 0 1.5px var(--accent2)}
+    .m-dot.gold{background:var(--gold);box-shadow:0 0 0 1.5px var(--gold)}
+    .m-dot.future{background:var(--surface);border-color:var(--border);box-shadow:0 0 0 1px var(--border)}
+    .m-dot.add-dot{background:var(--surface);border:1.5px dashed var(--border);box-shadow:none}
+    .m-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.25rem;position:relative;overflow:hidden;transition:border-color .2s}
+    .m-card::before{content:'';position:absolute;top:0;left:1.25rem;right:1.25rem;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.2}
+    .m-card:hover{border-color:#d8c8bc}
+    .m-card.future-card{background:var(--warm);border-style:dashed;opacity:.6}
+    .m-card.future-card::before{display:none}
+    .m-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.25rem}
+    .m-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:var(--text);line-height:1.3}
+    .m-date{font-size:.65rem;color:var(--muted);white-space:nowrap;padding-top:3px}
+    .m-note{font-size:.78rem;color:var(--muted);line-height:1.4}
+    .m-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem}
+    .m-author{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+    .m-tag{display:inline-block;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(196,133,106,.25);border-radius:20px;padding:.15rem .55rem}
+    .m-tag.b{color:var(--accent2);border-color:rgba(138,171,170,.25)}
+    .m-tag.gold{color:var(--gold);border-color:rgba(201,169,110,.25)}
+    .m-delete{background:none;border:none;cursor:pointer;color:var(--muted);opacity:0;transition:opacity .2s;padding:2px;font-size:.75rem}
+    .m-card:hover .m-delete{opacity:.5}
+    .m-delete:hover{opacity:1!important;color:#b04040}
+    .year-marker{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:.75rem}
+    .add-form{background:var(--warm);border:1px dashed var(--border);border-radius:16px;padding:1.1rem 1.25rem;display:none;flex-direction:column;gap:.65rem;margin-top:1rem}
+    .add-form.open{display:flex}
+    .add-form input[type="text"]{border:none;background:transparent;outline:none;font-family:'Jost',sans-serif;font-size:.88rem;color:var(--text);width:100%}
+    .add-form input[type="text"]:first-child{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem}
+    .add-form input::placeholder{color:var(--muted)}
+    .add-form-row{display:flex;align-items:center;gap:.75rem;border-top:1px solid var(--border);padding-top:.65rem;flex-wrap:wrap}
+    .add-form input[type="date"]{font-size:.72rem;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:.28rem .55rem;background:var(--surface);outline:none;font-family:'Jost',sans-serif}
+    .form-tag-select{font-size:.68rem;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:.28rem .55rem;background:var(--surface);outline:none;font-family:'Jost',sans-serif;cursor:pointer}
+    .form-save-btn{margin-left:auto;background:var(--accent);color:white;border:none;border-radius:9px;padding:.38rem 1.1rem;font-family:'Jost',sans-serif;font-size:.75rem;cursor:pointer;transition:opacity .2s}
+    .form-save-btn:hover{opacity:.85}
+    .empty{color:var(--muted);font-size:.9rem;padding:1rem 0;font-style:italic}
+    footer{margin-top:4rem;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--border);text-align:center}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @media(max-width:680px){
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.3)}
+      .sidebar-overlay.open{display:block}
+      .hamburger{display:flex}
+      .main{margin-left:0;padding:5rem 1.25rem 4rem}
+      .grid-2{grid-template-columns:1fr}
+      .weather-row{grid-template-columns:1fr}
+      .weather-cell:first-child{border-right:none;border-bottom:1px solid var(--border)}
+      .stat-card-header{flex-direction:column;align-items:flex-start;gap:.4rem}
+      .login-btns{flex-direction:column;align-items:center}
+      .login-btn{max-width:220px;width:100%}
     }
   </style>
 </head>
 <body>
-<div class="page">
 
-  <div id="demo-banner">Running in demo mode — notes are local to this session only.</div>
+<!-- Corner brackets -->
+<svg class="corner-bracket cb-tl" id="cb1" width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M2 54 L2 2 L54 2" stroke="#c9a96e" stroke-width=".8"/><circle cx="2" cy="2" r="2" fill="#c9a96e" opacity=".5"/></svg>
+<svg class="corner-bracket cb-tr" id="cb2" width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M2 54 L2 2 L54 2" stroke="#c9a96e" stroke-width=".8"/><circle cx="2" cy="2" r="2" fill="#c9a96e" opacity=".5"/></svg>
+<svg class="corner-bracket cb-bl" id="cb3" width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M2 54 L2 2 L54 2" stroke="#c9a96e" stroke-width=".8"/><circle cx="2" cy="2" r="2" fill="#c9a96e" opacity=".5"/></svg>
+<svg class="corner-bracket cb-br" id="cb4" width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M2 54 L2 2 L54 2" stroke="#c9a96e" stroke-width=".8"/><circle cx="2" cy="2" r="2" fill="#c9a96e" opacity=".5"/></svg>
 
-  <!-- Login -->
-  <div id="login-screen">
-    <p class="login-sub">Welcome to</p>
-    <h2 class="login-title">Freddy <em>&</em> Sarah</h2>
-    <p class="login-sub">Who are you?</p>
-    <div class="login-btns">
-      <button class="login-btn" onclick="chooseUser('Freddy')">Freddy</button>
-      <button class="login-btn" onclick="chooseUser('Sarah')">Sarah</button>
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-orn-row">
+      <div class="orn-line"></div>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="2.5" fill="none" stroke="#c9a96e" stroke-width=".7" opacity=".6"/><circle cx="5" cy="5" r="1" fill="#c9a96e" opacity=".4"/></svg>
+      <div class="orn-line r"></div>
     </div>
+    <p class="login-eyebrow">a little corner for</p>
+    <h1 class="login-title">Freddy <em>&</em> Sarah</h1>
+    <div class="login-sub-row">
+      <div class="login-sub-line"></div>
+      <p class="login-sub">Who are you?</p>
+      <div class="login-sub-line"></div>
+    </div>
+    <div class="login-btns">
+      <button class="login-btn" onclick="startAuth('Freddy')"><span class="login-btn-label">I am</span>Freddy</button>
+      <button class="login-btn" onclick="startAuth('Sarah')"><span class="login-btn-label">I am</span>Sarah</button>
+    </div>
+    <div class="login-biometric">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 8c0-1.66 1.34-3 3-3s3 1.34 3 3"/><path d="M3 8c0-2.76 2.24-5 5-5s5 2.24 5 5"/><path d="M1 8C1 4.13 4.13 1 8 1s7 3.13 7 7"/><line x1="8" y1="11" x2="8" y2="13"/></svg>
+      Fingerprint or Face ID after selecting
+    </div>
+    <div class="login-bottom-orn"><svg width="90" height="12" viewBox="0 0 90 12" fill="none"><line x1="0" y1="6" x2="32" y2="6" stroke="#c9a96e" stroke-width=".5" opacity=".3"/><path d="M37 6 Q39 2 42 6 Q45 10 48 6" stroke="#c9a96e" stroke-width=".7" fill="none" opacity=".35"/><line x1="53" y1="6" x2="90" y2="6" stroke="#c9a96e" stroke-width=".5" opacity=".3"/></svg></div>
   </div>
+</div>
 
-  <!-- Locating -->
-  <div id="locating">
-    <h2 class="login-title">Freddy <em>&</em> Sarah</h2>
-    <p class="locating-text">Detecting your location…</p>
+<!-- Auth screen -->
+<div id="auth-screen">
+  <div class="auth-step" id="auth-biometric">
+    <p class="auth-title">Welcome, <em id="auth-name-bio"></em></p>
+    <div class="auth-icon"><svg width="28" height="28" viewBox="0 0 16 16" fill="none" stroke="#c4856a" stroke-width="1.1"><path d="M5 8c0-1.66 1.34-3 3-3s3 1.34 3 3"/><path d="M3 8c0-2.76 2.24-5 5-5s5 2.24 5 5"/><path d="M1 8C1 4.13 4.13 1 8 1s7 3.13 7 7"/><line x1="8" y1="11" x2="8" y2="13"/></svg></div>
+    <p class="auth-sub">Authenticate with biometrics</p>
+    <button class="auth-btn" onclick="attemptBiometric()">Use Fingerprint / Face ID</button>
+    <button class="auth-link" onclick="showAuthStep('auth-recovery')">Use recovery phrase instead</button>
+    <p class="auth-error" id="bio-error">Authentication failed. Try again or use recovery phrase.</p>
   </div>
+  <div class="auth-step" id="auth-recovery">
+    <p class="auth-title">Recovery phrase</p>
+    <p class="auth-sub">Enter your secret recovery phrase</p>
+    <input type="password" class="auth-input" id="recovery-input" placeholder="Your phrase…" onkeydown="if(event.key==='Enter')checkRecovery()"/>
+    <button class="auth-btn" onclick="checkRecovery()">Continue</button>
+    <button class="auth-link" onclick="showAuthStep('auth-biometric')">Back to biometrics</button>
+    <p class="auth-error" id="recovery-error">Incorrect phrase. Please try again.</p>
+  </div>
+  <div class="auth-step" id="auth-setup">
+    <p class="auth-title">Set up <em id="auth-name-setup"></em></p>
+    <p class="auth-sub">First time here! Register your fingerprint and set a recovery phrase you'll always remember.</p>
+    <div class="auth-icon"><svg width="28" height="28" viewBox="0 0 16 16" fill="none" stroke="#c9a96e" stroke-width="1.1"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg></div>
+    <input type="password" class="auth-input" id="setup-phrase" placeholder="Choose a recovery phrase…"/>
+    <input type="password" class="auth-input" id="setup-phrase2" placeholder="Confirm phrase…"/>
+    <p class="auth-error" id="setup-error">Phrases don't match. Try again.</p>
+    <button class="auth-btn" onclick="doSetup()">Register &amp; Continue</button>
+  </div>
+</div>
 
-  <!-- Main -->
-  <div id="main">
+<!-- Locating -->
+<div id="locating">
+  <p class="locating-title">Freddy <em>&</em> Sarah</p>
+  <p class="locating-sub">Detecting your location…</p>
+</div>
 
-    <header>
-      <p class="eyebrow">a little corner for</p>
-      <h1>Freddy <em>&</em> Sarah</h1>
-    </header>
+<!-- Sidebar overlay + hamburger -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
 
-    <!-- Where we are -->
-    <p class="section-label">Where we are</p>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <p class="sidebar-eyebrow">a little corner for</p>
+    <p class="sidebar-title">Freddy <em>&</em> Sarah</p>
+    <svg class="sidebar-ornament" width="90" height="10" viewBox="0 0 90 10"><line x1="0" y1="5" x2="34" y2="5" stroke="#c9a96e" stroke-width=".6"/><circle cx="45" cy="5" r="2.5" fill="none" stroke="#c9a96e" stroke-width=".6"/><circle cx="45" cy="5" r="1" fill="#c9a96e"/><line x1="56" y1="5" x2="90" y2="5" stroke="#c9a96e" stroke-width=".6"/></svg>
+  </div>
+  <div class="user-badge"><div class="user-dot"></div><span class="user-name" id="sidebar-user">—</span></div>
+  <nav class="sidebar-nav">
+    <p class="nav-section-label">Navigate</p>
+    <button class="nav-item active" id="nav-home" onclick="showPage('home')"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6.5L8 2l6 4.5V14H2V6.5z"/></svg>Home</button>
+    <button class="nav-item" id="nav-milestones" onclick="showPage('milestones')"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="2"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/><path d="M3.5 3.5l2 2M10.5 10.5l2 2M3.5 12.5l2-2M10.5 5.5l2-2"/></svg>Milestones</button>
+    <button class="nav-item" id="nav-notes" onclick="showPage('notes')"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 2h10v9l-3 3H3V2z"/><path d="M10 11v3M10 11h3"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="9" y2="9"/></svg>Notes</button>
+    <div class="nav-spacer"></div>
+    <p class="nav-section-label">Coming soon</p>
+    <button class="nav-item" style="opacity:.35;pointer-events:none;"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>Bucket list</button>
+    <button class="nav-item" style="opacity:.35;pointer-events:none;"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="1" width="10" height="14" rx="1"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>Letter</button>
+  </nav>
+  <div class="sidebar-footer">
+    <p class="sidebar-cd-label">Next meetup</p>
+    <div class="sidebar-cd-row">
+      <div><span class="sidebar-cd-num" id="scd-d">--</span><span class="sidebar-cd-lbl">d</span></div>
+      <div><span class="sidebar-cd-num" id="scd-h">--</span><span class="sidebar-cd-lbl">h</span></div>
+      <div><span class="sidebar-cd-num" id="scd-m">--</span><span class="sidebar-cd-lbl">m</span></div>
+      <div><span class="sidebar-cd-num" id="scd-s">--</span><span class="sidebar-cd-lbl">s</span></div>
+    </div>
+    <p class="sidebar-cd-caption" id="scd-caption">4 July 2026</p>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main" id="main" style="display:none;">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="page-header">
+      <div>
+        <p class="page-eyebrow" id="home-date">—</p>
+        <h1 class="page-title" id="home-greeting">Good evening, <em>—</em></h1>
+      </div>
+      <svg class="page-corner-orn" width="70" height="44" viewBox="0 0 70 44"><path d="M70 44 Q48 22 24 34 Q12 40 0 44" stroke="#c9a96e" stroke-width=".8" fill="none"/><circle cx="24" cy="34" r="3" fill="none" stroke="#c9a96e" stroke-width=".6"/><circle cx="48" cy="24" r="2" fill="none" stroke="#c9a96e" stroke-width=".6"/><path d="M24 34 Q20 24 26 18" stroke="#c9a96e" stroke-width=".6" fill="none"/><path d="M48 24 Q54 16 49 10" stroke="#c9a96e" stroke-width=".6" fill="none"/><circle cx="26" cy="18" r="1.2" fill="#c9a96e" opacity=".5"/><circle cx="49" cy="10" r="1" fill="#c9a96e" opacity=".4"/></svg>
+    </div>
+    <p class="section-heading">Where we are</p>
     <div class="map-card">
       <div id="map"></div>
       <div class="weather-row">
         <div class="weather-cell">
           <p class="weather-city" id="my-weather-city">—</p>
-          <div class="weather-main">
-            <span id="my-weather-icon" style="font-size:1.4rem;line-height:1;">—</span>
-            <span class="weather-temp" id="my-weather-temp">—</span>
-            <span class="weather-desc" id="my-weather-desc"></span>
-          </div>
+          <div class="weather-main"><span id="my-weather-icon" style="font-size:1.3rem;line-height:1;">—</span><span class="weather-temp" id="my-weather-temp">—</span><span class="weather-desc" id="my-weather-desc"></span></div>
           <p class="weather-details" id="my-weather-details"></p>
         </div>
         <div class="weather-cell">
           <p class="weather-city" id="other-weather-city">—</p>
-          <div class="weather-main">
-            <span id="other-weather-icon" style="font-size:1.4rem;line-height:1;">—</span>
-            <span class="weather-temp" id="other-weather-temp">—</span>
-            <span class="weather-desc" id="other-weather-desc"></span>
-          </div>
+          <div class="weather-main"><span id="other-weather-icon" style="font-size:1.3rem;line-height:1;">—</span><span class="weather-temp" id="other-weather-temp">—</span><span class="weather-desc" id="other-weather-desc"></span></div>
           <p class="weather-details" id="other-weather-details"></p>
         </div>
       </div>
     </div>
-
-    <div class="divider"></div>
-
-    <!-- Right now -->
-    <p class="section-label">Right now</p>
-    <div class="clocks">
-      <div class="clock-card mine">
-        <p class="clock-city" id="my-city">You</p>
-        <p class="clock-time" id="my-time">--:--:--</p>
-        <p class="clock-date" id="my-date">--</p>
-      </div>
-      <div class="clock-card">
-        <p class="clock-city" id="other-city">Them</p>
-        <p class="clock-time" id="other-time">--:--:--</p>
-        <p class="clock-date" id="other-date">--</p>
-      </div>
+    <div class="orn-divider"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="#c9a96e" stroke-width=".8"/><line x1="8" y1="1" x2="8" y2="3.5" stroke="#c9a96e" stroke-width=".8"/><line x1="8" y1="12.5" x2="8" y2="15" stroke="#c9a96e" stroke-width=".8"/><line x1="1" y1="8" x2="3.5" y2="8" stroke="#c9a96e" stroke-width=".8"/><line x1="12.5" y1="8" x2="15" y2="8" stroke="#c9a96e" stroke-width=".8"/></svg></div>
+    <p class="section-heading">Right now</p>
+    <div class="grid-2">
+      <div class="card mine"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="my-city">—</span></p><p class="clock-time" id="my-time">--:--:--</p><p class="clock-date" id="my-date">--</p></div>
+      <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="other-city">—</span></p><p class="clock-time" id="other-time">--:--:--</p><p class="clock-date" id="other-date">--</p></div>
     </div>
-
-    <div class="divider"></div>
-
-    <!-- Us -->
-    <p class="section-label">Us</p>
-    <div class="stats">
-      <div class="stat-card">
-        <p class="stat-label">Together since</p>
-        <p class="stat-value" id="days-together">—</p>
-        <p class="stat-unit">days</p>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-header">
-          <p class="stat-label" style="margin-bottom:0;">Next meetup</p>
-          <input type="date" id="meetup-date-input" class="meetup-date-input" value="2026-07-04" onchange="updateMeetupDate(this.value)"/>
-        </div>
-        <div class="cd-row">
-          <div class="cd-cell"><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div>
-          <div class="cd-cell"><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div>
-          <div class="cd-cell"><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div>
-          <div class="cd-cell"><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div>
-        </div>
+    <div class="orn-divider"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 13s-5-3.5-5-7a5 5 0 0110 0c0 3.5-5 7-5 7z" stroke="#c9a96e" stroke-width=".8"/><circle cx="8" cy="6" r="1.5" stroke="#c9a96e" stroke-width=".7"/></svg></div>
+    <p class="section-heading">Us</p>
+    <div class="grid-2">
+      <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="11" rx="1"/><path d="M5 3V1M11 3V1M2 7h12"/></svg>Together since</p><p class="stat-value" id="days-together">—</p><p class="stat-unit">days</p></div>
+      <div class="card">
+        <div class="stat-card-header"><p class="card-label" style="margin:0;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>Next meetup</p><input type="date" id="meetup-date-input" class="meetup-input" value="2026-07-04" onchange="updateMeetupDate(this.value)"/></div>
+        <div class="cd-row"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
         <p class="cd-caption" id="cd-caption">4 July 2026</p>
       </div>
     </div>
-
-    <div class="divider"></div>
-
-    <!-- Notes -->
-    <p class="section-label">Notes to each other</p>
-    <div class="notes-compose">
-      <textarea id="note-input" rows="3" placeholder="Write something…"></textarea>
-      <div class="compose-footer">
-        <span class="author-tag" id="note-author-name">—</span>
-        <button class="send-btn" onclick="submitNote()">Send</button>
-      </div>
-    </div>
-    <div id="notes-wall"><p class="empty">No notes yet.</p></div>
-
-    <footer>Freddy & Sarah</footer>
+    <div class="orn-divider"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 2h10v9H3zM6 11l2 3 2-3" stroke="#c9a96e" stroke-width=".8"/></svg></div>
+    <p class="section-heading">Recent notes</p>
+    <div class="grid-2" id="home-notes-preview"><p class="empty">No notes yet.</p></div>
   </div>
 
-</div>
+  <!-- MILESTONES -->
+  <div class="page" id="page-milestones">
+    <div class="page-header">
+      <div><p class="page-eyebrow">Our story</p><h1 class="page-title">Milestones</h1></div>
+      <button class="milestone-add-btn" onclick="toggleAddForm()"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>Add milestone</button>
+      <svg class="page-corner-orn" width="70" height="44" viewBox="0 0 70 44"><path d="M70 44 Q48 22 24 34 Q12 40 0 44" stroke="#c9a96e" stroke-width=".8" fill="none"/><circle cx="24" cy="34" r="3" fill="none" stroke="#c9a96e" stroke-width=".6"/><circle cx="48" cy="24" r="2" fill="none" stroke="#c9a96e" stroke-width=".6"/></svg>
+    </div>
+    <div class="timeline" id="milestone-timeline"><p class="empty">No milestones yet. Add your first one!</p></div>
+    <div class="add-form" id="add-milestone-form">
+      <input type="text" id="m-title-input" placeholder="What happened?"/>
+      <input type="text" id="m-note-input" placeholder="A little note… (optional)"/>
+      <div class="add-form-row">
+        <input type="date" id="m-date-input"/>
+        <select class="form-tag-select" id="m-tag-input"><option value="moment">Moment</option><option value="memory">Memory</option><option value="first">First</option><option value="milestone">Milestone</option><option value="future">Future ✈️</option></select>
+        <button class="form-save-btn" onclick="saveMilestone()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="page" id="page-notes">
+    <div class="page-header">
+      <div><p class="page-eyebrow">For each other</p><h1 class="page-title">Notes</h1></div>
+      <svg class="page-corner-orn" width="70" height="44" viewBox="0 0 70 44"><path d="M70 44 Q48 22 24 34 Q12 40 0 44" stroke="#c9a96e" stroke-width=".8" fill="none"/><circle cx="24" cy="34" r="3" fill="none" stroke="#c9a96e" stroke-width=".6"/><circle cx="48" cy="24" r="2" fill="none" stroke="#c9a96e" stroke-width=".6"/></svg>
+    </div>
+    <p class="section-heading">Write something</p>
+    <div class="notes-compose">
+      <textarea id="note-input" rows="3" placeholder="Write something…"></textarea>
+      <div class="compose-footer"><span class="author-tag" id="note-author-name">—</span><button class="send-btn" onclick="submitNote()">Send</button></div>
+    </div>
+    <p class="section-heading">All notes</p>
+    <div id="notes-wall"><p class="empty">No notes yet.</p></div>
+  </div>
+
+  <footer>Freddy & Sarah</footer>
+</main>
 
 <script type="module">
-  // ── Firebase config ────────────────────────────────────────────────────────
-  const FIREBASE_CONFIG = {
-    apiKey:            "AIzaSyAz5CvOXduYUAh2_Zk2L-8PUEy4KfQjeCo",
-    authDomain:        "ldrcounter.firebaseapp.com",
-    databaseURL:       "https://ldrcounter-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId:         "ldrcounter",
-    storageBucket:     "ldrcounter.firebasestorage.app",
-    messagingSenderId: "856435037901",
-    appId:             "1:856435037901:web:db66ccb1ddcc0278d9fb84",
-    measurementId:     "G-XC5ZCNCXLG"
+  const FIREBASE_CONFIG={apiKey:"AIzaSyAz5CvOXduYUAh2_Zk2L-8PUEy4KfQjeCo",authDomain:"ldrcounter.firebaseapp.com",databaseURL:"https://ldrcounter-default-rtdb.europe-west1.firebasedatabase.app",projectId:"ldrcounter",storageBucket:"ldrcounter.firebasestorage.app",messagingSenderId:"856435037901",appId:"1:856435037901:web:db66ccb1ddcc0278d9fb84"};
+  const DEFAULTS={Freddy:"Europe/Berlin",Sarah:"Asia/Taipei"};
+  const DEFAULT_CITIES={Freddy:"Bonn",Sarah:"Kaohsiung"};
+  const DEFAULT_COORDS={Freddy:[50.7374,7.0982],Sarah:[22.6273,120.3014]};
+  let ME=null,OTHER=null,myTz=null,otherTz=null,myCity=null,otherCity=null,myCoords=null,otherCoords=null;
+  let db=null,dbPush=null,dbSet=null,dbRef=null,dbRemove=null,fbOnValue=null;
+  let localNotes=[],localMilestones=[],meetupDate=new Date("2026-07-04T00:00:00+02:00"),countdownInterval=null;
+  let mapInstance=null,myMarker=null,otherMarker=null,connectLine=null;
+  let pendingUser=null;
+
+  // Hashing
+  async function hashPhrase(p){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(p.trim().toLowerCase()));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");}
+
+  // WebAuthn
+  function b64url(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"");}
+  function b64urlDecode(s){s=s.replace(/-/g,"+").replace(/_/g,"/");const b=atob(s);return new Uint8Array([...b].map(c=>c.charCodeAt(0))).buffer;}
+  async function registerBiometric(uid){try{const ch=crypto.getRandomValues(new Uint8Array(32));const cr=await navigator.credentials.create({publicKey:{challenge:ch,rp:{name:"Freddy & Sarah",id:location.hostname},user:{id:new TextEncoder().encode(uid),name:uid,displayName:uid},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],authenticatorSelection:{userVerification:"required"},timeout:60000}});localStorage.setItem(`wc_${uid}`,b64url(cr.rawId));return true;}catch(e){console.warn("reg failed",e);return false;}}
+  async function authenticateBiometric(uid){try{const cid=localStorage.getItem(`wc_${uid}`);if(!cid)return false;const ch=crypto.getRandomValues(new Uint8Array(32));await navigator.credentials.get({publicKey:{challenge:ch,allowCredentials:[{type:"public-key",id:b64urlDecode(cid)}],userVerification:"required",timeout:60000}});return true;}catch(e){return false;}}
+  function webAuthnSupported(){return!!(window.PublicKeyCredential&&navigator.credentials);}
+
+  // Auth
+  window.startAuth=async function(name){
+    pendingUser=name;
+    document.getElementById("login-screen").style.display="none";
+    ["cb1","cb2","cb3","cb4"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display="none";});
+    await tryInitFirebase();
+    const hasRecovery=await checkHasRecovery(name);
+    const hasCred=!!localStorage.getItem(`wc_${name}`);
+    document.getElementById("auth-screen").style.display="flex";
+    if(!hasRecovery){document.getElementById("auth-name-setup").textContent=name;showAuthStep("auth-setup");}
+    else if(hasCred&&webAuthnSupported()){document.getElementById("auth-name-bio").textContent=name;showAuthStep("auth-biometric");}
+    else{showAuthStep("auth-recovery");}
   };
 
-  // ── Defaults ───────────────────────────────────────────────────────────────
-  const DEFAULTS       = { Freddy: "Europe/Berlin",  Sarah: "Asia/Taipei" };
-  const DEFAULT_CITIES = { Freddy: "Bonn",           Sarah: "Kaohsiung" };
-  const DEFAULT_COORDS = { Freddy: [50.7374, 7.0982], Sarah: [22.6273, 120.3014] };
-
-  // ── State ──────────────────────────────────────────────────────────────────
-  let ME = null, OTHER = null;
-  let myTz = null,    otherTz = null;
-  let myCity = null,  otherCity = null;
-  let myCoords = null, otherCoords = null;
-  let db = null, dbPush = null, dbSet = null, dbRef = null;
-  let localNotes = [];
-  let meetupDate = new Date("2026-07-04T00:00:00+02:00");
-  let countdownInterval = null;
-  let mapInstance = null, myMarker = null, otherMarker = null, connectLine = null;
-  let otherWeatherFetched = false;
-
-  // ── Weather helpers ────────────────────────────────────────────────────────
-  function weatherIcon(code) {
-    if (code === 0)  return "☀️";
-    if (code <= 2)   return "⛅";
-    if (code <= 3)   return "☁️";
-    if (code <= 48)  return "🌫️";
-    if (code <= 57)  return "🌦️";
-    if (code <= 67)  return "🌧️";
-    if (code <= 77)  return "❄️";
-    if (code <= 82)  return "🌧️";
-    if (code <= 86)  return "🌨️";
-    if (code <= 99)  return "⛈️";
-    return "🌡️";
+  async function checkHasRecovery(name){
+    if(!db||!fbOnValue)return false;
+    return new Promise(r=>fbOnValue(dbRef(db,`auth/${name}/recoveryHash`),s=>{r(!!s.val());},{onlyOnce:true}));
   }
 
-  function weatherDesc(code) {
-    if (code === 0)  return "Clear sky";
-    if (code === 1)  return "Mainly clear";
-    if (code === 2)  return "Partly cloudy";
-    if (code === 3)  return "Overcast";
-    if (code <= 48)  return "Foggy";
-    if (code <= 57)  return "Drizzle";
-    if (code <= 67)  return "Rain";
-    if (code <= 77)  return "Snow";
-    if (code <= 82)  return "Rain showers";
-    if (code <= 86)  return "Snow showers";
-    if (code <= 99)  return "Thunderstorm";
-    return "Unknown";
-  }
-
-  async function fetchWeather(lat, lng, prefix) {
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
-      const r = await fetch(url);
-      const j = await r.json();
-      const temp = Math.round(j.current.temperature_2m);
-      const code = j.current.weathercode;
-      const wind = Math.round(j.current.windspeed_10m);
-      const high = Math.round(j.daily.temperature_2m_max[0]);
-      const low  = Math.round(j.daily.temperature_2m_min[0]);
-      document.getElementById(`${prefix}-weather-icon`).textContent    = weatherIcon(code);
-      document.getElementById(`${prefix}-weather-temp`).textContent    = `${temp}°`;
-      document.getElementById(`${prefix}-weather-desc`).textContent    = weatherDesc(code);
-      document.getElementById(`${prefix}-weather-details`).textContent = `H ${high}°  L ${low}°  Wind ${wind} km/h`;
-    } catch {
-      document.getElementById(`${prefix}-weather-temp`).textContent = "—";
-    }
-  }
-
-  // ── Map ────────────────────────────────────────────────────────────────────
-  function initMap(myCo, otherCo, myLabel, otherLabel) {
-    if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-
-    mapInstance = L.map("map", { zoomControl: false, attributionControl: true })
-      .setView([(myCo[0]+otherCo[0])/2, (myCo[1]+otherCo[1])/2], 2);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap", maxZoom: 18
-    }).addTo(mapInstance);
-
-    const makeIcon = (color) => L.divIcon({
-      className: "",
-      html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
-      iconSize: [12,12], iconAnchor: [6,6]
+  window.showAuthStep=function(id){
+    ["auth-biometric","auth-recovery","auth-setup"].forEach(s=>{
+      const el=document.getElementById(s);
+      if(s===id){el.classList.add("active");}else{el.classList.remove("active");}
     });
+  };
 
-    myMarker = L.marker(myCo, { icon: makeIcon("#c4856a") })
-      .addTo(mapInstance)
-      .bindTooltip(myLabel, { permanent: true, direction: "top", offset: [0,-10], className: "map-tooltip" });
+  window.attemptBiometric=async function(){
+    const ok=await authenticateBiometric(pendingUser);
+    if(ok){proceedAfterAuth();}else{document.getElementById("bio-error").style.display="block";}
+  };
 
-    otherMarker = L.marker(otherCo, { icon: makeIcon("#8aabaa") })
-      .addTo(mapInstance)
-      .bindTooltip(otherLabel, { permanent: true, direction: "top", offset: [0,-10], className: "map-tooltip" });
+  window.checkRecovery=async function(){
+    const phrase=document.getElementById("recovery-input").value;
+    if(!phrase)return;
+    const hash=await hashPhrase(phrase);
+    const stored=await getStoredHash(pendingUser);
+    if(hash===stored){
+      document.getElementById("recovery-error").style.display="none";
+      document.getElementById("recovery-input").value="";
+      if(webAuthnSupported())await registerBiometric(pendingUser);
+      proceedAfterAuth();
+    }else{document.getElementById("recovery-error").style.display="block";}
+  };
 
-    connectLine = L.polyline([myCo, otherCo], {
-      color: "#c4856a", weight: 1.5, dashArray: "6,5", opacity: 0.65
-    }).addTo(mapInstance);
-
-    mapInstance.fitBounds(L.latLngBounds([myCo, otherCo]).pad(0.3));
+  async function getStoredHash(name){
+    if(!db||!fbOnValue)return null;
+    return new Promise(r=>fbOnValue(dbRef(db,`auth/${name}/recoveryHash`),s=>{r(s.val());},{onlyOnce:true}));
   }
 
-  function updateOtherMapMarker(coords, label) {
-    if (!mapInstance) return;
-    otherMarker.setLatLng(coords);
-    otherMarker.setTooltipContent(label);
-    connectLine.setLatLngs([myCoords, coords]);
-    mapInstance.fitBounds(L.latLngBounds([myCoords, coords]).pad(0.3));
+  window.doSetup=async function(){
+    const p1=document.getElementById("setup-phrase").value;
+    const p2=document.getElementById("setup-phrase2").value;
+    if(!p1||p1!==p2){document.getElementById("setup-error").style.display="block";return;}
+    document.getElementById("setup-error").style.display="none";
+    const hash=await hashPhrase(p1);
+    if(db&&dbSet)await dbSet(dbRef(db,`auth/${pendingUser}/recoveryHash`),hash);
+    if(webAuthnSupported())await registerBiometric(pendingUser);
+    document.getElementById("setup-phrase").value="";
+    document.getElementById("setup-phrase2").value="";
+    proceedAfterAuth();
+  };
+
+  async function proceedAfterAuth(){
+    document.getElementById("auth-screen").style.display="none";
+    document.getElementById("locating").style.display="flex";
+    ME=pendingUser;
+    OTHER=pendingUser==="Freddy"?"Sarah":"Freddy";
+    await detectAndStart();
   }
 
-  // ── Firebase ───────────────────────────────────────────────────────────────
-  async function tryInitFirebase() {
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-      const { getDatabase, ref, set, push, onValue, serverTimestamp } =
-        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-
-      const app = initializeApp(FIREBASE_CONFIG);
-      db = getDatabase(app);
-      dbRef = ref; dbSet = set; dbPush = push;
-
-      // Live notes
-      onValue(ref(db, "notes"), (snap) => {
-        const data = snap.val();
-        renderNotes(data ? Object.values(data).reverse() : []);
-      });
-
-      // Meetup date sync
-      onValue(ref(db, "meetupDate"), (snap) => {
-        const val = snap.val();
-        if (val) {
-          meetupDate = new Date(val);
-          const inputVal = val.substring(0, 10);
-          document.getElementById("meetup-date-input").value = inputVal;
-          updateCdCaption(meetupDate);
-          startCountdown();
-        }
-      });
-
-      // Other person's presence
-      window._watchOther = () => {
-        onValue(ref(db, `presence/${OTHER}`), (snap) => {
-          const data = snap.val();
-          otherTz     = data?.timezone || DEFAULTS[OTHER];
-          otherCity   = data?.city     || DEFAULT_CITIES[OTHER];
-          const newCoords = (data?.lat && data?.lng) ? [data.lat, data.lng] : DEFAULT_COORDS[OTHER];
-          const coordsChanged = !otherCoords ||
-            Math.abs(newCoords[0] - otherCoords[0]) > 0.01 ||
-            Math.abs(newCoords[1] - otherCoords[1]) > 0.01;
-
-          otherCoords = newCoords;
-
-          // Update labels
-          const label = `${OTHER} · ${otherCity}`;
-          document.getElementById("other-city").textContent         = label;
-          document.getElementById("other-weather-city").textContent = label;
-
-          // Update map marker
-          if (mapInstance) updateOtherMapMarker(otherCoords, label);
-
-          // Re-fetch weather only if location changed
-          if (coordsChanged) fetchWeather(otherCoords[0], otherCoords[1], "other");
+  // Firebase
+  async function tryInitFirebase(){
+    try{
+      const{initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const{getDatabase,ref,set,push,onValue,remove,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+      const app=initializeApp(FIREBASE_CONFIG);
+      db=getDatabase(app);dbRef=ref;dbSet=set;dbPush=push;dbRemove=remove;fbOnValue=onValue;
+      onValue(ref(db,"notes"),snap=>{const d=snap.val();const n=d?Object.values(d).reverse():[];renderNotes(n);renderNotesPreview(n);});
+      onValue(ref(db,"milestones"),snap=>{const d=snap.val();renderMilestones(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]); });
+      onValue(ref(db,"meetupDate"),snap=>{const v=snap.val();if(v){meetupDate=new Date(v);document.getElementById("meetup-date-input").value=v.substring(0,10);updateCdCaption(meetupDate);startCountdown();}});
+      window._watchOther=()=>{
+        onValue(ref(db,`presence/${OTHER}`),snap=>{
+          const d=snap.val();
+          otherTz=d?.timezone||DEFAULTS[OTHER];otherCity=d?.city||DEFAULT_CITIES[OTHER];
+          const nc=(d?.lat&&d?.lng)?[d.lat,d.lng]:DEFAULT_COORDS[OTHER];
+          const changed=!otherCoords||Math.abs(nc[0]-otherCoords[0])>0.01||Math.abs(nc[1]-otherCoords[1])>0.01;
+          otherCoords=nc;
+          const label=`${OTHER} · ${otherCity}`;
+          document.getElementById("other-city").textContent=label;
+          document.getElementById("other-weather-city").textContent=label;
+          if(mapInstance)updateOtherMarker(otherCoords,label);
+          if(changed)fetchWeather(otherCoords[0],otherCoords[1],"other");
         });
       };
-
-      // Push my presence
-      window._pushPresence = (tz, city, lat, lng) => {
-        set(ref(db, `presence/${ME}`), { timezone: tz, city, lat, lng, updatedAt: serverTimestamp() });
-      };
-
+      window._pushPresence=(tz,city,lat,lng)=>set(ref(db,`presence/${ME}`),{timezone:tz,city,lat,lng,updatedAt:serverTimestamp()});
       return true;
-    } catch (e) {
-      console.warn("Firebase init failed, using demo mode:", e);
-      return false;
-    }
+    }catch(e){console.warn("Firebase failed:",e);return false;}
   }
 
-  // ── Location detection ─────────────────────────────────────────────────────
-  async function tzFromCoords(lat, lng) {
-    try {
-      const r = await fetch(`https://timeapi.io/api/timezone/coordinate?latitude=${lat}&longitude=${lng}`);
-      const j = await r.json();
-      return j.timeZone || null;
-    } catch { return null; }
+  // Location
+  async function tzFromCoords(lat,lng){try{const r=await fetch(`https://timeapi.io/api/timezone/coordinate?latitude=${lat}&longitude=${lng}`);return(await r.json()).timeZone||null;}catch{return null;}}
+  async function cityFromCoords(lat,lng){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);const j=await r.json();return j.address?.city||j.address?.town||j.address?.village||j.address?.county||null;}catch{return null;}}
+  async function detectMyLocation(){return new Promise(res=>{if(!navigator.geolocation){res({tz:null,city:null,lat:null,lng:null});return;}navigator.geolocation.getCurrentPosition(async({coords:{latitude:lat,longitude:lng}})=>{const[tz,city]=await Promise.all([tzFromCoords(lat,lng),cityFromCoords(lat,lng)]);res({tz,city,lat,lng});},()=>res({tz:null,city:null,lat:null,lng:null}),{timeout:8000});});}
+  async function detectAndStart(){
+    const{tz,city,lat,lng}=await detectMyLocation();
+    myTz=tz||Intl.DateTimeFormat().resolvedOptions().timeZone||DEFAULTS[ME];
+    myCity=city||DEFAULT_CITIES[ME];
+    myCoords=(lat&&lng)?[lat,lng]:DEFAULT_COORDS[ME];
+    otherTz=DEFAULTS[OTHER];otherCity=DEFAULT_CITIES[OTHER];otherCoords=DEFAULT_COORDS[OTHER];
+    if(window._pushPresence)window._pushPresence(myTz,myCity,myCoords[0],myCoords[1]);
+    startUI();
   }
 
-  async function cityFromCoords(lat, lng) {
-    try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
-      const j = await r.json();
-      return j.address?.city || j.address?.town || j.address?.village || j.address?.county || null;
-    } catch { return null; }
+  // Weather
+  function wIcon(c){if(c===0)return"☀️";if(c<=2)return"⛅";if(c<=3)return"☁️";if(c<=48)return"🌫️";if(c<=57)return"🌦️";if(c<=67)return"🌧️";if(c<=77)return"❄️";if(c<=82)return"🌧️";if(c<=86)return"🌨️";if(c<=99)return"⛈️";return"🌡️";}
+  function wDesc(c){if(c===0)return"Clear sky";if(c===1)return"Mainly clear";if(c===2)return"Partly cloudy";if(c===3)return"Overcast";if(c<=48)return"Foggy";if(c<=57)return"Drizzle";if(c<=67)return"Rain";if(c<=77)return"Snow";if(c<=82)return"Rain showers";if(c<=86)return"Snow showers";if(c<=99)return"Thunderstorm";return"—";}
+  async function fetchWeather(lat,lng,prefix){try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`);const j=await r.json();const temp=Math.round(j.current.temperature_2m),code=j.current.weathercode,wind=Math.round(j.current.windspeed_10m),high=Math.round(j.daily.temperature_2m_max[0]),low=Math.round(j.daily.temperature_2m_min[0]);document.getElementById(`${prefix}-weather-icon`).textContent=wIcon(code);document.getElementById(`${prefix}-weather-temp`).textContent=`${temp}°`;document.getElementById(`${prefix}-weather-desc`).textContent=wDesc(code);document.getElementById(`${prefix}-weather-details`).textContent=`H ${high}°  L ${low}°  Wind ${wind} km/h`;}catch{document.getElementById(`${prefix}-weather-temp`).textContent="—";}}
+
+  // Map
+  function initMap(myCo,oCo,myL,oL){
+    if(mapInstance){mapInstance.remove();mapInstance=null;}
+    mapInstance=L.map("map",{zoomControl:false,attributionControl:true}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],2);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:18}).addTo(mapInstance);
+    const mkI=color=>L.divIcon({className:"",html:`<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
+    myMarker=L.marker(myCo,{icon:mkI("#c4856a")}).addTo(mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+    otherMarker=L.marker(oCo,{icon:mkI("#8aabaa")}).addTo(mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+    connectLine=L.polyline([myCo,oCo],{color:"#c4856a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(mapInstance);
+    mapInstance.fitBounds(L.latLngBounds([myCo,oCo]).pad(0.3));
   }
+  function updateOtherMarker(coords,label){if(!mapInstance)return;otherMarker.setLatLng(coords);otherMarker.setTooltipContent(label);connectLine.setLatLngs([myCoords,coords]);mapInstance.fitBounds(L.latLngBounds([myCoords,coords]).pad(0.3));}
 
-  async function detectMyLocation() {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) { resolve({ tz: null, city: null, lat: null, lng: null }); return; }
-      navigator.geolocation.getCurrentPosition(
-        async ({ coords: { latitude: lat, longitude: lng } }) => {
-          const [tz, city] = await Promise.all([tzFromCoords(lat, lng), cityFromCoords(lat, lng)]);
-          resolve({ tz, city, lat, lng });
-        },
-        () => resolve({ tz: null, city: null, lat: null, lng: null }),
-        { timeout: 8000 }
-      );
-    });
+  // Notes
+  function fmtTs(ts){if(!ts)return"";const d=new Date(ts),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)} · ${p(d.getHours())}:${p(d.getMinutes())}`;}
+  function noteCardHTML(note){return`<div class="note-card"><p class="note-text">${note.text}</p><div class="note-footer"><span class="note-author">${note.author}</span>${note.time?`<span class="note-time">${fmtTs(note.time)}</span>`:""}</div></div>`;}
+  function renderNotes(notes){const w=document.getElementById("notes-wall");if(!notes.length){w.innerHTML=`<p class="empty">No notes yet.</p>`;return;}w.innerHTML=notes.map(noteCardHTML).join("");}
+  function renderNotesPreview(notes){const p=document.getElementById("home-notes-preview");const r=notes.slice(0,2);if(!r.length){p.innerHTML=`<p class="empty">No notes yet.</p>`;return;}p.innerHTML=r.map(noteCardHTML).join("");}
+  window.submitNote=function(){const text=document.getElementById("note-input").value.trim();if(!text||!ME)return;const note={text,author:ME,time:Date.now()};if(db&&dbPush){dbPush(dbRef(db,"notes"),note);}else{localNotes.unshift(note);renderNotes(localNotes);renderNotesPreview(localNotes);}document.getElementById("note-input").value="";};
+
+  // Milestones
+  const DOT_COLORS=["gold","b","a","b","a","gold"];
+  const TAG_CLS={moment:"a",memory:"b",first:"gold",milestone:"b",future:""};
+  function fmtMDate(s){if(!s)return"";const d=new Date(s+"T12:00:00"),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)}`;}
+  function renderMilestones(items){
+    const tl=document.getElementById("milestone-timeline");
+    if(!items.length){tl.innerHTML=`<p class="empty">No milestones yet. Add your first one!</p>`;return;}
+    items.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    let ci=0;
+    tl.innerHTML=items.map(item=>{
+      const isFuture=new Date(item.date)>new Date();
+      const dc=isFuture?"future":DOT_COLORS[ci++%DOT_COLORS.length];
+      const tc=TAG_CLS[item.tag]||"";
+      return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}"><div class="m-top"><p class="m-title">${item.title}</p><span class="m-date">${fmtMDate(item.date)}</span></div>${item.note?`<p class="m-note">${item.note}</p>`:""}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${item.tag}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.5rem;"><span class="m-author">${item.addedBy||""}</span>${item._key?`<button class="m-delete" onclick="deleteMilestone('${item._key}')">✕</button>`:""}</div></div></div></div>`;
+    }).join("");
   }
+  window.toggleAddForm=function(){const f=document.getElementById("add-milestone-form");f.classList.toggle("open");if(f.classList.contains("open")){document.getElementById("m-date-input").value=new Date().toISOString().split("T")[0];document.getElementById("m-title-input").focus();}};
+  window.saveMilestone=function(){const title=document.getElementById("m-title-input").value.trim(),note=document.getElementById("m-note-input").value.trim(),date=document.getElementById("m-date-input").value,tag=document.getElementById("m-tag-input").value;if(!title||!date)return;const m={title,note,date,tag,addedBy:ME,time:Date.now()};if(db&&dbPush){dbPush(dbRef(db,"milestones"),m);}else{localMilestones.push({...m,_key:Date.now().toString()});renderMilestones([...localMilestones]);}document.getElementById("m-title-input").value="";document.getElementById("m-note-input").value="";document.getElementById("add-milestone-form").classList.remove("open");};
+  window.deleteMilestone=function(key){if(db&&dbRemove){dbRemove(dbRef(db,`milestones/${key}`));}else{localMilestones=localMilestones.filter(m=>m._key!==key);renderMilestones([...localMilestones]);}};
 
-  // ── Notes ──────────────────────────────────────────────────────────────────
-  function fmtTimestamp(ts) {
-    if (!ts) return "";
-    const d   = new Date(ts);
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  // Meetup
+  function updateCdCaption(date){const s=date.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});document.getElementById("cd-caption").textContent=s;document.getElementById("scd-caption").textContent=s;}
+  window.updateMeetupDate=function(val){meetupDate=new Date(val+"T00:00:00");updateCdCaption(meetupDate);startCountdown();if(db&&dbSet)dbSet(dbRef(db,"meetupDate"),val+"T00:00:00");};
+
+  // Countdown
+  function startCountdown(){if(countdownInterval)clearInterval(countdownInterval);function tick(){const diff=meetupDate-Date.now();const d=Math.max(0,Math.floor(diff/86400000)),h=Math.max(0,Math.floor((diff%86400000)/3600000)),m=Math.max(0,Math.floor((diff%3600000)/60000)),s=Math.max(0,Math.floor((diff%60000)/1000));["cd","scd"].forEach(p=>{document.getElementById(`${p}-d`).textContent=d;document.getElementById(`${p}-h`).textContent=h;document.getElementById(`${p}-m`).textContent=m;document.getElementById(`${p}-s`).textContent=s;});}tick();countdownInterval=setInterval(tick,1000);}
+
+  // Greeting
+  function greeting(name,tz){const h=parseInt(new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit"}));const g=h<12?"Good morning":h<18?"Good afternoon":"Good evening";return`${g}, <em>${name}</em>`;}
+  function fmtTime(tz){return new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+  function fmtDate(tz){return new Date().toLocaleDateString("en-GB",{timeZone:tz,weekday:"long",day:"numeric",month:"long"});}
+
+  // Nav
+  window.showPage=function(name){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));document.getElementById(`page-${name}`).classList.add("active");document.getElementById(`nav-${name}`).classList.add("active");closeSidebar();};
+  window.toggleSidebar=function(){document.getElementById("sidebar").classList.toggle("open");document.getElementById("sidebar-overlay").classList.toggle("open");};
+  window.closeSidebar=function(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sidebar-overlay").classList.remove("open");};
+
+  // Start UI
+  function startUI(){
+    document.getElementById("locating").style.display="none";
+    document.getElementById("main").style.display="block";
+    const myL=`${ME} · ${myCity}`,oL=`${OTHER} · ${otherCity}`;
+    document.getElementById("sidebar-user").textContent=`Logged in as ${ME}`;
+    document.getElementById("my-city").textContent=myL;
+    document.getElementById("other-city").textContent=oL;
+    document.getElementById("my-weather-city").textContent=myL;
+    document.getElementById("other-weather-city").textContent=oL;
+    document.getElementById("note-author-name").textContent=ME;
+    document.getElementById("home-greeting").innerHTML=greeting(ME,myTz);
+    document.getElementById("home-date").textContent=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    setTimeout(()=>initMap(myCoords,otherCoords,myL,oL),50);
+    fetchWeather(myCoords[0],myCoords[1],"my");
+    fetchWeather(otherCoords[0],otherCoords[1],"other");
+    if(window._watchOther)window._watchOther();
+    function tickClocks(){document.getElementById("my-time").textContent=fmtTime(myTz);document.getElementById("my-date").textContent=fmtDate(myTz);document.getElementById("other-time").textContent=fmtTime(otherTz||DEFAULTS[OTHER]);document.getElementById("other-date").textContent=fmtDate(otherTz||DEFAULTS[OTHER]);}
+    tickClocks();setInterval(tickClocks,1000);
+    const start=new Date("2026-01-01");document.getElementById("days-together").textContent=Math.floor((Date.now()-start)/86400000)+1;
+    updateCdCaption(meetupDate);startCountdown();
   }
-
-  function renderNotes(notes) {
-    const wall = document.getElementById("notes-wall");
-    if (!notes.length) { wall.innerHTML = `<p class="empty">No notes yet.</p>`; return; }
-    wall.innerHTML = "";
-    notes.forEach(note => {
-      const card = document.createElement("div");
-      card.className = "note-card";
-      const ts = note.time ? `<span class="note-time">${fmtTimestamp(note.time)}</span>` : "";
-      card.innerHTML = `
-        <p class="note-text">${note.text}</p>
-        <div class="note-footer">
-          <span class="note-author">${note.author}</span>
-          ${ts}
-        </div>`;
-      wall.appendChild(card);
-    });
-  }
-
-  window.submitNote = function() {
-    const text = document.getElementById("note-input").value.trim();
-    if (!text || !ME) return;
-    const note = { text, author: ME, time: Date.now() };
-    if (db && dbPush) {
-      dbPush(dbRef(db, "notes"), note);
-    } else {
-      localNotes.unshift(note);
-      renderNotes(localNotes);
-    }
-    document.getElementById("note-input").value = "";
-  };
-
-  // ── Meetup date ────────────────────────────────────────────────────────────
-  function updateCdCaption(date) {
-    document.getElementById("cd-caption").textContent =
-      date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  }
-
-  window.updateMeetupDate = function(val) {
-    meetupDate = new Date(val + "T00:00:00");
-    updateCdCaption(meetupDate);
-    startCountdown();
-    if (db && dbSet) dbSet(dbRef(db, "meetupDate"), val + "T00:00:00");
-  };
-
-  // ── Countdown ─────────────────────────────────────────────────────────────
-  function startCountdown() {
-    if (countdownInterval) clearInterval(countdownInterval);
-    function tick() {
-      const diff = meetupDate - Date.now();
-      if (diff <= 0) {
-        ["cd-d","cd-h","cd-m","cd-s"].forEach(id => document.getElementById(id).textContent = "0");
-        return;
-      }
-      document.getElementById("cd-d").textContent = Math.floor(diff / 86400000);
-      document.getElementById("cd-h").textContent = Math.floor((diff % 86400000) / 3600000);
-      document.getElementById("cd-m").textContent = Math.floor((diff % 3600000) / 60000);
-      document.getElementById("cd-s").textContent = Math.floor((diff % 60000) / 1000);
-    }
-    tick();
-    countdownInterval = setInterval(tick, 1000);
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function fmtTime(tz) {
-    return new Date().toLocaleTimeString("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  }
-  function fmtDate(tz) {
-    return new Date().toLocaleDateString("en-GB", { timeZone: tz, weekday: "long", day: "numeric", month: "long" });
-  }
-
-  // ── Start UI ───────────────────────────────────────────────────────────────
-  function startUI(isDemo) {
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("locating").style.display     = "none";
-    document.getElementById("demo-banner").style.display  = isDemo ? "block" : "none";
-    document.getElementById("main").style.display         = "block";
-
-    const myLabel    = `${ME} · ${myCity}`;
-    const otherLabel = `${OTHER} · ${otherCity}`;
-
-    document.getElementById("my-city").textContent            = myLabel;
-    document.getElementById("other-city").textContent         = otherLabel;
-    document.getElementById("my-weather-city").textContent    = myLabel;
-    document.getElementById("other-weather-city").textContent = otherLabel;
-    document.getElementById("note-author-name").textContent   = ME;
-
-    // Map (init after main is visible so dimensions are correct)
-    setTimeout(() => initMap(myCoords, otherCoords, myLabel, otherLabel), 50);
-
-    // Weather
-    fetchWeather(myCoords[0], myCoords[1], "my");
-    fetchWeather(otherCoords[0], otherCoords[1], "other");
-
-    // Watch other person's live presence
-    if (window._watchOther) window._watchOther();
-
-    // Clocks
-    function tickClocks() {
-      const effOther = otherTz || DEFAULTS[OTHER];
-      document.getElementById("my-time").textContent    = fmtTime(myTz);
-      document.getElementById("my-date").textContent    = fmtDate(myTz);
-      document.getElementById("other-time").textContent = fmtTime(effOther);
-      document.getElementById("other-date").textContent = fmtDate(effOther);
-    }
-    tickClocks();
-    setInterval(tickClocks, 1000);
-
-    // Days together
-    const start = new Date("2026-01-01");
-    document.getElementById("days-together").textContent = Math.floor((Date.now() - start) / 86400000) + 1;
-
-    // Countdown
-    updateCdCaption(meetupDate);
-    startCountdown();
-  }
-
-  // ── Login ──────────────────────────────────────────────────────────────────
-  window.chooseUser = async function(name) {
-    ME    = name;
-    OTHER = name === "Freddy" ? "Sarah" : "Freddy";
-
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("locating").style.display     = "flex";
-
-    const firebaseOk = await tryInitFirebase();
-    const { tz, city, lat, lng } = await detectMyLocation();
-
-    myTz     = tz   || Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULTS[ME];
-    myCity   = city || DEFAULT_CITIES[ME];
-    myCoords = (lat && lng) ? [lat, lng] : DEFAULT_COORDS[ME];
-
-    otherTz     = DEFAULTS[OTHER];
-    otherCity   = DEFAULT_CITIES[OTHER];
-    otherCoords = DEFAULT_COORDS[OTHER];
-
-    if (firebaseOk && window._pushPresence) {
-      window._pushPresence(myTz, myCity, myCoords[0], myCoords[1]);
-    }
-
-    startUI(!firebaseOk);
-  };
 </script>
-
 </body>
 </html>
