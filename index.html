@@ -718,7 +718,7 @@
   // Map
   function initMap(myCo,oCo,myL,oL){
     if(mapInstance){mapInstance.remove();mapInstance=null;}
-    mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:2,maxBounds:[[-90,-180],[90,180]],maxBoundsViscosity:1.0}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],2);
+    mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:2}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],2);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:18,noWrap:true}).addTo(mapInstance);
     const mkI=color=>L.divIcon({className:"",html:`<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
     myMarker=L.marker(myCo,{icon:mkI("#c4856a")}).addTo(mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
@@ -1123,7 +1123,7 @@
     const centerLat = (Math.min(...lats)+Math.max(...lats))/2;
     const centerLng = (Math.min(...lngs)+Math.max(...lngs))/2;
 
-    placesMapInstance = L.map("places-map", {zoomControl:true, attributionControl:true, minZoom:2, maxBounds:[[-90,-180],[90,180]], maxBoundsViscosity:1.0})
+    placesMapInstance = L.map("places-map", {zoomControl:true, attributionControl:true, minZoom:2})
       .setView([centerLat, centerLng], 2);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -1134,7 +1134,7 @@
     groups.forEach(g => {
       const isMulti = g.items.length > 1;
       const color = "#8aabaa";
-      const size = isMulti ? 34 : 28;
+      const size = isMulti ? 24 : 20;
 
       const badgeHTML = isMulti
         ? `<div style="position:absolute;top:-5px;right:-5px;background:white;border:1.5px solid ${color};border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:${color};font-family:Jost,sans-serif;">${g.items.length}</div>`
