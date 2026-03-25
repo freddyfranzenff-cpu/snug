@@ -264,11 +264,11 @@
     .pulse-banner-time{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.1rem}
     .pulse-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.85rem;position:relative;overflow:hidden;margin-bottom:.4rem}
     .pulse-row::before{content:'';position:absolute;top:0;left:1.1rem;right:1.1rem;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.25}
-    .pulse-btn-sm{position:relative;width:32px;height:32px;flex-shrink:0;cursor:pointer}
+    .pulse-btn-sm{position:relative;width:36px;height:36px;flex-shrink:0;cursor:pointer}
     .pulse-ring-sm{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(196,133,106,.3);animation:pulseRing 2.2s ease-out infinite}
     .pulse-ring-sm.r2{animation-delay:.75s}
     @keyframes pulseRing{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}
-    .pulse-heart-sm{position:absolute;inset:4px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
+    .pulse-heart-sm{position:absolute;inset:3px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
     .pulse-heart-sm:hover{transform:scale(1.1)}
     .pulse-heart-sm:active{transform:scale(.92)}
     .pulse-heart-sm.sent{animation:heartPop .3s ease}
@@ -427,7 +427,7 @@
         <div class="pulse-ring-sm"></div>
         <div class="pulse-ring-sm r2"></div>
         <div class="pulse-heart-sm" id="pulse-heart-btn">
-          <svg width="12" height="11" viewBox="0 0 24 22" fill="white"><path d="M12 21C12 21 2 14 2 7a6 6 0 0112 0 6 6 0 0112 0c0 7-10 14-10 14z"/></svg>
+          <svg width="15" height="14" viewBox="0 0 24 22" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.593c-.5-.36-9-6.5-9-12.593a7 7 0 0 1 14 0c0 6.093-8.5 12.233-9 12.593z" stroke="white" stroke-width=".3"/></svg>
         </div>
       </div>
       <div style="flex:1;">
