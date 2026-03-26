@@ -752,7 +752,8 @@
     <div class="letter-modal">
       <p class="letter-modal-title" id="letter-modal-title">Your letter</p>
       <p class="letter-modal-sub" id="letter-modal-sub">Only you can see this until the unlock date.</p>
-      <textarea class="letter-modal-textarea" id="letter-modal-textarea" placeholder="Dear Sarah,&#10;&#10;I've been thinking about what to write…" rows="10"></textarea>
+      <textarea class="letter-modal-textarea" id="letter-modal-textarea" placeholder="Dear Sarah,&#10;&#10;I've been thinking about what to write…" rows="10" maxlength="4000" oninput="document.getElementById('letter-char-count').textContent=this.value.length"></textarea>
+      <p style="font-size:.62rem;color:var(--muted);text-align:right;margin-top:.35rem;"><span id="letter-char-count">0</span> / 4000</p>
       <div class="letter-modal-footer">
         <div class="letter-modal-hint">
           <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg>
@@ -1828,7 +1829,11 @@
       },{onlyOnce:true});
     }
     modal.classList.add("open");
-    setTimeout(()=>ta.focus(),100);
+    setTimeout(()=>{
+      ta.focus();
+      const counter = document.getElementById("letter-char-count");
+      if(counter) counter.textContent = ta.value.length;
+    },100);
   };
 
   window.closeLetterModal = function(){
