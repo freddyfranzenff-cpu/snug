@@ -365,6 +365,25 @@
     .letter-unlocked-banner{background:linear-gradient(135deg,rgba(201,169,110,.1),rgba(196,133,106,.07));border:1px solid rgba(201,169,110,.3);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;text-align:center}
     .letter-unlocked-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--text);margin-bottom:.2rem}
     .letter-unlocked-sub{font-size:.7rem;color:var(--muted)}
+    /* ── Milestone photos ── */
+    .m-photo-wrap{width:100%;height:140px;overflow:hidden;border-radius:12px 12px 0 0;margin:-1.1rem -1.25rem 1rem;width:calc(100% + 2.5rem);position:relative;cursor:pointer}
+    .m-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+    .m-photo-wrap:hover img{transform:scale(1.03)}
+    .m-photo-placeholder{width:calc(100% + 2.5rem);margin:-1.1rem -1.25rem .75rem;height:72px;background:var(--warm);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .2s}
+    .m-photo-placeholder:hover{background:#ede5d8}
+    .m-photo-placeholder svg{opacity:.3}
+    .m-photo-placeholder span{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);opacity:.6}
+    .m-photo-upload-input{display:none}
+    .m-photo-actions{position:absolute;top:.5rem;right:.5rem;display:flex;gap:.3rem;opacity:0;transition:opacity .2s}
+    .m-photo-wrap:hover .m-photo-actions{opacity:1}
+    .m-photo-action-btn{background:rgba(28,24,20,.55);border:none;color:white;border-radius:8px;padding:.25rem .5rem;font-size:.62rem;cursor:pointer;font-family:"Jost",sans-serif;backdrop-filter:blur(4px)}
+    .m-photo-action-btn:hover{background:rgba(28,24,20,.8)}
+    .m-photo-loading{position:absolute;inset:0;background:rgba(250,246,240,.8);display:flex;align-items:center;justify-content:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    /* Photo upload btn in add form */
+    .m-form-photo-btn{display:flex;align-items:center;gap:5px;font-size:.65rem;color:var(--muted);border:1px dashed var(--border);border-radius:8px;padding:.3rem .65rem;background:transparent;cursor:pointer;font-family:"Jost",sans-serif;transition:all .2s}
+    .m-form-photo-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .m-form-photo-btn.has-photo{border-color:var(--accent2);color:var(--accent2);border-style:solid}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -584,7 +603,7 @@
         <span style="font-size:.68rem;color:var(--muted);">→</span>
         <input type="date" id="m-enddate-input" title="End date (optional)"/>
         <select class="form-tag-select" id="m-tag-input"><option value="moment">Moment</option><option value="memory">Memory</option><option value="first">First</option><option value="milestone">Milestone</option><option value="future">Future ✈️</option></select>
-        <button class="form-save-btn" id="m-save-btn" onclick="saveMilestone()">Save</button><button class="form-save-btn" id="m-cancel-btn" onclick="cancelMilestoneEdit()" style="display:none;background:var(--warm);color:var(--muted);border:1px solid var(--border);margin-left:.4rem;">Cancel</button>
+        <button class="m-form-photo-btn" id="m-photo-btn" onclick="document.getElementById('m-photo-input').click()" type="button"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span id="m-photo-btn-label">Add photo</span></button><input type="file" id="m-photo-input" class="m-photo-upload-input" accept="image/*" onchange="handleMilestonePhotoSelect(this)"/><button class="form-save-btn" id="m-save-btn" onclick="saveMilestone()">Save</button><button class="form-save-btn" id="m-cancel-btn" onclick="cancelMilestoneEdit()" style="display:none;background:var(--warm);color:var(--muted);border:1px solid var(--border);margin-left:.4rem;">Cancel</button>
       </div>
     </div>
   </div>
@@ -777,6 +796,7 @@
   const DEFAULT_COORDS={Freddy:[50.7374,7.0982],Sarah:[22.6273,120.3014]};
   let ME=null,OTHER=null,myTz=null,otherTz=null,myCity=null,otherCity=null,myCoords=null,otherCoords=null;
   let db=null,dbPush=null,dbSet=null,dbRef=null,dbRemove=null,fbOnValue=null;
+  let storage=null,fbStorageRef=null,fbUploadBytes=null,fbGetDownloadURL=null,fbDeleteObject=null;
   let localNotes=[],localMilestones=[],meetupDate=new Date("2026-07-04T00:00:00+02:00"),countdownInterval=null;
   let mapInstance=null,myMarker=null,otherMarker=null,connectLine=null;
   let pendingUser=null;
@@ -855,8 +875,10 @@
     try{
       const{initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
       const{getDatabase,ref,set,push,onValue,remove,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+      const{getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
       const app=initializeApp(FIREBASE_CONFIG);
       db=getDatabase(app);dbRef=ref;dbSet=set;dbPush=push;dbRemove=remove;fbOnValue=onValue;
+      storage=getStorage(app);fbStorageRef=storageRef;fbUploadBytes=uploadBytes;fbGetDownloadURL=getDownloadURL;fbDeleteObject=deleteObject;
       onValue(ref(db,"notes"),snap=>{const d=snap.val();const n=d?Object.entries(d).map(([k,v])=>({...v,_key:k})).reverse():[];renderNotes(n);renderNotesPreview(n);});
       onValue(ref(db,"bucket"),snap=>{const d=snap.val();renderBucket(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]);});
       onValue(ref(db,"milestones"),snap=>{const d=snap.val();renderMilestones(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]); });
@@ -977,11 +999,17 @@
       const icon=TAG_ICONS[item.tag]||"";
       const dateStr=fmtMDateRange(item.date,item.endDate);
       const locationHTML=item.location?`<p class="m-location"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>${item.locationDisplay||item.location}</p>`:"";
-      return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}"><div class="m-top"><p class="m-title"><span class="m-icon">${icon}</span>${item.title}</p><span class="m-date-range">${dateStr}</span></div>${item.note?`<p class="m-note">${item.note}</p>`:""}${locationHTML}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${item.tag}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.4rem;"><span class="m-author">${item.addedBy||""}</span>${item._key?`<button class="m-edit" onclick="editMilestone('${item._key}')" title="Edit">✎</button><button class="m-delete" onclick="deleteMilestone('${item._key}')" title="Delete">✕</button>`:""}</div></div></div></div>`;
+      const photoHTML=item.photoURL?`<div class="m-photo-wrap" onclick="viewMilestonePhoto('${item.photoURL}')"><img src="${item.photoURL}" alt=""/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${item._key}')">Remove photo</button></div></div>`:(item._key?`<div class="m-photo-placeholder" onclick="triggerPhotoUploadFor('${item._key}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span>Add photo</span></div>`:"")+"";
+      return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}">${photoHTML}<div class="m-top"><p class="m-title"><span class="m-icon">${icon}</span>${item.title}</p><span class="m-date-range">${dateStr}</span></div>${item.note?`<p class="m-note">${item.note}</p>`:""}${locationHTML}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${item.tag}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.4rem;"><span class="m-author">${item.addedBy||""}</span>${item._key?`<button class="m-edit" onclick="editMilestone('${item._key}')" title="Edit">✎</button><button class="m-delete" onclick="deleteMilestone('${item._key}')" title="Delete">✕</button>`:""}</div></div></div></div>`;
     }).join("");
   }
   window.cancelMilestoneEdit=function(){
     editingKey=null;
+    pendingPhotoFile=null;
+    const pbtn=document.getElementById("m-photo-btn");
+    const plbl=document.getElementById("m-photo-btn-label");
+    if(pbtn)pbtn.classList.remove("has-photo");
+    if(plbl)plbl.textContent="Add photo";
     document.getElementById("m-title-input").value="";
     document.getElementById("m-note-input").value="";
     document.getElementById("m-date-input").value="";
@@ -1074,12 +1102,42 @@
       if(geo.country)m.country=geo.country;
     }
     if(editingKey){
-      if(db&&dbSet)dbSet(dbRef(db,`milestones/${editingKey}`),m);
-      else{const idx=localMilestones.findIndex(x=>x._key===editingKey);if(idx>-1)localMilestones[idx]={...m,_key:editingKey};renderMilestones([...localMilestones]);}
+      // If new photo selected, delete old photo from Storage first
+      if(pendingPhotoFile && db && fbOnValue){
+        fbOnValue(dbRef(db,`milestones/${editingKey}/photoPath`), async snap=>{
+          const oldPath = snap.val();
+          if(oldPath && storage && fbStorageRef && fbDeleteObject){
+            try{ await fbDeleteObject(fbStorageRef(storage, oldPath)); }
+            catch(e){ console.warn("Old photo delete failed:", e); }
+          }
+        },{onlyOnce:true});
+      }
+      const currentEditKey = editingKey;
+      if(db&&dbSet)dbSet(dbRef(db,`milestones/${currentEditKey}`),m);
+      else{const idx=localMilestones.findIndex(x=>x._key===currentEditKey);if(idx>-1)localMilestones[idx]={...m,_key:currentEditKey};renderMilestones([...localMilestones]);}
+      // Upload new photo if selected
+      if(pendingPhotoFile && currentEditKey && storage){
+        await safeUploadPhotoForKey(currentEditKey, pendingPhotoFile);
+        pendingPhotoFile=null;
+        const pbtn=document.getElementById("m-photo-btn");
+        const plbl=document.getElementById("m-photo-btn-label");
+        if(pbtn)pbtn.classList.remove("has-photo");
+        if(plbl)plbl.textContent="Add photo";
+      }
       editingKey=null;
     } else {
-      if(db&&dbPush)dbPush(dbRef(db,"milestones"),m);
-      else{localMilestones.push({...m,_key:Date.now().toString()});renderMilestones([...localMilestones]);}
+      let finalKey = null;
+      if(db&&dbPush){const newRef=await dbPush(dbRef(db,"milestones"),m);finalKey=newRef.key;}
+      else{finalKey=Date.now().toString();localMilestones.push({...m,_key:finalKey});renderMilestones([...localMilestones]);}
+      // Upload pending photo if selected
+      if(pendingPhotoFile && finalKey && storage){
+        await safeUploadPhotoForKey(finalKey, pendingPhotoFile);
+        pendingPhotoFile=null;
+        const pbtn=document.getElementById("m-photo-btn");
+        const plbl=document.getElementById("m-photo-btn-label");
+        if(pbtn)pbtn.classList.remove("has-photo");
+        if(plbl)plbl.textContent="Add photo";
+      }
     }
     document.getElementById("m-title-input").value="";
     document.getElementById("m-note-input").value="";
@@ -1088,7 +1146,18 @@
     document.getElementById("add-milestone-form").classList.remove("open");
     btn.textContent="Save";
   };
-  window.deleteMilestone=function(key){
+  window.deleteMilestone=async function(key){
+    // Delete photo from Storage first if exists
+    if(db && fbOnValue){
+      fbOnValue(dbRef(db,`milestones/${key}/photoPath`), async snap=>{
+        const path = snap.val();
+        if(path && storage && fbStorageRef && fbDeleteObject){
+          try{ await fbDeleteObject(fbStorageRef(storage, path)); }
+          catch(e){ console.warn("Storage delete failed:", e); }
+        }
+      },{onlyOnce:true});
+    }
+    // Delete milestone from database
     if(db&&dbRemove)dbRemove(dbRef(db,`milestones/${key}`));
     else{localMilestones=localMilestones.filter(m=>m._key!==key);renderMilestones([...localMilestones]);}
   };
@@ -1965,6 +2034,154 @@
       renderLetterTimeline(rounds);
     },{onlyOnce:true});
   }
+
+  // Milestone photos
+  let pendingPhotoFile = null;
+  let pendingPhotoForKey = null;
+
+  window.handleMilestonePhotoSelect = function(input){
+    const file = input.files[0];
+    if(!file) return;
+    // Validate file type
+    const validTypes = ["image/jpeg","image/jpg","image/png","image/gif","image/webp","image/heic","image/heif"];
+    if(!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i)){
+      const label = document.getElementById("m-photo-btn-label");
+      if(label){ label.textContent = "Invalid file type ✕"; setTimeout(()=>label.textContent="Add photo",3000); }
+      input.value = "";
+      return;
+    }
+    // Validate file size (max 10MB)
+    if(file.size > 10 * 1024 * 1024){
+      const label = document.getElementById("m-photo-btn-label");
+      if(label){ label.textContent = "File too large (max 10MB) ✕"; setTimeout(()=>label.textContent="Add photo",3000); }
+      input.value = "";
+      return;
+    }
+    pendingPhotoFile = file;
+    const btn = document.getElementById("m-photo-btn");
+    const label = document.getElementById("m-photo-btn-label");
+    if(btn) btn.classList.add("has-photo");
+    if(label) label.textContent = "Photo added ✓";
+  };
+
+  window.triggerPhotoUploadFor = function(key){
+    pendingPhotoForKey = key;
+    // Create temp input and trigger
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async function(){
+      const file = input.files[0];
+      if(!file || !storage) return;
+      // Validate type
+      const validTypes = ["image/jpeg","image/jpg","image/png","image/gif","image/webp","image/heic","image/heif"];
+      if(!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i)) return;
+      // Validate size (max 10MB)
+      if(file.size > 10 * 1024 * 1024) return;
+      await safeUploadPhotoForKey(key, file);
+    };
+    input.click();
+  };
+
+  async function uploadPhotoForKey(key, file){
+    if(!storage || !fbStorageRef || !fbUploadBytes || !fbGetDownloadURL) return;
+    // Show uploading feedback
+    const saveBtn = document.getElementById("m-save-btn");
+    const placeholder = document.querySelector(`.m-photo-placeholder[onclick*="${key}"]`);
+    if(saveBtn && saveBtn.textContent !== "Saving…") saveBtn.textContent = "Uploading…";
+    if(placeholder) placeholder.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round" style="animation:spin 1s linear infinite;opacity:.4;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Uploading…</span>`;
+    // Compress if large
+    const compressed = await compressImage(file, 1200);
+    const safeName = file.name.replace(/[^a-z0-9.]/gi,"_").substring(0,60);
+    const path = `milestones/${key}/${Date.now()}_${safeName}`;
+    const ref = fbStorageRef(storage, path);
+    await fbUploadBytes(ref, compressed);
+    const url = await fbGetDownloadURL(ref);
+    // Save URL AND path to Firebase (path needed for proper deletion)
+    if(db && dbSet){
+      await dbSet(dbRef(db,`milestones/${key}/photoURL`), url);
+      await dbSet(dbRef(db,`milestones/${key}/photoPath`), path);
+    }
+    // Immediately update card in DOM without waiting for Firebase listener
+    const existingPlaceholder = document.querySelector(`.m-photo-placeholder[onclick*="${key}"]`);
+    if(existingPlaceholder){
+      const wrap = document.createElement("div");
+      wrap.className = "m-photo-wrap";
+      wrap.setAttribute("onclick", `viewMilestonePhoto('${url}')`);
+      wrap.innerHTML = `<img src="${url}" alt=""/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${key}')">Remove photo</button></div>`;
+      existingPlaceholder.replaceWith(wrap);
+    }
+    // Reset save btn
+    const saveBtn2 = document.getElementById("m-save-btn");
+    if(saveBtn2 && saveBtn2.textContent === "Uploading…") saveBtn2.textContent = "Save";
+  }
+
+  async function safeUploadPhotoForKey(key, file){
+    try{
+      await uploadPhotoForKey(key, file);
+    } catch(e){
+      console.error("Photo upload failed:", e);
+      const saveBtn = document.getElementById("m-save-btn");
+      if(saveBtn) saveBtn.textContent = "Save";
+      // Show brief error on photo btn
+      const label = document.getElementById("m-photo-btn-label");
+      if(label){ label.textContent = "Upload failed ✕"; setTimeout(()=>label.textContent="Add photo",3000); }
+    }
+  }
+
+  async function compressImage(file, maxWidth){
+    return new Promise(resolve=>{
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = e=>{
+        img.onload = ()=>{
+          const canvas = document.createElement("canvas");
+          let w = img.width, h = img.height;
+          if(w > maxWidth){ h = Math.round(h*maxWidth/w); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img,0,0,w,h);
+          canvas.toBlob(blob=>resolve(blob),"image/jpeg",0.82);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  window.removeMilestonePhoto = async function(key){
+    if(!key || !db) return;
+    // Get path first, then delete from Storage and Firebase
+    if(fbOnValue){
+      fbOnValue(dbRef(db,`milestones/${key}/photoPath`), async snap=>{
+        const path = snap.val();
+        if(path && storage && fbStorageRef && fbDeleteObject){
+          try{ await fbDeleteObject(fbStorageRef(storage, path)); }
+          catch(e){ console.warn("Storage delete failed:", e); }
+        }
+        if(dbSet){
+          await dbSet(dbRef(db,`milestones/${key}/photoURL`), null);
+          await dbSet(dbRef(db,`milestones/${key}/photoPath`), null);
+        }
+      },{onlyOnce:true});
+    }
+  };
+
+  window.viewMilestonePhoto = function(url){
+    // Open photo in a lightbox overlay
+    const overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(28,24,20,.92);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;";
+    overlay.onclick = (e)=>{ if(e.target===overlay||e.target===closeBtn) overlay.remove(); };
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "✕";
+    closeBtn.style.cssText = "position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,.15);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+    closeBtn.onclick = ()=>overlay.remove();
+    const img = document.createElement("img");
+    img.src = url;
+    img.style.cssText = "max-width:90vw;max-height:88vh;border-radius:12px;object-fit:contain;";
+    overlay.appendChild(closeBtn);
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+  };
 
   // Nav
   window.showPage=function(name){
