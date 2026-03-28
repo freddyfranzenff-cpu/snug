@@ -46,7 +46,7 @@
   .login-orn-row{display:none}
   .login-eyebrow{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
   .login-title{font-size:2rem;font-weight:700;letter-spacing:-.025em;color:var(--text);line-height:1.3;margin-bottom:1.5rem;overflow:visible}
-  .login-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .login-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.2em;margin-bottom:-.2em;line-height:1;vertical-align:top}
   .login-sub-row{display:flex;align-items:center;gap:.65rem;margin:0 0 1.5rem}
   .login-sub-line{flex:1;height:1px;background:var(--border)}
   .login-sub{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
@@ -63,8 +63,8 @@
 
   /* ── AUTH SCREEN ── */
   #auth-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:1.5rem;text-align:center;padding:2rem}
-  .auth-title{font-size:1.7rem;font-weight:700;letter-spacing:-.025em;color:var(--text);line-height:1.3;overflow:visible}
-  .auth-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .auth-title{font-size:1.7rem;font-weight:700;letter-spacing:-.025em;color:var(--text);line-height:1.4;overflow:visible}
+  .auth-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.2em;margin-bottom:-.2em;line-height:1;vertical-align:top}
   .auth-sub{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);max-width:300px;line-height:1.6}
   .auth-icon{width:80px;height:80px;border-radius:50%;
     border:2px solid rgba(232,98,42,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto;
@@ -87,7 +87,7 @@
   .auth-step.active{display:flex}
   #locating{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:1rem;text-align:center}
   .locating-title{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;color:var(--text)}
-  .locating-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .locating-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.2em;margin-bottom:-.2em;line-height:1;vertical-align:top}
   .locating-sub{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
   /* ── SIDEBAR ── */
@@ -101,7 +101,7 @@
   .sidebar-logo{padding:1.5rem 1.4rem 1.25rem;border-bottom:1px solid rgba(232,98,42,0.08)}
   .sidebar-eyebrow{font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
   .sidebar-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.2;letter-spacing:-.01em}
-  .sidebar-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .sidebar-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.15em;margin-bottom:-.15em;line-height:1;vertical-align:top}
   .sidebar-ornament{display:none}
   .user-badge{margin:.7rem 1.4rem 0;display:inline-flex;align-items:center;gap:.3rem;
     background:rgba(232,98,42,0.08);border:1px solid rgba(232,98,42,0.2);
@@ -134,7 +134,7 @@
     height:52px;align-items:center;padding:0 1.25rem;
     border-bottom:1px solid rgba(232,98,42,0.1);}
   .mobile-header-title{font-size:1rem;font-weight:700;color:var(--text);flex:1;text-align:center;letter-spacing:-.01em}
-  .mobile-header-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .mobile-header-title em{font-style:italic;font-weight:300;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.15em;margin-bottom:-.15em;line-height:1;vertical-align:top}
   .hamburger{background:none;border:none;cursor:pointer;padding:.25rem;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
   .hamburger span{display:block;width:18px;height:1.5px;background:var(--text);border-radius:2px;opacity:.6}
   .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(42,18,8,.4);z-index:350;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
@@ -146,7 +146,7 @@
   .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);position:relative}
   .page-eyebrow{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.25rem;display:block}
   .page-title{font-size:clamp(1.6rem,2.8vw,2.2rem);font-weight:700;letter-spacing:-.025em;color:var(--text);line-height:1.2}
-  .page-title em{font-style:normal;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;line-height:inherit;vertical-align:baseline}
+  .page-title em{font-style:normal;background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:.2em;margin-bottom:-.2em;line-height:1;vertical-align:top}
   .page-corner-orn{display:none}
   .section-heading{font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;margin-top:.25rem;display:flex;align-items:center;gap:.5rem}
   .section-heading::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -163,10 +163,10 @@
   .card-label{font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;display:flex;align-items:center;gap:.35rem}
 
   /* accent card (dark purple) */
-  .card-accent{background:linear-gradient(135deg,var(--k),#c94d1e)!important;border-color:transparent!important;box-shadow:0 6px 28px rgba(232,98,42,0.38)!important;}
-  .card-accent::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)!important;}
-  .card-accent .card-label,.card-accent .stat-unit,.card-accent .cd-caption{color:rgba(255,255,255,0.55)!important;}
-  .card-accent .stat-value,.card-accent .cd-num{color:white!important;-webkit-text-fill-color:white!important;}
+  .card-accent{background:linear-gradient(135deg,#fff8f5,#ffeee6)!important;border:1.5px solid rgba(232,98,42,0.3)!important;box-shadow:0 4px 20px rgba(232,98,42,0.12)!important;}
+  .card-accent::before{background:linear-gradient(90deg,transparent,rgba(232,98,42,0.2),transparent)!important;}
+  .card-accent .card-label,.card-accent .stat-unit{color:var(--muted)!important;}
+  .card-accent .stat-value{background:linear-gradient(135deg,var(--k),var(--pk))!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;}
 
   /* ── CLOCKS ── */
   .clock-time{font-size:1.9rem;font-weight:300;color:var(--text);line-height:1;letter-spacing:-.02em}
@@ -206,15 +206,15 @@
   .weather-details{font-size:.6rem;color:var(--muted)}
 
   /* ── PULSE ── */
-  .pulse-banner{background:linear-gradient(135deg,rgba(232,98,42,0.07),rgba(212,96,122,0.05));border:1px solid rgba(232,98,42,0.15);border-radius:14px;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.85rem;margin-bottom:.55rem;animation:fadeUp .4s ease both;position:relative;overflow:hidden}
+  .pulse-banner{background:linear-gradient(135deg,rgba(232,98,42,0.07),rgba(212,96,122,0.05));border:1px solid rgba(232,98,42,0.15);border-radius:12px;padding:.6rem .9rem;display:flex;align-items:center;gap:.7rem;margin-bottom:.4rem;animation:fadeUp .4s ease both;position:relative;overflow:hidden}
   .pulse-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(247,197,168,0.55),transparent)}
-  .pulse-banner-icon{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--k),var(--pk));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 12px rgba(232,98,42,0.4);animation:hb 1.8s ease infinite}
+  .pulse-banner-icon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--k),var(--pk));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(232,98,42,0.35);animation:hb 1.8s ease infinite}
   @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.18)}28%{transform:scale(1)}42%{transform:scale(1.1)}56%{transform:scale(1)}}
-  .pulse-banner-title{font-size:.86rem;font-weight:600;color:var(--text)}
-  .pulse-banner-time{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
-  .pulse-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.85rem;position:relative;overflow:hidden;margin-bottom:.4rem;box-shadow:0 2px 12px rgba(232,98,42,0.06);}
+  .pulse-banner-title{font-size:.76rem;font-weight:600;color:var(--text)}
+  .pulse-banner-time{font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.05rem}
+  .pulse-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.6rem .9rem;display:flex;align-items:center;gap:.7rem;position:relative;overflow:hidden;margin-bottom:.35rem;box-shadow:0 2px 10px rgba(232,98,42,0.06);}
   .pulse-row::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(247,197,168,0.55),transparent)}
-  .pulse-btn-sm{position:relative;width:36px;height:36px;flex-shrink:0;cursor:pointer}
+  .pulse-btn-sm{position:relative;width:30px;height:30px;flex-shrink:0;cursor:pointer}
   .pulse-ring-sm{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(232,98,42,0.35);animation:pulseRing 2.2s ease-out infinite}
   .pulse-ring-sm.r2{animation-delay:.75s}
   @keyframes pulseRing{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.2);opacity:0}}
@@ -223,10 +223,10 @@
   .pulse-heart-sm:active{transform:scale(.92)}
   .pulse-heart-sm.sent{animation:heartPop .3s ease}
   @keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
-  .pulse-row-title{font-size:.8rem;font-weight:600;color:var(--text)}
-  .pulse-row-sub{font-size:.63rem;color:var(--muted);margin-top:.08rem}
-  .pulse-row-last{font-size:.58rem;color:var(--muted);white-space:nowrap;opacity:.65;margin-left:auto}
-  .pulse-history-toggle{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;margin-bottom:.65rem;display:block;padding:0}
+  .pulse-row-title{font-size:.74rem;font-weight:600;color:var(--text)}
+  .pulse-row-sub{font-size:.58rem;color:var(--muted);margin-top:.05rem}
+  .pulse-row-last{font-size:.54rem;color:var(--muted);white-space:nowrap;opacity:.6;margin-left:auto}
+  .pulse-history-toggle{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;margin-bottom:.5rem;display:block;padding:0}
   .pulse-history{background:rgba(232,98,42,0.04);border-radius:12px;padding:.4rem .9rem;margin-bottom:1.25rem;border:1px solid var(--border);display:none}
   .pulse-history.open{display:block}
   .pulse-history-item{display:flex;align-items:center;gap:.65rem;padding:.42rem 0;border-bottom:1px solid var(--border)}
@@ -301,7 +301,7 @@
   .stat-card-small{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:.95rem 1.1rem;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(232,98,42,0.06);transition:box-shadow .2s;}
   .stat-card-small::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(247,197,168,0.55),transparent)}
   .home-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
-  .sleep-indicator{display:inline-flex;align-items:center;gap:.3rem;font-size:.63rem;color:var(--muted);margin-top:.22rem}
+  .sleep-indicator{display:flex;align-items:center;gap:.3rem;font-size:.56rem;color:var(--muted);opacity:.7;margin-top:.3rem;font-weight:400}
   .milestone-counter{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;margin-top:.25rem}
   .milestone-counter span{color:var(--k);font-size:.9rem;font-weight:600}
 
@@ -703,8 +703,8 @@
     <div style="margin-top:1.5rem"></div>
     <p class="section-heading">Right now</p>
     <div class="grid-2">
-      <div class="card mine"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="my-city">—</span></p><p class="clock-time" id="my-time">--:--:--</p><p class="clock-date" id="my-date">--</p></div>
-      <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="other-city">—</span></p><p class="clock-time" id="other-time">--:--:--</p><p class="clock-date" id="other-date">--</p></div>
+      <div class="card mine"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="my-city">—</span></p><p class="clock-time" id="my-time">--:--:--</p><p class="clock-date" id="my-date">--</p><p id="sleep-my" class="sleep-indicator"></p></div>
+      <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="other-city">—</span></p><p class="clock-time" id="other-time">--:--:--</p><p class="clock-date" id="other-date">--</p><p id="sleep-other" class="sleep-indicator"></p></div>
     </div>
     <div style="margin-top:1.5rem"></div>
     <p class="section-heading">Us</p>
@@ -716,16 +716,11 @@
         <p class="cd-caption" id="cd-caption">4 July 2026</p>
       </div>
     </div>
-    <div class="home-stats-row" style="margin-top:1.25rem;">
-      <div class="stat-card-small">
+    <div style="margin-top:.9rem;">
+      <div class="card">
         <p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 8h12M8 2l6 6-6 6"/></svg>Distance apart</p>
         <p class="stat-value" id="distance-apart" style="font-size:2rem;">—</p>
         <p class="stat-unit">km</p>
-      </div>
-      <div class="stat-card-small">
-        <p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2a6 6 0 100 12A6 6 0 008 2z"/><path d="M8 5v3l2 1.5"/></svg>Right now</p>
-        <p id="sleep-my" class="sleep-indicator">—</p>
-        <p id="sleep-other" class="sleep-indicator">—</p>
       </div>
     </div>
     <div style="margin-top:1.5rem"></div>
@@ -2509,9 +2504,11 @@
     const frame = document.getElementById("m-reposition-frame");
     if(!frame) return;
     const rect = frame.getBoundingClientRect();
-    // Sensitivity: drag distance relative to frame size
-    const dx = (pt.clientX - repositionStart.x) / rect.width * 100;
-    const dy = (pt.clientY - repositionStart.y) / rect.height * 100;
+    // Use same reference for both axes so horizontal = vertical sensitivity
+    // Smaller dimension (height=150px) gives better feel on mobile
+    const ref = Math.min(rect.width, rect.height) * 0.65;
+    const dx = (pt.clientX - repositionStart.x) / ref * 100;
+    const dy = (pt.clientY - repositionStart.y) / ref * 100;
     // Dragging right moves position left (natural feel)
     repositionPos.x = Math.max(0, Math.min(100, repositionStartPos.x - dx));
     repositionPos.y = Math.max(0, Math.min(100, repositionStartPos.y - dy));
