@@ -357,7 +357,11 @@
   .places-chip-dot.multi{background:var(--pk)}
   .places-chip-name{font-size:.7rem;color:var(--text);font-weight:400}
   .places-chip-count{font-size:.62rem;color:var(--muted)}
-  .places-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem;margin-bottom:.9rem}
+  .places-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin-bottom:.9rem}
+  .places-stat-row .card{padding:.75rem .9rem}
+  .places-stat-row .card-label{font-size:.42rem;margin-bottom:.3rem}
+  .places-stat-row .stat-value{font-size:1.7rem}
+  .places-stat-row .stat-unit{font-size:.54rem;margin-top:.1rem}
 
   /* ── LETTER ── */
   .letter-countdown-bar{background:rgba(232,98,42,0.04);border:1px solid var(--border);border-radius:14px;padding:.9rem 1.1rem;margin-bottom:.9rem;display:flex;align-items:center;gap:1.1rem}
@@ -410,8 +414,8 @@
   .letter-modal-sub{font-size:.66rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.5}
   .letter-modal-textarea{width:100%;min-height:200px;border:1px solid var(--border);border-radius:12px;padding:1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;color:var(--text);background:rgba(232,98,42,0.03);resize:none;outline:none;line-height:1.75;transition:border-color .2s}
   .letter-modal-textarea:focus{border-color:var(--k)}
-  .letter-modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.9rem}
-  .letter-modal-hint{font-size:.6rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
+  .letter-modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.9rem;gap:.5rem;flex-wrap:wrap}
+  .letter-modal-hint{font-size:.6rem;color:var(--muted);display:flex;align-items:flex-start;gap:.35rem;line-height:1.4}
   .letter-modal-actions{display:flex;gap:.6rem}
   .letter-modal-cancel{background:none;border:1px solid var(--border);border-radius:10px;padding:.48rem 1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;color:var(--muted);cursor:pointer}
   .letter-modal-save{background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:10px;padding:.48rem 1.2rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:opacity .2s}
@@ -597,8 +601,9 @@
     .pulse-send-pill-btn .pulse-heart-sm{inset:2px}
   }
 
-  .timeline-end{padding-left:1.5rem;margin-top:.5rem;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);opacity:.55;display:flex;align-items:center;gap:.5rem}
-  .timeline-end::before{content:'';width:2px;height:12px;background:linear-gradient(180deg,rgba(232,98,42,0.25),transparent);border-radius:2px;flex-shrink:0;margin-left:3px}</style>
+  .timeline-end{position:relative;padding-left:1.5rem;margin-top:.35rem;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);opacity:.55;display:flex;align-items:center;gap:.5rem}
+  .timeline-end::before{content:'';position:absolute;left:3px;top:50%;transform:translateY(-50%);width:2px;height:10px;background:linear-gradient(180deg,rgba(232,98,42,0.2),transparent);border-radius:2px}
+  </style>
 </head>
 <body>
 
@@ -840,7 +845,7 @@
           <button type="button" class="m-tag-pill" data-val="milestone" onclick="selectMilestoneTag('milestone')">Milestone</button>
         </div>
         <input type="hidden" id="m-tag-input" value="moment"/>
-        <button class="m-form-photo-btn" id="m-photo-btn" onclick="document.getElementById('m-photo-input').click()" type="button"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span id="m-photo-btn-label">Add photo</span></button><input type="file" id="m-photo-input" class="m-photo-upload-input" accept="image/*" onchange="handleMilestonePhotoSelect(this)"/><button class="form-save-btn" id="m-save-btn" onclick="saveMilestone()">Save</button><button class="form-save-btn" id="m-cancel-btn" onclick="cancelMilestoneEdit()" style="display:none;background:var(--warm);color:var(--muted);border:1px solid var(--border);margin-left:.4rem;">Cancel</button>
+        <button class="m-form-photo-btn" id="m-photo-btn" onclick="document.getElementById('m-photo-input').click()" type="button"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span id="m-photo-btn-label">Add photo</span></button><input type="file" id="m-photo-input" class="m-photo-upload-input" accept="image/*" onchange="handleMilestonePhotoSelect(this)"/><button class="form-save-btn" id="m-save-btn" onclick="saveMilestone()">Save</button><button class="form-save-btn" id="m-cancel-btn" onclick="cancelMilestoneEdit()" style="background:var(--surface);color:var(--muted);border:1px solid var(--border);margin-left:.4rem;">Discard</button>
       </div>
     </div>
   </div>
@@ -1039,8 +1044,8 @@
       <p style="font-size:.62rem;color:var(--muted);text-align:right;margin-top:.35rem;"><span id="letter-char-count" style="font-size:.6rem;color:var(--muted)">0</span> / 4000</p>
       <div class="letter-modal-footer">
         <div class="letter-modal-hint">
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg>
-          Saved privately · <span id="letter-modal-hint-name">—</span> can't see this
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" style="flex-shrink:0;margin-top:1px;"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg>
+          <span>Saved privately · <span id="letter-modal-hint-name">—</span> can't see this</span>
         </div>
         <div class="letter-modal-actions">
           <button class="letter-modal-cancel" onclick="closeLetterModal()">Cancel</button>
@@ -1286,7 +1291,8 @@
     document.getElementById("m-location-input").value="";
     document.getElementById("m-tag-input").value="moment";
     document.getElementById("m-save-btn").textContent="Save";
-    document.getElementById("m-cancel-btn").style.display="none";
+    // Reset label to Discard for next new milestone
+    const cancelBtnReset=document.getElementById("m-cancel-btn");if(cancelBtnReset)cancelBtnReset.textContent="Discard";
     document.getElementById("add-milestone-form").classList.remove("open");
   };
 
@@ -1302,6 +1308,8 @@
     const f=document.getElementById("add-milestone-form");
     f.classList.toggle("open");
     if(f.classList.contains("open")){
+      const cb=document.getElementById("m-cancel-btn");
+      if(cb)cb.textContent="Discard";
       document.getElementById("m-title-input").value="";
       document.getElementById("m-note-input").value="";
       document.getElementById("m-date-input").value=new Date().toISOString().split("T")[0];
@@ -1316,6 +1324,9 @@
     function loadIntoForm(item){
       editingKey=key;
       editingOriginalAuthor=item.addedBy||null;
+      const cb=document.getElementById("m-cancel-btn");
+      if(cb)cb.textContent="Cancel edit";
+      const cancelBtn=document.getElementById("m-cancel-btn");if(cancelBtn)cancelBtn.textContent="Cancel";
       const f=document.getElementById("add-milestone-form");
       f.classList.add("open");
       document.getElementById("m-title-input").value=item.title||"";
