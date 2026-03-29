@@ -257,16 +257,16 @@
   /* ── MILESTONES ── */
   .milestone-add-btn{display:flex;align-items:center;gap:.4rem;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:.38rem .9rem;cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0}
   .milestone-add-btn:hover{border-color:var(--k);color:var(--k)}
-  .timeline{position:relative;padding-left:2rem}
-  .timeline::before{content:'';position:absolute;left:7px;top:10px;bottom:10px;width:1.5px;background:linear-gradient(180deg,var(--k),var(--pk),rgba(232,98,42,0.1));opacity:.6}
+  .timeline{position:relative;padding-left:1.5rem}
+  .timeline::before{display:none}
   .milestone{position:relative;margin-bottom:1.5rem;animation:fadeUp .4s ease both}
-  .m-dot{position:absolute;left:-1.85rem;top:7px;width:11px;height:11px;border-radius:50%;border:2px solid white;flex-shrink:0}
-  .m-dot.a{background:var(--k);box-shadow:0 0 0 1.5px var(--k)}
-  .m-dot.b{background:var(--pk);box-shadow:0 0 0 1.5px var(--pk)}
-  .m-dot.gold{background:var(--kl);box-shadow:0 0 0 1.5px var(--kl)}
-  .m-dot.future{background:var(--surface);border-color:rgba(232,98,42,0.25);box-shadow:0 0 0 1px rgba(232,98,42,0.25)}
-  .m-dot.add-dot{background:var(--surface);border:1.5px dashed var(--border);box-shadow:none}
-  .m-card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:1rem 1.1rem;position:relative;overflow:hidden;transition:border-color .2s;box-shadow:0 2px 12px rgba(232,98,42,0.06);}
+  .m-dot{position:absolute;left:-1.3rem;top:14px;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .m-dot.a{background:var(--k)}
+  .m-dot.b{background:var(--pk)}
+  .m-dot.gold{background:var(--kl)}
+  .m-dot.future{background:var(--surface);border:2px solid var(--kl)}
+  .m-dot.add-dot{background:var(--surface);border:1.5px dashed var(--border)}
+  .m-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:15px;padding:1rem 1.1rem;position:relative;overflow:hidden;transition:border-color .2s,border-left-color .2s;box-shadow:0 2px 12px rgba(232,98,42,0.06);}
   .m-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(247,197,168,0.55),transparent)}
   .m-card:hover{border-color:rgba(232,98,42,0.2);box-shadow:0 4px 18px rgba(232,98,42,0.1)}
   .m-card.future-card{background:rgba(232,98,42,0.02);border-style:dashed;opacity:.6}
@@ -432,7 +432,9 @@
   .m-photo-wrap{width:calc(100% + 2.2rem);height:130px;overflow:hidden;border-radius:12px 12px 0 0;margin:-1rem -1.1rem .9rem;position:relative;cursor:pointer}
   .m-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
   .m-photo-wrap:hover img{transform:scale(1.03)}
-  .m-photo-placeholder{width:calc(100% + 2.2rem);margin:-1rem -1.1rem .7rem;height:65px;background:rgba(232,98,42,0.04);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .2s}
+  .m-photo-placeholder{display:none}
+  .m-add-photo-btn{display:inline-flex;align-items:center;gap:.3rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:none;border:1px dashed var(--bdm);border-radius:8px;padding:.22rem .55rem;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;opacity:.6}
+  .m-add-photo-btn:hover{opacity:1;border-color:var(--k);color:var(--k)}
   .m-photo-placeholder:hover{background:rgba(232,98,42,0.08)}
   .m-photo-placeholder svg{opacity:.3}
   .m-photo-placeholder span{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);opacity:.6}
@@ -453,9 +455,9 @@
   .m-reposition-header{background:rgba(42,18,8,.9);padding:.62rem 1rem;display:flex;align-items:center;justify-content:space-between}
   .m-reposition-hint{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:.4rem}
   .m-reposition-title{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
-  .m-reposition-frame{height:180px;overflow:hidden;position:relative;cursor:grab;user-select:none;touch-action:none}
+  .m-reposition-frame{height:160px;overflow:hidden;position:relative;cursor:grab;user-select:none;touch-action:none}
   .m-reposition-frame:active{cursor:grabbing}
-  .m-reposition-frame img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translate(var(--pan-x,0px),var(--pan-y,0px));min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;object-fit:none;pointer-events:none}
+  .m-reposition-frame img{position:absolute;top:0;left:0;width:auto;height:auto;transform-origin:0 0;transform:translate(var(--tx,0px),var(--ty,0px)) scale(var(--sc,1));pointer-events:none;will-change:transform}
   .m-reposition-grid{position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:33.33% 33.33%;pointer-events:none}
   .m-reposition-footer{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-top:1px solid var(--border)}
   .m-reposition-tip{font-size:.6rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
@@ -471,7 +473,11 @@
   .add-form input::placeholder{color:var(--muted)}
   .add-form-row{display:flex;align-items:center;gap:.75rem;border-top:1px solid var(--border);padding-top:.6rem;flex-wrap:wrap}
   .add-form input[type="date"]{font-size:.68rem;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:.26rem .5rem;background:var(--surface);outline:none;font-family:'Plus Jakarta Sans',sans-serif}
-  .form-tag-select{font-size:.66rem;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:.26rem .5rem;background:var(--surface);outline:none;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
+  .form-tag-select{display:none}
+  .m-tag-pills{display:flex;gap:.35rem;flex-wrap:wrap}
+  .m-tag-pill{font-size:.58rem;letter-spacing:.06em;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:.25rem .65rem;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s}
+  .m-tag-pill.active{color:var(--k);border-color:var(--k);background:var(--kll);font-weight:600}
+  .m-tag-pill:hover:not(.active){border-color:var(--bdm);color:var(--text)}
   .form-save-btn{margin-left:auto;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:9px;padding:.36rem 1.05rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:opacity .2s}
   .form-save-btn:hover{opacity:.88}
   .empty{color:var(--muted);font-size:.85rem;padding:.9rem 0;font-style:italic}
@@ -556,7 +562,7 @@
     .milestone-add-btn{flex-shrink:0}
     .note-grid,.ng{grid-template-columns:1fr}
     #notes-wall{grid-template-columns:1fr}
-    .timeline{padding-left:1.6rem}
+    .timeline{padding-left:1.4rem}
     .m-photo-wrap{height:110px}
     .places-map{height:260px}
     .letter-modal{padding:1.25rem}
@@ -824,7 +830,13 @@
         <input type="date" id="m-date-input"/>
         <span style="font-size:.68rem;color:var(--muted);">→</span>
         <input type="date" id="m-enddate-input" title="End date (optional)"/>
-        <select class="form-tag-select" id="m-tag-input"><option value="moment">Moment</option><option value="memory">Memory</option><option value="first">First</option><option value="milestone">Milestone</option><option value="future">Future ✈️</option></select>
+        <div class="m-tag-pills" id="m-tag-pills">
+          <button type="button" class="m-tag-pill active" data-val="moment" onclick="selectMilestoneTag('moment')">Moment</button>
+          <button type="button" class="m-tag-pill" data-val="memory" onclick="selectMilestoneTag('memory')">Memory</button>
+          <button type="button" class="m-tag-pill" data-val="first" onclick="selectMilestoneTag('first')">First</button>
+          <button type="button" class="m-tag-pill" data-val="milestone" onclick="selectMilestoneTag('milestone')">Milestone</button>
+        </div>
+        <input type="hidden" id="m-tag-input" value="moment"/>
         <button class="m-form-photo-btn" id="m-photo-btn" onclick="document.getElementById('m-photo-input').click()" type="button"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span id="m-photo-btn-label">Add photo</span></button><input type="file" id="m-photo-input" class="m-photo-upload-input" accept="image/*" onchange="handleMilestonePhotoSelect(this)"/><button class="form-save-btn" id="m-save-btn" onclick="saveMilestone()">Save</button><button class="form-save-btn" id="m-cancel-btn" onclick="cancelMilestoneEdit()" style="display:none;background:var(--warm);color:var(--muted);border:1px solid var(--border);margin-left:.4rem;">Cancel</button>
       </div>
     </div>
@@ -1232,6 +1244,7 @@
   const TAG_CLS={moment:"a",memory:"b",first:"gold",milestone:"b",future:""};
   const TAG_ICONS={first:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8622a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 12 8 9 8 6a4 4 0 018 0c0 3-4 6-4 6z"/><path d="M9 19c-2 .5-4 1-4 1s1-2 1-4"/><path d="M15 19c2 .5 4 1 4 1s-1-2-1-4"/></svg>`,moment:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8622a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>`,memory:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8622a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/><circle cx="17" cy="9" r="1" fill="#e8622a"/></svg>`,milestone:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8622a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>`,future:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8622a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16l-7-13-7 13"/><path d="M3 12h18"/><path d="M7 16l1 5h8l1-5"/></svg>`};
   let editingKey=null;
+  let editingOriginalAuthor=null;
   function fmtMDate(s){if(!s)return"";const d=new Date(s+"T12:00:00"),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)}`;}
   function fmtMDateRange(s,e){if(!e||e===s)return fmtMDate(s);return`${fmtMDate(s)} – ${fmtMDate(e)}`;}
   function renderMilestones(items){
@@ -1248,12 +1261,13 @@
       const icon=TAG_ICONS[item.tag]||"";
       const dateStr=fmtMDateRange(item.date,item.endDate);
       const locationHTML=item.location?`<p class="m-location"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>${item.locationDisplay||item.location}</p>`:"";
-      const photoHTML=item.photoURL?`<div class="m-photo-wrap" onclick="viewMilestonePhoto('${item.photoURL}')"><img src="${item.photoURL}" alt="" style="object-position:${item.photoPosition||'center center'}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();openRepositionModal('${item._key}','${item.photoURL}','${item.title||''}','${item.photoPosition||'center center'}')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${item._key}')">Remove</button></div></div>`:(item._key?`<div class="m-photo-placeholder" onclick="triggerPhotoUploadFor('${item._key}')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg><span>Add photo</span></div>`:"")+"";
+      const photoHTML=item.photoURL?`<div class="m-photo-wrap" onclick="viewMilestonePhoto('${item.photoURL}')"><img src="${item.photoURL}" alt="" style="object-position:${item.photoPosition||'center center'}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();openRepositionModal('${item._key}','${item.photoURL}','${item.title||''}','${item.photoPosition||'center center'}')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${item._key}')">Remove</button></div></div>`:(item._key?`<button class="m-add-photo-btn" onclick="triggerPhotoUploadFor('${item._key}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg>Add photo</button>`:"")+"";
       return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}">${photoHTML}<div class="m-top"><p class="m-title"><span class="m-icon">${icon}</span>${item.title}</p><span class="m-date-range">${dateStr}</span></div>${item.note?`<p class="m-note">${item.note}</p>`:""}${locationHTML}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${item.tag}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.4rem;"><span class="m-author">${item.addedBy||""}</span>${item._key?`<button class="m-edit" onclick="editMilestone('${item._key}')" title="Edit">✎</button><button class="m-delete" onclick="deleteMilestone('${item._key}')" title="Delete">✕</button>`:""}</div></div></div></div>`;
     }).join("");
   }
   window.cancelMilestoneEdit=function(){
     editingKey=null;
+    editingOriginalAuthor=null;
     pendingPhotoFile=null;
     pendingPhotoPosition="50% 50%";
     const pbtn=document.getElementById("m-photo-btn");
@@ -1271,8 +1285,15 @@
     document.getElementById("add-milestone-form").classList.remove("open");
   };
 
+  window.selectMilestoneTag=function(val){
+    document.getElementById("m-tag-input").value=val;
+    document.querySelectorAll(".m-tag-pill").forEach(p=>{
+      p.classList.toggle("active", p.dataset.val===val);
+    });
+  };
   window.toggleAddForm=function(){
     editingKey=null;
+    editingOriginalAuthor=null;
     const f=document.getElementById("add-milestone-form");
     f.classList.toggle("open");
     if(f.classList.contains("open")){
@@ -1289,6 +1310,7 @@
   window.editMilestone=function(key){
     function loadIntoForm(item){
       editingKey=key;
+      editingOriginalAuthor=item.addedBy||null;
       const f=document.getElementById("add-milestone-form");
       f.classList.add("open");
       document.getElementById("m-title-input").value=item.title||"";
@@ -1296,6 +1318,7 @@
       document.getElementById("m-date-input").value=item.date||"";
       document.getElementById("m-enddate-input").value=item.endDate||"";
       document.getElementById("m-tag-input").value=item.tag||"moment";
+      if(window.selectMilestoneTag)window.selectMilestoneTag(item.tag||"moment");
       document.getElementById("m-location-input").value=item.location||"";
       document.getElementById("m-save-btn").textContent="Update";document.getElementById("m-cancel-btn").style.display="inline-block";
       document.getElementById("m-title-input").focus();
@@ -1340,7 +1363,7 @@
     if(!title||!date)return;
     const btn=document.getElementById("m-save-btn");
     btn.textContent="Saving…";
-    const m={title,note,date,tag,addedBy:ME,time:Date.now()};
+    const m={title,note,date,tag,addedBy:editingKey?(editingOriginalAuthor||ME):ME,time:Date.now()};
     if(endDate&&endDate!==date)m.endDate=endDate;
     if(locationStr){
       const geo=await geocodeLocation(locationStr);
@@ -2591,24 +2614,27 @@
 
   function applyRepositionPos(){
     const img = document.getElementById("m-reposition-img");
-    if(!img) return;
-    // Calculate pixel overflow and clamp translation
     const frame = document.getElementById("m-reposition-frame");
-    if(!frame){ img.style.setProperty("--pan-x","0px"); img.style.setProperty("--pan-y","0px"); return; }
-    const fw = frame.offsetWidth, fh = frame.offsetHeight;
-    const iw = img.naturalWidth  || img.offsetWidth  || fw;
-    const ih = img.naturalHeight || img.offsetHeight || fh;
-    // Scale factor: image scaled to cover frame minimally
-    const scale = Math.max(fw/iw, fh/ih);
-    const scaledW = iw * scale, scaledH = ih * scale;
-    // Max pan = half of overflow in each direction
-    const maxX = Math.max(0, (scaledW - fw) / 2);
-    const maxY = Math.max(0, (scaledH - fh) / 2);
-    // repositionPos.x/y are 0-100 → map to -maxX..+maxX
-    const panX = ((repositionPos.x - 50) / 50) * maxX;
-    const panY = ((repositionPos.y - 50) / 50) * maxY;
-    img.style.setProperty("--pan-x", panX.toFixed(1)+"px");
-    img.style.setProperty("--pan-y", panY.toFixed(1)+"px");
+    if(!img || !frame) return;
+    const fw = frame.offsetWidth;
+    const fh = frame.offsetHeight;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    // Need natural dimensions — if not loaded yet, wait
+    if(!iw || !ih){ img.onload = applyRepositionPos; return; }
+    // Scale to cover the frame completely
+    const scale = Math.max(fw / iw, fh / ih);
+    const scaledW = iw * scale;
+    const scaledH = ih * scale;
+    // Overflow in each direction
+    const overflowX = scaledW - fw;
+    const overflowY = scaledH - fh;
+    // Translate: repositionPos 0→left edge, 50→centre, 100→right edge
+    const tx = -(repositionPos.x / 100) * overflowX;
+    const ty = -(repositionPos.y / 100) * overflowY;
+    img.style.setProperty("--tx", tx.toFixed(2)+"px");
+    img.style.setProperty("--ty", ty.toFixed(2)+"px");
+    img.style.setProperty("--sc", scale.toFixed(6));
   }
 
   function startRepositionDrag(e){
@@ -2631,11 +2657,12 @@
     const rect = frame.getBoundingClientRect();
     // Use same reference for both axes so horizontal = vertical sensitivity
     // Smaller dimension (height=150px) gives better feel on mobile
-    // Sensitivity: 80px drag = full pan across the overflow range
-    const sensitivity = 80;
-    const dx = (pt.clientX - repositionStart.x) / sensitivity * 50;
-    const dy = (pt.clientY - repositionStart.y) / sensitivity * 50;
-    // Dragging right → pan left (natural/intuitive feel)
+    // object-position: 0%=far left, 100%=far right
+    // Drag 120px = pan from 0% to 100%
+    const sensitivity = 120;
+    const dx = (pt.clientX - repositionStart.x) / sensitivity * 100;
+    const dy = (pt.clientY - repositionStart.y) / sensitivity * 100;
+    // Dragging right moves view left (natural feel)
     repositionPos.x = Math.max(0, Math.min(100, repositionStartPos.x - dx));
     repositionPos.y = Math.max(0, Math.min(100, repositionStartPos.y - dy));
     applyRepositionPos();
