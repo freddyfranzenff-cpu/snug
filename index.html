@@ -2,8 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy &amp; Sarah 🍑</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Your Little Corner 🍑</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/socute/manifest.json"/>
+  <meta name="theme-color" content="#e8622a"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Our Corner"/>
+  <link rel="apple-touch-icon" href="/socute/icons/icon-180.png"/>
+  <link rel="apple-touch-icon" sizes="152x152" href="/socute/icons/icon-152.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="/socute/icons/icon-192.png"/>
+
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -2749,5 +2761,27 @@
     updateCdCaption(meetupDate);startCountdown();
   }
 </script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/socute/sw.js', { scope: '/socute/' })
+          .then(reg => {
+            console.log('[App] SW registered, scope:', reg.scope);
+            // When a new SW is waiting, activate it immediately
+            reg.addEventListener('updatefound', () => {
+              const newSW = reg.installing;
+              newSW.addEventListener('statechange', () => {
+                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[App] New version available — activating');
+                  newSW.postMessage('SKIP_WAITING');
+                }
+              });
+            });
+          })
+          .catch(err => console.warn('[App] SW registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>
