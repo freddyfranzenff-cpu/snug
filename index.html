@@ -737,6 +737,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <label class="auth-label">Have an invite link? Enter the code</label>
       <input type="text" class="auth-field" id="invite-code-input" placeholder="e.g. ABC123" style="text-transform:uppercase;letter-spacing:.15em;text-align:center;" maxlength="6" autocomplete="off" oninput="window.onInviteCodeInput()"/>
       <p class="auth-field-error" id="linking-error"></p>
+      <p id="linking-code-hint" style="display:none;font-size:.65rem;color:var(--pk);text-align:center;margin:-.25rem 0 .5rem;"></p>
       <button class="auth-submit-btn" onclick="doJoinCouple()" id="join-couple-btn">Join Snug</button>
     </div>
 
@@ -760,6 +761,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <p class="login-eyebrow">share with your partner</p>
     <h1 class="login-title">Your invite <em>link</em></h1>
     <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Share this link with your partner so they can join your Snug.</p>
+    <p style="font-size:.58rem;color:var(--pk);background:rgba(232,98,42,0.07);border-radius:10px;padding:.6rem .8rem;line-height:1.6;margin-bottom:.75rem;">⚠️ Ask your partner to <strong>complete sign up in their browser first</strong> before installing the app to their home screen.</p>
     <div class="invite-link-box" id="invite-link-display">—</div>
     <p style="font-size:.58rem;color:var(--muted);margin:.75rem 0 1rem;text-align:center;">Waiting for your partner to join…</p>
     <div class="invite-waiting-dots"><span></span><span></span><span></span></div>
@@ -1195,14 +1197,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   // When invite code is pre-filled or typed, dim the Create section to avoid confusion
   window.onInviteCodeInput = function(){
     const code = document.getElementById('invite-code-input')?.value||'';
-    const hasPending = !!(sessionStorage.getItem('pendingJoinCode')||localStorage.getItem('pendingJoinCode'));
-    // If a pending code exists in storage OR user has typed something — keep Create hidden
-    // Once user arrives via invite link, Create stays hidden for entire session visit
+    const pendingCode = sessionStorage.getItem('pendingJoinCode')||localStorage.getItem('pendingJoinCode')||'';
+    const hasPending = !!pendingCode;
     const shouldHide = code.length > 0 || hasPending;
     const createSection = document.getElementById('linking-create-section');
     const divider = document.getElementById('linking-or-divider');
     if(createSection) createSection.style.display = shouldHide ? 'none' : '';
     if(divider) divider.style.display = shouldHide ? 'none' : '';
+    // If code not yet in input but exists in storage, show it as hint
+    const hint = document.getElementById('linking-code-hint');
+    if(hint){
+      if(pendingCode && !code){
+        hint.textContent = `Your code: ${pendingCode} — tap above to confirm`;
+        hint.style.display = 'block';
+      } else {
+        hint.style.display = 'none';
+      }
+    }
   };
 
   // Safe DB key from a name — lowercase, spaces to underscores, strip invalid chars
@@ -1379,7 +1390,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const err  = document.getElementById('linking-error');
     err.textContent = '';
     if(code.length !== 6){ err.textContent = 'Please enter a 6-character code.'; return; }
-    const joinBtn = document.querySelector('#screen-linking .auth-submit-btn:last-of-type');
+    const joinBtn = document.getElementById('join-couple-btn');
     if(joinBtn && joinBtn.disabled) return;
     if(joinBtn){ joinBtn.textContent='Joining…'; joinBtn.disabled=true; }
     try{
@@ -1387,10 +1398,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       // Check invite
       let invite = null;
       await new Promise(res => fbOnValue(dbRef(db,`invites/${code}`), snap=>{ invite=snap.val(); res(); },{onlyOnce:true}));
-      if(!invite){ err.textContent = 'Code not found. Please check and try again.'; return; }
-      if(invite.createdBy === uid){ err.textContent = "You can't join your own Snug with your own code!"; return; }
-      if(invite.used && invite.createdBy !== uid){ err.textContent = 'This invite has already been used.'; return; }
-      if(invite.expiresAt && Date.now() > invite.expiresAt){ err.textContent = 'This invite has expired. Ask your partner for a new one.'; return; }
+      if(!invite){ err.textContent = 'Code not found. Please check and try again.'; if(joinBtn){joinBtn.textContent='Join Snug';joinBtn.disabled=false;} return; }
+      if(invite.createdBy === uid){ err.textContent = "You can't join your own Snug with your own code!"; if(joinBtn){joinBtn.textContent='Join Snug';joinBtn.disabled=false;} return; }
+      if(invite.used && invite.createdBy !== uid){ err.textContent = 'This invite has already been used.'; if(joinBtn){joinBtn.textContent='Join Snug';joinBtn.disabled=false;} return; }
+      if(invite.expiresAt && Date.now() > invite.expiresAt){ err.textContent = 'This invite has expired. Ask your partner for a new one.'; if(joinBtn){joinBtn.textContent='Join Snug';joinBtn.disabled=false;} return; }
       const cId = invite.coupleId;
       const ownerUid = invite.createdBy;
       // Read user data
@@ -1978,7 +1989,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       input.style.color="var(--muted)";
     } else {
       // Populate input with stored meetup date
-      input.value=meetupDate.toISOString().split("T")[0];
+      // Use local date to avoid UTC offset shifting the displayed date
+      const _y=meetupDate.getFullYear(),_m=String(meetupDate.getMonth()+1).padStart(2,"0"),_d=String(meetupDate.getDate()).padStart(2,"0");
+      input.value=`${_y}-${_m}-${_d}`;
       input.style.color="";
     }
   }
