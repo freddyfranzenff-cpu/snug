@@ -1586,15 +1586,18 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         if(_unsubWatchOther){try{_unsubWatchOther();}catch(e){}_unsubWatchOther=null;}
         _unsubWatchOther=onValue(ref(db,`couples/${coupleId}/presence/${partnerUid}`),snap=>{
           const d=snap.val();
-          otherTz=d?.timezone||"UTC";otherCity=d?.city||"—";
-          const nc=(d?.lat&&d?.lng)?[d.lat,d.lng]:[0,0];
-          const changed=!otherCoords||Math.abs(nc[0]-otherCoords[0])>0.01||Math.abs(nc[1]-otherCoords[1])>0.01;
-          otherCoords=nc;
+          otherTz=d?.timezone||null;otherCity=d?.city||"—";
+          // Only update coords if we have real values — don't overwrite with [0,0]
+          const nc=(d?.lat&&d?.lng)?[d.lat,d.lng]:null;
+          const changed=nc&&(!otherCoords||Math.abs(nc[0]-(otherCoords[0]||0))>0.01||Math.abs(nc[1]-(otherCoords[1]||0))>0.01);
+          if(nc)otherCoords=nc;
           const label=`${OTHER} · ${otherCity}`;
           document.getElementById("other-city").textContent=label;
           document.getElementById("other-weather-city").textContent=label;
-          if(mapInstance)updateOtherMarker(otherCoords,label);
-          if(changed)fetchWeather(otherCoords[0],otherCoords[1],"other");
+          if(mapInstance&&otherCoords)updateOtherMarker(otherCoords,label);
+          if(changed&&otherCoords)fetchWeather(otherCoords[0],otherCoords[1],"other");
+          // Update distance and sleep status whenever partner data changes
+          updateDistanceAndSleep();
         });
       };
       window._pushPresence=(tz,city,lat,lng)=>dbSet(dbRef(db,`couples/${coupleId}/presence/${myUid}`),{timezone:tz,city,lat,lng,updatedAt:serverTimestamp()});
@@ -1620,15 +1623,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const{tz,city,lat,lng}=await detectMyLocation();
       myTz=tz||Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
       myCity=city||"—";
-      myCoords=(lat&&lng)?[lat,lng]:[0,0];
-      otherTz="UTC";otherCity="—";otherCoords=[0,0];
-      if(window._pushPresence)window._pushPresence(myTz,myCity,myCoords[0],myCoords[1]);
+      myCoords=(lat&&lng)?[lat,lng]:null;
+      // Only push presence if we have real coordinates — don't push [0,0]
+      if(myCoords&&window._pushPresence)window._pushPresence(myTz,myCity,myCoords[0],myCoords[1]);
+      // Leave partner data null — _watchOther populates from Firebase
       startUI();
     }catch(e){
       console.error('detectAndStart failed:',e);
-      // Fallback: use UTC and skip location
-      myTz=myTz||"UTC";myCity=myCity||"—";myCoords=myCoords||[0,0];
-      otherTz="UTC";otherCity="—";otherCoords=[0,0];
+      myTz=myTz||"UTC";myCity=myCity||"—";
       startUI();
     }
   }
@@ -1640,6 +1642,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   // Map
   function initMap(myCo,oCo,myL,oL){
+    // Guard against null/zero coords — use sensible fallback
+    if(!myCo||(!myCo[0]&&!myCo[1]))myCo=oCo||[20,0];
+    if(!oCo||(!oCo[0]&&!oCo[1]))oCo=myCo||[20,0];
     if(mapInstance){mapInstance.remove();mapInstance=null;}
     const isMobile=window.innerWidth<680;mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:1,worldCopyJump:false}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],isMobile?1:2);
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap",subdomains:"abcd",maxZoom:18}).addTo(mapInstance);
@@ -1649,7 +1654,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     connectLine=L.polyline([myCo,oCo],{color:"#e8622a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(mapInstance);
     
   }
-  function updateOtherMarker(coords,label){if(!mapInstance)return;otherMarker.setLatLng(coords);otherMarker.setTooltipContent(label);connectLine.setLatLngs([myCoords,coords]);}
+  function updateOtherMarker(coords,label){if(!mapInstance||!otherMarker||!coords)return;otherMarker.setLatLng(coords);otherMarker.setTooltipContent(label);if(connectLine&&myCoords)connectLine.setLatLngs([myCoords,coords]);}
 
   // Notes
   function fmtTs(ts){if(!ts)return"";const d=new Date(ts),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)} · ${p(d.getHours())}:${p(d.getMinutes())}`;}
@@ -2046,7 +2051,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   function updateDistanceAndSleep(){
     // Distance
-    if(myCoords&&otherCoords){
+    if(myCoords&&otherCoords&&(myCoords[0]||myCoords[1])&&(otherCoords[0]||otherCoords[1])){
       const km=calcDistance(myCoords[0],myCoords[1],otherCoords[0],otherCoords[1]);
       const el=document.getElementById("distance-apart");
       if(el)el.textContent=km.toLocaleString("en-GB");
@@ -2068,7 +2073,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const myEl=document.getElementById("sleep-my");
     const otherEl=document.getElementById("sleep-other");
     if(myEl)myEl.textContent=sleepStatus(ME,myTz);
-    if(otherEl)otherEl.textContent=sleepStatus(OTHER,otherTz||"UTC");
+    // Only show partner sleep status if we have their actual timezone
+    if(otherEl)otherEl.textContent=otherTz?sleepStatus(OTHER,otherTz):"";
   }
 
   // Bucket list
@@ -3278,7 +3284,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const dnb=document.getElementById("home-dist-name-b");if(dnb)dnb.textContent=OTHER;
     document.getElementById("home-greeting").innerHTML=greeting(ME,myTz);
     document.getElementById("home-date").textContent=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-    setTimeout(()=>initMap(myCoords,otherCoords,myL,oL),50);
+    setTimeout(()=>initMap(myCoords||[0,0],otherCoords||[0,0],myL,oL),50);
     fetchWeather(myCoords[0],myCoords[1],"my");
     fetchWeather(otherCoords[0],otherCoords[1],"other");
     if(window._watchOther)window._watchOther();
