@@ -679,6 +679,33 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .settings-btn:disabled{opacity:.45;cursor:not-allowed;}
   .settings-success{font-size:.62rem;color:var(--green,#2a9d5c);margin:.3rem 0 0;display:none;}
   .settings-error{font-size:.62rem;color:var(--error,#d63031);margin:.3rem 0 0;}
+  /* ── Home tabs ─────────────────────────────────────────── */
+  .home-tabs{display:flex;background:var(--surface);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.1rem;}
+  .home-tab{flex:1;padding:.42rem .5rem;font-size:.6rem;font-family:'Plus Jakarta Sans',sans-serif;text-align:center;color:var(--muted);border:none;background:none;cursor:pointer;transition:all .2s;letter-spacing:.04em;border-right:1px solid var(--border);}
+  .home-tab:last-child{border-right:none;}
+  .home-tab.active{background:linear-gradient(135deg,rgba(232,98,42,0.12),rgba(212,83,126,0.08));color:var(--k);font-weight:600;}
+  .home-tab-panel{display:none;}
+  .home-tab-panel.active{display:block;}
+  /* Notes preview on Us tab */
+  .home-note-preview{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:.65rem;}
+  .home-note-preview-item{padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text);}
+  .home-note-preview-item:last-child{border-bottom:none;padding-bottom:0;}
+  .home-note-preview-meta{font-size:.55rem;color:var(--muted);margin-top:.15rem;}
+  .home-see-all{font-size:.58rem;color:var(--k);text-align:center;display:block;margin-top:.5rem;background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+  /* Bucket progress on Us tab */
+  .home-bl-progress{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:.65rem;}
+  .home-bl-bar-bg{background:var(--border);border-radius:4px;height:5px;margin:.4rem 0 .35rem;overflow:hidden;}
+  .home-bl-bar{background:linear-gradient(90deg,var(--k),var(--pk));height:100%;border-radius:4px;transition:width .4s ease;}
+  .home-bl-stats{display:flex;justify-content:space-between;align-items:center;}
+  .home-bl-stat{font-size:.6rem;color:var(--muted);}
+  /* Moments tab links */
+  .moments-link{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.65rem;cursor:pointer;transition:opacity .2s;}
+  .moments-link:hover{opacity:.8;}
+  .moments-link-left{display:flex;align-items:center;gap:.75rem;}
+  .moments-link-icon{width:36px;height:36px;border-radius:10px;background:rgba(232,98,42,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .moments-link-title{font-size:.78rem;font-weight:600;color:var(--text);}
+  .moments-link-sub{font-size:.58rem;color:var(--muted);margin-top:.1rem;}
+  .moments-link-arrow{font-size:1rem;color:var(--muted);}
   </style>
 </head>
 <body>
@@ -855,32 +882,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="home-greeting-left">
         <p class="page-eyebrow" id="home-date">—</p>
         <h1 class="page-title" id="home-greeting">Good evening, <em>—</em></h1>
-        <!-- Pulse received — compact inline pill (shown by JS) -->
-        <div id="pulse-received" style="display:none;margin-top:.5rem;">
-          <div class="pulse-recv-pill">
-            <span class="pulse-recv-dot"></span>
-            <span class="pulse-banner-title" id="pulse-received-title">— was thinking of you</span>
-            <span class="pulse-recv-sep">·</span>
-            <span class="pulse-banner-time" id="pulse-received-time">—</span>
-          </div>
-        </div>
-        <!-- Send pulse — compact pill -->
-        <div class="pulse-send-pill" onclick="sendPulse()" style="margin-top:.4rem;">
-          <div class="pulse-send-pill-btn">
-            <div class="pulse-ring-sm"></div>
-            <div class="pulse-ring-sm r2"></div>
-            <div class="pulse-heart-sm" id="pulse-heart-btn">
-              <svg width="10" height="9" viewBox="0 0 32 30" fill="white"><path d="M16 28C14 26 2 19 2 10.5A7.5 7.5 0 0116 15a7.5 7.5 0 0114-4.5C30 19 18 26 16 28z"/></svg>
-            </div>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <p class="pulse-row-title">Send a pulse</p>
-            <p class="pulse-row-sub">Let <span id="pulse-other-name">—</span> know you're thinking of them</p>
-          </div>
-          <span class="pulse-row-last" id="pulse-last-sent" style="display:none;"></span>
-        </div>
-        <button class="pulse-history-toggle" id="pulse-history-toggle" onclick="togglePulseHistory()" style="display:none;margin-top:.35rem;">Show recent pulses ↓</button>
-        <div class="pulse-history" id="pulse-history-list"></div>
+
       </div>
       <!-- Days together badge top-right -->
       <div class="home-days-badge">
@@ -891,8 +893,35 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
 
-    <!-- ── HERO ROW: Map left, Countdown right ── -->
-    <div class="home-hero-row">
+    <!-- ── HOME TABS ── -->
+    <div class="home-tabs">
+      <button class="home-tab active" id="tab-now" onclick="switchHomeTab('now')">Now</button>
+      <button class="home-tab" id="tab-us" onclick="switchHomeTab('us')">Us</button>
+      <button class="home-tab" id="tab-moments" onclick="switchHomeTab('moments')">Moments</button>
+    </div>
+
+    <!-- ══ NOW TAB ══ -->
+    <div class="home-tab-panel active" id="panel-now">
+
+      <!-- Pulse -->
+      <div id="pulse-received-now" style="display:none;margin-bottom:.65rem;"></div>
+      <div class="pulse-send-pill" onclick="sendPulse()" style="margin-bottom:.65rem;">
+        <div class="pulse-send-pill-btn">
+          <div class="pulse-ring-sm"></div><div class="pulse-ring-sm r2"></div>
+          <div class="pulse-heart-sm" id="pulse-heart-btn-now">
+            <svg width="10" height="9" viewBox="0 0 32 30" fill="white"><path d="M16 28C14 26 2 19 2 10.5A7.5 7.5 0 0116 15a7.5 7.5 0 0114-4.5C30 19 18 26 16 28z"/></svg>
+          </div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <p class="pulse-row-title">Send a pulse</p>
+          <p class="pulse-row-sub">Let <span id="pulse-other-name">—</span> know you're thinking of them</p>
+        </div>
+        <span class="pulse-row-last" id="pulse-last-sent" style="display:none;"></span>
+      </div>
+      <button class="pulse-history-toggle" id="pulse-history-toggle" onclick="togglePulseHistory()" style="display:none;margin-bottom:.5rem;">Show recent pulses ↓</button>
+      <div class="pulse-history" id="pulse-history-list"></div>
+
+      <!-- Map + Weather -->
       <div class="map-card home-map-card">
         <div id="map"></div>
         <div class="weather-row">
@@ -908,7 +937,41 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
       </div>
-      <div class="card home-cd-card">
+
+      <!-- Clocks -->
+      <p class="section-heading" style="margin-top:.1rem;">Right now</p>
+      <div class="grid-2">
+        <div class="card mine"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="my-city">—</span></p><p class="clock-time" id="my-time">--:--:--</p><p class="clock-date" id="my-date">--</p><p id="sleep-my" class="sleep-indicator"></p></div>
+        <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="other-city">—</span></p><p class="clock-time" id="other-time">--:--:--</p><p class="clock-date" id="other-date">--</p><p id="sleep-other" class="sleep-indicator"></p></div>
+      </div>
+
+      <!-- Distance strip -->
+      <div class="card home-dist-strip" id="home-dist-strip" style="margin-top:.85rem;">
+        <div class="home-dist-city">
+          <p class="home-dist-city-name" id="home-dist-city-a">—</p>
+          <p class="home-dist-city-sub" id="home-dist-name-a">—</p>
+        </div>
+        <div class="home-dist-center">
+          <div class="home-dist-line">
+            <div class="home-dist-line-seg"></div>
+            <svg class="home-dist-plane" width="14" height="14" viewBox="0 0 24 24" fill="var(--k)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+            <div class="home-dist-line-seg"></div>
+          </div>
+          <p class="home-dist-km"><span id="distance-apart">—</span> <span class="home-dist-km-unit">km</span></p>
+        </div>
+        <div class="home-dist-city" style="text-align:right;">
+          <p class="home-dist-city-name" id="home-dist-city-b">—</p>
+          <p class="home-dist-city-sub" id="home-dist-name-b">—</p>
+        </div>
+      </div>
+
+    </div><!-- end panel-now -->
+
+    <!-- ══ US TAB ══ -->
+    <div class="home-tab-panel" id="panel-us">
+
+      <!-- Countdown -->
+      <div class="card home-cd-card" style="margin-bottom:.85rem;">
         <div>
           <div class="stat-card-header" style="margin-bottom:.5rem;">
             <p class="card-label" style="margin:0;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>Next meetup</p>
@@ -918,38 +981,75 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         </div>
         <p class="cd-caption" id="cd-caption">—</p>
       </div>
-    </div>
 
-    <!-- ── CLOCKS ── -->
-    <p class="section-heading" style="margin-top:.1rem;">Right now</p>
-    <div class="grid-2">
-      <div class="card mine"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="my-city">—</span></p><p class="clock-time" id="my-time">--:--:--</p><p class="clock-date" id="my-date">--</p><p id="sleep-my" class="sleep-indicator"></p></div>
-      <div class="card"><p class="card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><span id="other-city">—</span></p><p class="clock-time" id="other-time">--:--:--</p><p class="clock-date" id="other-date">--</p><p id="sleep-other" class="sleep-indicator"></p></div>
-    </div>
+      <!-- Notes preview -->
+      <p class="section-heading">Recent notes</p>
+      <div id="home-notes-preview" style="margin-bottom:.85rem;"><p class="empty">No notes yet.</p></div>
+      <button class="home-see-all" onclick="showPage('notes')">See all notes →</button>
 
-    <!-- ── DISTANCE STRIP ── -->
-    <div class="card home-dist-strip" id="home-dist-strip" style="margin-top:.85rem;">
-      <div class="home-dist-city">
-        <p class="home-dist-city-name" id="home-dist-city-a">—</p>
-        <p class="home-dist-city-sub" id="home-dist-name-a">—</p>
-      </div>
-      <div class="home-dist-center">
-        <div class="home-dist-line">
-          <div class="home-dist-line-seg"></div>
-          <svg class="home-dist-plane" width="14" height="14" viewBox="0 0 24 24" fill="var(--k)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
-          <div class="home-dist-line-seg"></div>
+      <!-- Bucket list progress -->
+      <p class="section-heading" style="margin-top:.85rem;">Bucket list</p>
+      <div class="home-bl-progress">
+        <div class="home-bl-stats">
+          <div class="home-bl-stat"><span id="home-bl-done">0</span> done · <span id="home-bl-total">0</span> total</div>
+          <button class="home-see-all" style="margin:0;" onclick="showPage('bucket')">See all →</button>
         </div>
-        <p class="home-dist-km"><span id="distance-apart">—</span> <span class="home-dist-km-unit">km</span></p>
+        <div class="home-bl-bar-bg"><div class="home-bl-bar" id="home-bl-bar" style="width:0%"></div></div>
       </div>
-      <div class="home-dist-city" style="text-align:right;">
-        <p class="home-dist-city-name" id="home-dist-city-b">—</p>
-        <p class="home-dist-city-sub" id="home-dist-name-b">—</p>
-      </div>
-    </div>
 
-    <!-- ── RECENT NOTES ── -->
-    <p class="section-heading" style="margin-top:1.25rem;">Recent notes</p>
-    <div class="grid-2" id="home-notes-preview"><p class="empty">No notes yet.</p></div>
+    </div><!-- end panel-us -->
+
+    <!-- ══ MOMENTS TAB ══ -->
+    <div class="home-tab-panel" id="panel-moments">
+
+      <p class="section-heading">Your story</p>
+
+      <div class="moments-link" onclick="showPage('milestones')">
+        <div class="moments-link-left">
+          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><circle cx="8" cy="8" r="2"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg></div>
+          <div>
+            <p class="moments-link-title">Milestones</p>
+            <p class="moments-link-sub" id="moments-milestone-sub">Your shared moments</p>
+          </div>
+        </div>
+        <span class="moments-link-arrow">›</span>
+      </div>
+
+      <div class="moments-link" onclick="showPage('letter')">
+        <div class="moments-link-left">
+          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg></div>
+          <div>
+            <p class="moments-link-title">Letters</p>
+            <p class="moments-link-sub" id="moments-letter-sub">Sealed until you meet</p>
+          </div>
+        </div>
+        <span class="moments-link-arrow">›</span>
+      </div>
+
+      <div class="moments-link" onclick="showPage('places')">
+        <div class="moments-link-left">
+          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg></div>
+          <div>
+            <p class="moments-link-title">Places</p>
+            <p class="moments-link-sub" id="moments-places-sub">Places you want to visit</p>
+          </div>
+        </div>
+        <span class="moments-link-arrow">›</span>
+      </div>
+
+      <div class="moments-link" onclick="showPage('bucket')">
+        <div class="moments-link-left">
+          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg></div>
+          <div>
+            <p class="moments-link-title">Bucket list</p>
+            <p class="moments-link-sub" id="moments-bucket-sub">Dreams to share</p>
+          </div>
+        </div>
+        <span class="moments-link-arrow">›</span>
+      </div>
+
+    </div><!-- end panel-moments -->
+
   </div>
 
   <!-- MILESTONES -->
@@ -2250,7 +2350,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(db&&fbOnValue){
       fbOnValue(dbRef(db,`couples/${coupleId}/bucket`),snap=>{
         const d=snap.val();
-        renderBucket(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]);
+        renderBucket(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]); updateHomeBucketProgress(); updateMomentsSubtitles();
       },{onlyOnce:true});
     } else renderBucket([...localBucket]);
   };
@@ -2568,12 +2668,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     // Find latest pulse FROM the other person
     const latest=pulses.find(p=>p.from===partnerUid||p.from===OTHER);
     if(!latest)return;
-    const banner=document.getElementById("pulse-received");
-    const title=document.getElementById("pulse-received-title");
-    const time=document.getElementById("pulse-received-time");
-    if(banner&&title&&time){
-      title.textContent=`${OTHER} was thinking of you`;
-      time.textContent=fmtPulseTime(latest.time);
+    const banner=document.getElementById("pulse-received-now");
+    if(banner){
+      banner.innerHTML=`<div class="pulse-recv-pill"><span class="pulse-recv-dot"></span><span class="pulse-banner-title">${OTHER} was thinking of you</span><span class="pulse-recv-sep">·</span><span class="pulse-banner-time">${fmtPulseTime(latest.time)}</span></div>`;
       banner.style.display="block";
     }
   }
@@ -2598,7 +2695,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     }
     _lastPulseSent = now;
     if(!ME)return;
-    const btn=document.getElementById("pulse-heart-btn");
+    const btn=document.getElementById("pulse-heart-btn-now");
     if(btn){btn.classList.add("sent");setTimeout(()=>btn.classList.remove("sent"),300);}
     const pulse={from:myUid,to:partnerUid,fromName:ME,time:Date.now()};
     if(db&&dbPush){
@@ -2640,8 +2737,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       pulseTimeInterval=setInterval(()=>{
         const latest=pulses.find(p=>p.from===partnerUid||p.from===OTHER);
         if(latest){
-          const time=document.getElementById("pulse-received-time");
-          if(time)time.textContent=fmtPulseTime(latest.time);
+          const nowBanner=document.getElementById("pulse-received-now");
+          if(nowBanner&&nowBanner.querySelector(".pulse-banner-time")){
+            nowBanner.querySelector(".pulse-banner-time").textContent=fmtPulseTime(latest.time);
+          }
         }
       },60000);
     });
@@ -3518,6 +3617,51 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     }
   };
 
+  // ── HOME TABS ──────────────────────────────────────────
+  window.switchHomeTab = function(tab){
+    ['now','us','moments'].forEach(t=>{
+      document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+      document.getElementById(`panel-${t}`).classList.toggle('active', t===tab);
+    });
+    // Re-invalidate map size when Now tab shown — Leaflet needs visible container
+    if(tab==='now' && mapInstance){
+      setTimeout(()=>{ try{ mapInstance.invalidateSize(); }catch(e){} }, 50);
+    }
+  };
+
+  // Update dynamic subtitles on Moments tab
+  function updateMomentsSubtitles(){
+    const msCount = localMilestones ? localMilestones.length : 0;
+    const msEl = document.getElementById('moments-milestone-sub');
+    if(msEl) msEl.textContent = msCount > 0 ? `${msCount} moment${msCount!==1?'s':''} together` : 'Your shared moments';
+
+    const blTotal = localBucket ? localBucket.length : 0;
+    const blDone = localBucket ? localBucket.filter(i=>i.done).length : 0;
+    const blEl = document.getElementById('moments-bucket-sub');
+    if(blEl) blEl.textContent = blTotal > 0 ? `${blDone} of ${blTotal} done` : 'Dreams to share';
+
+    // Letter sub — show next unlock date if exists
+    const ltEl = document.getElementById('moments-letter-sub');
+    if(ltEl && meetupDate){
+      const _y=meetupDate.getFullYear(),_m=String(meetupDate.getMonth()+1).padStart(2,'0'),_d=String(meetupDate.getDate()).padStart(2,'0');
+      ltEl.textContent = `Opens ${_d}.${_m}.${_y}`;
+    }
+  }
+
+  // Update bucket progress on Us tab
+  function updateHomeBucketProgress(){
+    if(!localBucket) return;
+    const total = localBucket.length;
+    const done = localBucket.filter(i=>i.done).length;
+    const pct = total > 0 ? Math.round((done/total)*100) : 0;
+    const doneEl = document.getElementById('home-bl-done');
+    const totalEl = document.getElementById('home-bl-total');
+    const barEl = document.getElementById('home-bl-bar');
+    if(doneEl) doneEl.textContent = done;
+    if(totalEl) totalEl.textContent = total;
+    if(barEl) barEl.style.width = `${pct}%`;
+  }
+
   window.doSignOut = async function(){
     if(fbAuth && fbAuth.signOut){
       await fbAuth.signOut();
@@ -3630,6 +3774,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         localNotes=[...notes];
         renderNotes(notes);
         renderNotesPreview(notes);
+        updateMomentsSubtitles();
       });
       // Milestones
       if(unsubMilestones)unsubMilestones();
@@ -3638,6 +3783,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         const items=d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[];
         localMilestones=[...items];
         renderMilestones(items);
+        updateMomentsSubtitles();
       });
       // Bucket
       if(unsubBucket)unsubBucket();
