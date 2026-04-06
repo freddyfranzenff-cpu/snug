@@ -1087,13 +1087,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <p class="cd-caption" id="cd-caption">—</p>
       </div>
 
-      <!-- Notes preview -->
-      <p class="section-heading">Recent notes</p>
-      <div id="home-notes-preview" style="margin-bottom:.85rem;"><p class="empty">No notes yet.</p></div>
-      <button class="home-see-all" onclick="showPage('notes')">See all notes →</button>
-
       <!-- Memory Jar preview -->
-      <p class="section-heading" style="margin-top:.85rem;">Memory jar</p>
+      <p class="section-heading">Memory jar</p>
       <div class="mj-preview-card" id="mj-preview-card">
         <div class="mj-preview-header">
           <span class="mj-preview-label">Today's moments</span>
@@ -1112,13 +1107,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
         <div class="mj-input-row" id="mj-preview-input-row">
-          <input class="mj-input" id="mj-preview-input" placeholder="Your moment for today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('preview')"/>
-          <button class="mj-send-btn" id="mj-preview-send" onclick="submitMemoryJar('preview')">
+          <div style="flex:1;display:flex;flex-direction:column;gap:.2rem;">
+            <input class="mj-input" id="mj-preview-input" placeholder="Your moment for today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('preview')" oninput="document.getElementById('mj-preview-counter').textContent=this.value.length+'/200'"/>
+            <span id="mj-preview-counter" style="font-size:.52rem;color:var(--muted);text-align:right;padding-right:.2rem;">0/200</span>
+          </div>
+          <button class="mj-send-btn" id="mj-preview-send" onclick="submitMemoryJar('preview')" style="align-self:flex-start;margin-top:.15rem;">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
           </button>
         </div>
       </div>
       <button class="home-see-all" onclick="showPage('memory')" style="margin-bottom:.85rem;">See all memories →</button>
+
+      <!-- Notes preview -->
+      <p class="section-heading" style="margin-top:.85rem;">Recent notes</p>
+      <div id="home-notes-preview" style="margin-bottom:.85rem;"><p class="empty">No notes yet.</p></div>
+      <button class="home-see-all" onclick="showPage('notes')">See all notes →</button>
 
       <!-- Bucket list progress -->
       <p class="section-heading" style="margin-top:.85rem;">Bucket list</p>
@@ -1334,8 +1337,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         </div>
       </div>
       <div class="mj-input-row" id="mj-today-input-row">
-        <input class="mj-input" id="mj-today-input" placeholder="Something that made you smile today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('today')"/>
-        <button class="mj-send-btn" id="mj-today-send" onclick="submitMemoryJar('today')">
+        <div style="flex:1;display:flex;flex-direction:column;gap:.2rem;">
+          <input class="mj-input" id="mj-today-input" placeholder="Something that made you smile today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('today')" oninput="document.getElementById('mj-today-counter').textContent=this.value.length+'/200'"/>
+          <span id="mj-today-counter" style="font-size:.52rem;color:var(--muted);text-align:right;padding-right:.2rem;">0/200</span>
+        </div>
+        <button class="mj-send-btn" id="mj-today-send" onclick="submitMemoryJar('today')" style="align-self:flex-start;margin-top:.15rem;">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
         </button>
       </div>
@@ -3892,7 +3898,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(input) input.disabled = disabled;
     if(send) send.disabled = disabled;
     if(row && disabled){
-      row.innerHTML = `<span class="mj-written-note">You've written today ✓</span>`;
+      row.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;">
+        <div style="width:18px;height:18px;border-radius:50%;background:rgba(42,157,92,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#2a9d5c" stroke-width="1.8"><path d="M2 5l2.5 2.5L8 3"/></svg>
+        </div>
+        <span class="mj-written-note" style="font-style:italic;font-size:.68rem;color:#2a9d5c;">You've written today — this can't be changed</span>
+      </div>`;
     }
   }
 
@@ -3933,8 +3944,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
     // Streak
     const streakEl = document.getElementById('mj-preview-streak');
-    if(streakEl && _mjStreakCount > 0){
-      streakEl.textContent = `${_mjStreakCount} day streak 🔥`;
+    if(streakEl){
+      if(_mjStreakCount > 0){
+        streakEl.textContent = `${_mjStreakCount} day streak 🔥`;
+      } else {
+        streakEl.textContent = 'Start your streak!';
+        streakEl.style.color = 'var(--muted)';
+        streakEl.style.fontWeight = '400';
+      }
     }
   }
 
@@ -4112,11 +4129,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(_mjMyEntry?.text) return; // already written today
     const today = _mjTodayKey();
     const entry = { text, createdAt: Date.now() };
+    // Disable immediately so double-tap can't fire
+    const sendBtn = document.getElementById(context==='today'?'mj-today-send':'mj-preview-send');
+    if(sendBtn) sendBtn.disabled = true;
     try{
       await dbSet(dbRef(db,`couples/${coupleId}/memoryJar/${today}/${myUid}`), entry);
       input.value = '';
+      // Brief confirmation flash
+      const rowId = context==='today'?'mj-today-input-row':'mj-preview-input-row';
+      const row = document.getElementById(rowId);
+      if(row){
+        const orig = row.innerHTML;
+        row.innerHTML = '<span style="font-size:.68rem;color:var(--k);padding:.45rem .7rem;font-weight:500;">✓ Saved — this can't be changed</span>';
+        setTimeout(()=>{ _mjSetInputDisabled(true, context); },1800);
+      }
     }catch(e){
       console.error('submitMemoryJar failed:', e);
+      if(sendBtn) sendBtn.disabled = false;
     }
   };
 
