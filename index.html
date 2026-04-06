@@ -4140,7 +4140,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const row = document.getElementById(rowId);
       if(row){
         const orig = row.innerHTML;
-        row.innerHTML = '<span style="font-size:.68rem;color:var(--k);padding:.45rem .7rem;font-weight:500;">✓ Saved — this can't be changed</span>';
+        row.innerHTML = `<span style="font-size:.68rem;color:var(--k);padding:.45rem .7rem;font-weight:500;">✓ Saved — this can\'t be changed</span>`;
         setTimeout(()=>{ _mjSetInputDisabled(true, context); },1800);
       }
     }catch(e){
