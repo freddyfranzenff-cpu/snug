@@ -4206,9 +4206,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(myMood) myMood.textContent = '';
       if(myTime) myTime.textContent = '';
     } else {
-      if(myEmoji) myEmoji.style.opacity='1';
-    } else {
-      if(myEmoji) myEmoji.textContent = ACTIVITY_EMOJI[myStatus.activity]||'—';
+      if(myEmoji){ myEmoji.textContent = ACTIVITY_EMOJI[myStatus.activity]||'—'; myEmoji.style.opacity='1'; }
       if(myActivity) myActivity.textContent = myStatus.activity||'';
       if(myMood) myMood.textContent = myStatus.mood ? `feeling ${myStatus.mood}` : '';
       if(myTime) myTime.textContent = fmtStatusTime(myStatus.updatedAt);
@@ -4226,9 +4224,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(otherMood) otherMood.textContent = '';
       if(otherTime) otherTime.textContent = '';
     } else {
-      if(otherEmoji) otherEmoji.style.opacity='1';
-    } else {
-      if(otherEmoji) otherEmoji.textContent = ACTIVITY_EMOJI[otherStatus.activity]||'—';
+      if(otherEmoji){ otherEmoji.textContent = ACTIVITY_EMOJI[otherStatus.activity]||'—'; otherEmoji.style.opacity='1'; }
       if(otherActivity) otherActivity.textContent = otherStatus.activity||'';
       if(otherMood) otherMood.textContent = otherStatus.mood ? `feeling ${otherStatus.mood}` : '';
       if(otherTime) otherTime.textContent = fmtStatusTime(otherStatus.updatedAt);
