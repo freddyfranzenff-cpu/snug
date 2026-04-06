@@ -782,6 +782,66 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .mj-month-arrow.open{transform:rotate(90deg);}
   .mj-month-days{display:none;}
   .mj-month-days.open{display:block;}
+  /* ── LDR / Together mode toggle ─────────────────────────── */
+  .mode-toggle{display:flex;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin:.65rem 0;}
+  .mode-toggle-btn{flex:1;padding:.55rem .5rem;font-size:.68rem;font-family:'Plus Jakarta Sans',sans-serif;text-align:center;color:var(--muted);border:none;background:none;cursor:pointer;transition:all .2s;}
+  .mode-toggle-btn.active{background:linear-gradient(135deg,rgba(232,98,42,0.12),rgba(212,83,126,0.08));color:var(--k);font-weight:600;}
+  .mode-toggle-btn:first-child{border-right:1px solid var(--border);}
+  /* ── Together mode: time picker ──────────────────────────── */
+  .datetime-row{display:flex;align-items:center;gap:.5rem;justify-content:flex-end;}
+  .time-input{border:1px solid var(--border);border-radius:8px;padding:.25rem .5rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;width:auto;}
+  .time-input:focus{border-color:var(--k);}
+  /* ── Date night planner ───────────────────────────────────── */
+  .dn-planner{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:.85rem;display:none;}
+  .dn-planner.visible{display:block;}
+  .dn-planner-header{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
+  .dn-planner-label{font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .dn-planner-date{font-size:.62rem;color:var(--k);font-weight:500;}
+  .dn-planner-field{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
+  .dn-planner-field:last-of-type{border-bottom:none;}
+  .dn-field-icon{width:28px;height:28px;border-radius:8px;background:rgba(232,98,42,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;}
+  .dn-field-label{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.1rem;}
+  .dn-field-input{width:100%;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);outline:none;padding:0;}
+  .dn-field-input::placeholder{color:var(--muted);}
+  /* ── Today's plan ─────────────────────────────────────────── */
+  .todays-plan{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:.85rem;display:none;}
+  .todays-plan.visible{display:block;}
+  .todays-plan-header{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
+  .todays-plan-label{font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .tp-entry-row{display:flex;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);align-items:flex-start;}
+  .tp-entry-row:last-of-type{border-bottom:none;}
+  .tp-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0;margin-top:.1rem;}
+  .tp-avatar-me{background:rgba(232,98,42,0.15);color:var(--k);}
+  .tp-avatar-other{background:rgba(124,58,237,0.12);color:#7c3aed;}
+  .tp-input{flex:1;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);outline:none;resize:none;line-height:1.4;}
+  .tp-input::placeholder{color:var(--muted);font-style:italic;}
+  .tp-other-text{font-size:.75rem;color:var(--text);flex:1;line-height:1.4;}
+  .tp-other-empty{font-size:.72rem;color:var(--muted);font-style:italic;flex:1;}
+  /* ── Together mode sheets (dn + tp + mj preview) ──────────── */
+  .together-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:800;display:none;align-items:flex-end;justify-content:center;}
+  .together-sheet-overlay.open{display:flex;}
+  .together-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:600px;padding:0 0 env(safe-area-inset-bottom,12px);max-height:85vh;overflow-y:auto;touch-action:none;}
+  .together-sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 8px;cursor:grab;}
+  .together-sheet-title{font-size:.85rem;font-weight:600;color:var(--text);padding:.5rem 1.1rem .75rem;border-bottom:1px solid var(--border);}
+  .together-sheet-body{padding:.75rem 1.1rem 0;}
+  .together-sheet-label{font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;display:block;}
+  .together-sheet-input{width:100%;border:1px solid var(--border);border-radius:10px;padding:.6rem .85rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box;transition:border-color .2s;margin-bottom:.65rem;}
+  .together-sheet-input:focus{border-color:var(--k);}
+  .together-sheet-textarea{resize:none;min-height:80px;line-height:1.5;}
+  .together-sheet-counter{font-size:.52rem;color:var(--muted);text-align:right;margin-top:-.5rem;margin-bottom:.65rem;}
+  .together-sheet-save{width:calc(100% - 2.2rem);margin:.75rem 1.1rem .25rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:13px;padding:.85rem 1.5rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:block;transition:opacity .2s;}
+  .together-sheet-save:hover{opacity:.88;}
+  .together-sheet-cancel{display:block;width:calc(100% - 2.2rem);margin:.2rem 1.1rem .25rem;padding:.45rem;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-align:center;}
+  /* dn-planner card — read-only display */
+  .dn-display-row{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
+  .dn-display-row:last-of-type{border-bottom:none;}
+  .dn-display-value{font-size:.75rem;color:var(--text);}
+  .dn-display-empty{font-size:.72rem;color:var(--muted);font-style:italic;}
+  /* tp card — read-only display */
+  .tp-display-row{display:flex;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);align-items:center;}
+  .tp-display-row:last-of-type{border-bottom:none;}
+  .tp-display-value{font-size:.75rem;color:var(--text);flex:1;line-height:1.4;}
+  .tp-display-empty{font-size:.72rem;color:var(--muted);font-style:italic;flex:1;}
   </style>
 </head>
 <body>
@@ -882,6 +942,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <p style="font-size:.62rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Starting fresh? Create a new Snug and invite your partner.</p>
       <label class="auth-label">Together since</label>
       <input type="date" class="auth-field" id="couple-startdate"/>
+      <label class="auth-label" style="margin-top:.5rem;">Your relationship type</label>
+      <div class="mode-toggle" id="create-mode-toggle">
+        <button class="mode-toggle-btn active" id="create-mode-ldr" onclick="window.selectCreateMode('ldr')">📍 Long distance</button>
+        <button class="mode-toggle-btn" id="create-mode-together" onclick="window.selectCreateMode('together')">🏠 Living together</button>
+      </div>
+      <input type="hidden" id="couple-type-input" value="ldr"/>
       <button class="auth-submit-btn" style="background:var(--surface);color:var(--k);border:1.5px solid var(--border);" onclick="doCreateCouple()" id="create-couple-btn">Create our Snug</button>
     </div>
   </div>
@@ -1080,6 +1146,54 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         </div>
       </div>
 
+      <!-- Today's plan (Together mode only) — ABOVE date night plan -->
+      <div class="todays-plan" id="todays-plan">
+        <div class="todays-plan-header">
+          <span class="todays-plan-label">Today's plan</span>
+          <button class="status-update-btn" onclick="openTpSheet()">Update plan →</button>
+        </div>
+        <div class="tp-display-row">
+          <div class="tp-avatar tp-avatar-me" id="tp-my-avatar">F</div>
+          <div class="tp-display-empty" id="tp-my-display">Nothing yet today</div>
+        </div>
+        <div class="tp-display-row">
+          <div class="tp-avatar tp-avatar-other" id="tp-other-avatar">S</div>
+          <div class="tp-display-empty" id="tp-other-text">Waiting for their plan…</div>
+        </div>
+      </div>
+
+      <!-- Date night planner (Together mode only) -->
+      <div class="dn-planner" id="dn-planner">
+        <div class="dn-planner-header">
+          <span class="dn-planner-label">Date night plan</span>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <span class="dn-planner-date" id="dn-planner-date">—</span>
+            <button class="status-update-btn" onclick="openDnSheet()">Update →</button>
+          </div>
+        </div>
+        <div class="dn-display-row">
+          <div class="dn-field-icon">📍</div>
+          <div style="flex:1;">
+            <div class="dn-field-label">Where</div>
+            <div class="dn-display-empty" id="dn-where-display">Not set yet</div>
+          </div>
+        </div>
+        <div class="dn-display-row">
+          <div class="dn-field-icon">✨</div>
+          <div style="flex:1;">
+            <div class="dn-field-label">What</div>
+            <div class="dn-display-empty" id="dn-what-display">Not set yet</div>
+          </div>
+        </div>
+        <div class="dn-display-row">
+          <div class="dn-field-icon">🎫</div>
+          <div style="flex:1;">
+            <div class="dn-field-label">Who's booking</div>
+            <div class="dn-display-empty" id="dn-who-display">Not set yet</div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- end panel-now -->
 
     <!-- ══ US TAB ══ -->
@@ -1089,8 +1203,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="card home-cd-card" style="margin-bottom:.85rem;">
         <div>
           <div class="stat-card-header" style="margin-bottom:.5rem;">
-            <p class="card-label" style="margin:0;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>Next meetup</p>
-            <input type="date" id="meetup-date-input" class="meetup-input" onchange="updateMeetupDate(this.value)"/>
+            <p class="card-label" style="margin:0;" id="cd-card-label"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>Next meetup</p>
+            <div class="datetime-row">
+              <input type="date" id="meetup-date-input" class="meetup-input" onchange="updateMeetupDate(this.value)"/>
+              <input type="time" id="meetup-time-input" class="time-input meetup-time-hidden" value="19:00" onchange="updateMeetupTime(this.value)" style="display:none;"/>
+            </div>
           </div>
           <div class="cd-row"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
         </div>
@@ -1113,17 +1230,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <div class="mj-entry-row" id="mj-preview-other-row">
           <div class="mj-avatar mj-avatar-other" id="mj-preview-other-avatar">S</div>
           <div style="flex:1;">
-            <div class="mj-entry-text mj-empty-entry" id="mj-preview-other-text">Nothing yet today</div>
+            <div class="mj-entry-text mj-empty-entry" id="mj-preview-other-text">Waiting for their moment…</div>
           </div>
         </div>
         <div class="mj-input-row" id="mj-preview-input-row">
-          <div style="flex:1;display:flex;flex-direction:column;gap:.2rem;">
-            <input class="mj-input" id="mj-preview-input" placeholder="Your moment for today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('preview')" oninput="document.getElementById('mj-preview-counter').textContent=this.value.length+'/200'"/>
-            <span id="mj-preview-counter" style="font-size:.52rem;color:var(--muted);text-align:right;padding-right:.2rem;">0/200</span>
-          </div>
-          <button class="mj-send-btn" id="mj-preview-send" onclick="submitMemoryJar('preview')" style="align-self:flex-start;margin-top:.15rem;">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
-          </button>
+          <button class="together-sheet-save" onclick="openMjSheet()" style="margin:.3rem 0 .1rem;padding:.55rem 1rem;font-size:.72rem;">Add today's moment →</button>
         </div>
       </div>
       <button class="home-see-all" onclick="showPage('memory')" style="margin-bottom:.85rem;">See all memories →</button>
@@ -1346,15 +1457,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="mj-entry-meta" id="mj-today-other-time"></div>
         </div>
       </div>
-      <div class="mj-input-row" id="mj-today-input-row">
-        <div style="flex:1;display:flex;flex-direction:column;gap:.2rem;">
-          <input class="mj-input" id="mj-today-input" placeholder="Something that made you smile today…" maxlength="200" type="text" onkeydown="if(event.key==='Enter')submitMemoryJar('today')" oninput="document.getElementById('mj-today-counter').textContent=this.value.length+'/200'"/>
-          <span id="mj-today-counter" style="font-size:.52rem;color:var(--muted);text-align:right;padding-right:.2rem;">0/200</span>
-        </div>
-        <button class="mj-send-btn" id="mj-today-send" onclick="submitMemoryJar('today')" style="align-self:flex-start;margin-top:.15rem;">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
-        </button>
-      </div>
     </div>
 
     <!-- History -->
@@ -1468,7 +1570,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="letter-modal">
       <p class="letter-modal-title" id="letter-modal-title">Your letter</p>
       <p class="letter-modal-sub" id="letter-modal-sub">Only you can see this until the unlock date.</p>
-      <textarea class="letter-modal-textarea" id="letter-modal-textarea" placeholder="Dear Sarah,&#10;&#10;I've been thinking about what to write…" rows="10" maxlength="4000" oninput="document.getElementById('letter-char-count').textContent=this.value.length"></textarea>
+      <textarea class="letter-modal-textarea" id="letter-modal-textarea" placeholder="Dear …,&#10;&#10;I've been thinking about what to write…" rows="10" maxlength="4000" oninput="document.getElementById('letter-char-count').textContent=this.value.length"></textarea>
       <p style="font-size:.62rem;color:var(--muted);text-align:right;margin-top:.35rem;"><span id="letter-char-count" style="font-size:.6rem;color:var(--muted)">0</span> / 4000</p>
       <div class="letter-modal-footer">
         <div class="letter-modal-hint">
@@ -1487,6 +1589,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <div class="page" id="page-settings">
     <div class="page-header">
       <h1 class="page-title">Your <em>settings</em></h1>
+    </div>
+
+    <!-- Relationship mode -->
+    <div class="section-heading">Relationship</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <label class="settings-label">Your relationship type</label>
+        <div class="mode-toggle">
+          <button class="mode-toggle-btn active" id="settings-mode-ldr" onclick="selectSettingsMode('ldr')">📍 Long distance</button>
+          <button class="mode-toggle-btn" id="settings-mode-together" onclick="selectSettingsMode('together')">🏠 Living together</button>
+        </div>
+        <p style="font-size:.58rem;color:var(--muted);margin-top:.4rem;line-height:1.5;">Switching modes updates the app for both of you instantly.</p>
+      </div>
     </div>
 
     <!-- Profile section -->
@@ -1589,6 +1704,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   let ME=null,OTHER=null,myUid=null,partnerUid=null,coupleId=null;
   let myTz=null,otherTz=null,myCity=null,otherCity=null,myCoords=null,otherCoords=null;
   let myName=null,otherName=null,myRole=null;
+  let coupleType='ldr'; // 'ldr' | 'together'
   let myStatus=null,otherStatus=null;
   let statusRefreshInterval=null;
   // Couple info
@@ -1749,12 +1865,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         if(!exists){code=c;break;}
       }
       if(!code){document.getElementById('linking-error').textContent='Could not generate code, please retry.';btn.textContent='Create our Snug';btn.disabled=false;return;}
+      // Read selected mode
+      const selectedType = document.getElementById('couple-type-input')?.value || 'ldr';
       // Create couple
       const coupleRef = await dbPush(dbRef(db,'couples'), {
         createdAt: Date.now(),
         startDate: startDate,
         meetupDate: '',
-        owner: uid
+        owner: uid,
+        coupleType: selectedType
       });
       const newCoupleId = coupleRef.key;
       // Save member (use existingData which was already read for the duplicate guard)
@@ -1917,12 +2036,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         myStatus=snap.val()||null; res();
       },{onlyOnce:true}));
     }catch(e){}
-    // Load couple info (startDate, meetupDate)
+    // Load couple info (startDate, meetupDate, coupleType)
       await new Promise(res => fbOnValue(dbRef(db,`couples/${cId}`), snap=>{
         const d = snap.val();
         coupleStartDate  = d?.startDate||'';
         coupleMeetupDate = d?.meetupDate||'';
-        if(d?.meetupDate) meetupDate = new Date(d.meetupDate.replace('T00:00:00','')+'T00:00:00');
+        if(d?.meetupDate){
+          const stored = d.meetupDate;
+          meetupDate = new Date(stored);
+          // Restore time input if Together mode and time was stored
+          if(stored.includes('T') && !stored.endsWith('T00:00:00')){
+            const timePart = stored.split('T')[1]?.substring(0,5)||'19:00';
+            _dnTimeVal = timePart;
+            const ti = document.getElementById('meetup-time-input');
+            if(ti) ti.value = timePart;
+          }
+        }
+        coupleType = d?.coupleType||'ldr';
         res();
       },{onlyOnce:true}));
       // Hide auth, show locating
@@ -1930,6 +2060,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       document.getElementById('locating').style.display='flex';
       // Init location then start UI
       await detectAndStart();
+      startCoupleTypeListener();
     }catch(e){
       console.error('loadCoupleAndStart failed:',e);
       showAuthWrap();
@@ -1967,11 +2098,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           myStatus=null;otherStatus=null;
           if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
           if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
+          if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+          if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
+          if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
+      if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
+      if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
           _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
+          coupleType='ldr';
       myStatus=null;otherStatus=null;
       if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
       if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
+      if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
       _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
+      coupleType='ldr';
           myTz=null;otherTz=null;myCity=null;otherCity=null;myCoords=null;otherCoords=null;
           meetupDate=null;localNotes=[];localMilestones=[];localBucket=[];letterRounds=[];
           if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
@@ -2224,7 +2363,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(cb)cb.textContent="Discard";
       document.getElementById("m-title-input").value="";
       document.getElementById("m-note-input").value="";
-      document.getElementById("m-date-input").value=new Date().toISOString().split("T")[0];
+      document.getElementById("m-date-input").value=_localDateStr(new Date());
       document.getElementById("m-enddate-input").value="";
       document.getElementById("m-tag-input").value="moment";
       document.getElementById("m-location-input").value="";
@@ -2397,7 +2536,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const input=document.getElementById("meetup-date-input");
       if(input){
         // Reset to previous valid date or clear
-        input.value=meetupDate&&meetupDate>now?meetupDate.toISOString().split("T")[0]:"";
+        input.value=meetupDate&&meetupDate>now?_localDateStr(meetupDate):"";
         input.style.borderColor="#e8622a";
         setTimeout(()=>input.style.borderColor="",2000);
       }
@@ -2408,16 +2547,27 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(newDate>maxDate){
       const input=document.getElementById("meetup-date-input");
       if(input){
-        input.value=meetupDate&&meetupDate>now?meetupDate.toISOString().split("T")[0]:"";
+        input.value=meetupDate&&meetupDate>now?_localDateStr(meetupDate):"";
         input.style.borderColor="#e8622a";
         setTimeout(()=>input.style.borderColor="",2000);
       }
       return;
     }
 
-    meetupDate=newDate;
+    // Set meetupDate with correct time immediately (not midnight)
+    const timeEl2 = document.getElementById('meetup-time-input');
+    const timeVal2 = (coupleType==='together' && timeEl2?.value) ? timeEl2.value : '00:00';
+    meetupDate = new Date(`${val}T${timeVal2}:00`);
     startCountdown();
-    if(db&&dbSet)dbSet(dbRef(db,`couples/${coupleId}/meetupDate`),val+"T00:00:00");
+    if(db&&dbSet){
+      dbSet(dbRef(db,`couples/${coupleId}/meetupDate`),`${val}T${timeVal2}:00`);
+    }
+    // Update date night planner visibility
+    const dnPlanner = document.getElementById('dn-planner');
+    if(dnPlanner && coupleType==='together'){
+      dnPlanner.classList.add('visible');
+      loadDnPlanner && loadDnPlanner();
+    }
 
     // Fix 5: update unlockDate on unread letters to match new meetup date
     if(db&&fbOnValue&&dbSet){
@@ -2432,7 +2582,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           const otherData=round[otherKey]||{};
           const neitherRead=!meData.readAt&&!otherData.readAt;
           if(neitherRead&&round.unlockDate){
-            dbSet(dbRef(db,`couples/${coupleId}/letters/${key}/unlockDate`),val+"T00:00:00");
+            const unlockTime2 = (coupleType==='together' && _dnTimeVal) ? _dnTimeVal : '00:00';
+            dbSet(dbRef(db,`couples/${coupleId}/letters/${key}/unlockDate`),val+`T${unlockTime2}:00`);
           }
         });
       },{onlyOnce:true});
@@ -2445,8 +2596,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     // Set min to tomorrow, max to 2 years from now
     const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
     const maxD=new Date();maxD.setFullYear(maxD.getFullYear()+2);
-    input.min=tomorrow.toISOString().split("T")[0];
-    input.max=maxD.toISOString().split("T")[0];
+    input.min=_localDateStr(tomorrow);
+    input.max=_localDateStr(maxD);
     if(!meetupDate||meetupDate<=new Date()){
       input.value="";
       input.setAttribute("placeholder","Set next meetup");
@@ -2466,7 +2617,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     function tick(){
       if(!meetupDate){
         ["cd-d","cd-h","cd-m","cd-s","scd-d","scd-h","scd-m","scd-s"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="—";});
-        const cc=document.getElementById("cd-caption");if(cc)cc.textContent="Set your next meetup date 🗓️";
+        const cc=document.getElementById("cd-caption");if(cc)cc.textContent=coupleType==='together'?'Set your next date night 🗓️':'Set your next meetup date 🗓️';
         const sc=document.getElementById("scd-caption");if(sc)sc.textContent="Pick a new date";
         return;
       }
@@ -2476,7 +2627,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const cdCaption=document.getElementById("cd-caption");
       if(isPast){
         ["cd-d","cd-h","cd-m","cd-s"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="—";});
-        if(cdCaption)cdCaption.textContent="Set your next meetup date 🗓️";
+        if(cdCaption)cdCaption.textContent=coupleType==='together'?'Set your next date night 🗓️':'Set your next meetup date 🗓️';
         // Sidebar countdown
         ["scd-d","scd-h","scd-m","scd-s"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="—";});
         const scdCaption=document.getElementById("scd-caption");
@@ -2487,7 +2638,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           const de=document.getElementById(`${p}-d`),he=document.getElementById(`${p}-h`),me=document.getElementById(`${p}-m`),se=document.getElementById(`${p}-s`);
           if(de)de.textContent=d;if(he)he.textContent=h;if(me)me.textContent=m;if(se)se.textContent=s;
         });
-        if(cdCaption)cdCaption.textContent=meetupDate?meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"Set your next meetup date 🗓️";
+        if(cdCaption)cdCaption.textContent=meetupDate?meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):(coupleType==='together'?'Set your next date night 🗓️':'Set your next meetup date 🗓️');
         const scdCaption=document.getElementById("scd-caption");
         if(scdCaption)scdCaption.textContent=meetupDate?meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"Pick a new date";
       }
@@ -3043,7 +3194,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const sep = document.createElement("div");
       sep.className = "letter-meetup-sep";
       const d = new Date(round.unlockDate);
-      const label = isActive ? `Next meetup · ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}` : `Meetup · ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}`;
+      const modeWord = coupleType==='together'?'Date night':'Meetup';
+        const label = isActive ? `${modeWord} · ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}` : `${modeWord} · ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}`;
       sep.innerHTML = `<span class="letter-meetup-sep-label">${label}</span>`;
       tl.appendChild(sep);
 
@@ -3111,7 +3263,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         return `<div class="letter-tile sealed">
           <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${OTHER}'s letter to you</p>
           <div class="letter-tile-status sealed"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg> ${hasContent ? "Written &amp; sealed" : "Not written yet"}</div>
-          <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? "You can read it on the day you meet." : OTHER+" hasn't written their letter yet."}</p>
+          <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? (coupleType==='together'?'You can read it on your date night.':`You can read it on the day you meet.`) : OTHER+" hasn't written their letter yet."}</p>
           ${hasContent ? `<button class="letter-tile-btn" style="opacity:.45;pointer-events:none;">Locked until meetup 🔒</button>` : ""}
         </div>`;
       }
@@ -3147,19 +3299,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(!hasActiveRound){
         const prompt = document.createElement("div");
         prompt.style.cssText = "text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.78rem;line-height:1.7;";
-        prompt.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" stroke-linecap="round" style="display:block;margin:0 auto .75rem;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Set your next meetup date on the home page<br>to start writing new letters 💌`;
+        prompt.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" stroke-linecap="round" style="display:block;margin:0 auto .75rem;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>${coupleType==='together'?'Set your next date night on the home page':'Set your next meetup date on the home page'}<br>to start writing new letters 💌`;
         tl.appendChild(prompt);
       }
       return;
     }
-    const unlockDateStr = meetupDate.toISOString().split("T")[0];
+    const unlockDateStr = _localDateStr(meetupDate);
     // Check if a round already exists for this date
     const existing = rounds && rounds.find(r => r.unlockDate && r.unlockDate.startsWith(unlockDateStr));
     if(existing) return; // already rendered
     // Create empty round UI
     const sep = document.createElement("div");
     sep.className = "letter-meetup-sep";
-    sep.innerHTML = `<span class="letter-meetup-sep-label">Next meetup · ${meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</span>`;
+    sep.innerHTML = `<span class="letter-meetup-sep-label">${coupleType==='together'?'Date night':'Next meetup'} · ${meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</span>`;
     tl.appendChild(sep);
     const card = document.createElement("div");
     card.className = "letter-round active-round";
@@ -3195,8 +3347,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(!modal) return;
 
     titleEl.textContent = `Your letter to ${OTHER}`;
-    subEl.textContent = `Only you can see this. ${OTHER} will read it on the day you meet.`;
+    subEl.textContent = `Only you can see this. ${OTHER} will read it ${coupleType==='together'?'on your date night':'on the day you meet'}.`;
     if(hintEl) hintEl.textContent = OTHER;
+    // Set salutation placeholder dynamically
+    const taEl = document.getElementById('letter-modal-textarea');
+    if(taEl) taEl.placeholder = `Dear ${OTHER},\n\nI've been thinking about what to write…`;
 
     // Pre-fill if existing content
     ta.value = "";
@@ -3236,7 +3391,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       return;
     }
 
-    const unlockDate = meetupDate.toISOString().split("T")[0]+"T00:00:00";
+    // Use actual date night time in Together mode, midnight for LDR
+      const unlockDateStr = _localDateStr(meetupDate);
+      const unlockTime = (coupleType==='together' && _dnTimeVal) ? _dnTimeVal : '00:00';
+      const unlockDate = `${unlockDateStr}T${unlockTime}:00`;
 
     let roundKey = currentLetterRoundId;
 
@@ -3712,6 +3870,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
      'settings-new-email','settings-email-pw'].forEach(id=>{
       const el = document.getElementById(id); if(el) el.value = '';
     });
+    // Sync mode toggle to current coupleType
+    const ldrBtn = document.getElementById('settings-mode-ldr');
+    const togBtn = document.getElementById('settings-mode-together');
+    if(ldrBtn) ldrBtn.classList.toggle('active', coupleType==='ldr');
+    if(togBtn) togBtn.classList.toggle('active', coupleType==='together');
   };
 
   // ── SETTINGS — save profile (name + city) ───────────────
@@ -3950,7 +4113,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     }
 
     // Disable input if already written
-    if(_mjMyEntry?.text) _mjSetInputDisabled(true, 'preview');
+    if(_mjMyEntry?.text){
+      const row = document.getElementById('mj-preview-input-row');
+      if(row) row.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;"><div style="width:18px;height:18px;border-radius:50%;background:rgba(42,157,92,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#2a9d5c" stroke-width="1.8"><path d="M2 5l2.5 2.5L8 3"/></svg></div><span style="font-style:italic;font-size:.68rem;color:#2a9d5c;">You\'ve written today — this can\'t be changed</span></div>`;
+    }
 
     // Streak
     const streakEl = document.getElementById('mj-preview-streak');
@@ -4184,14 +4350,291 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       // Brief confirmation flash
       const rowId = context==='today'?'mj-today-input-row':'mj-preview-input-row';
       const row = document.getElementById(rowId);
-      if(row){
-        const orig = row.innerHTML;
-        row.innerHTML = `<span style="font-size:.68rem;color:var(--k);padding:.45rem .7rem;font-weight:500;">✓ Saved — this can\'t be changed</span>`;
-        setTimeout(()=>{ _mjSetInputDisabled(true, context); },1800);
-      }
+      // listener fires and updates display
     }catch(e){
       console.error('submitMemoryJar failed:', e);
       if(sendBtn) sendBtn.disabled = false;
+    }
+  };
+
+  // ── TOGETHER MODE FEATURES ────────────────────────────────────
+
+  // ── Time picker ────────────────────────────────────────────
+  let _dnTimeVal = '19:00'; // default date night time
+
+  // Helper: get local date string YYYY-MM-DD from a Date object (no UTC shift)
+  function _localDateStr(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+
+  window.updateMeetupTime = function(val){
+    if(!val || !meetupDate) return;
+    _dnTimeVal = val;
+    try{
+      // Use LOCAL date parts — never toISOString() which shifts to UTC
+      const dateStr = _localDateStr(meetupDate);
+      const newDate = new Date(`${dateStr}T${val}:00`);
+      meetupDate = newDate;
+      if(db && coupleId) dbSet(dbRef(db,`couples/${coupleId}/meetupDate`), `${dateStr}T${val}:00`);
+      startCountdown();
+    }catch(e){ console.error('updateMeetupTime failed:',e); }
+  };
+
+  function _showTimeInput(show){
+    const ti = document.getElementById('meetup-time-input');
+    if(ti) ti.style.display = show ? '' : 'none';
+  }
+
+  // ── Date night planner ────────────────────────────────────────
+  let _dnUnsub = null;
+  let _dnSaveTimer = null;
+
+  function _dnDateKey(){
+    if(!meetupDate) return null;
+    const d = meetupDate;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function loadDnPlanner(){
+    if(_dnUnsub){ try{_dnUnsub();}catch(e){} _dnUnsub=null; }
+    const dateKey = _dnDateKey();
+    if(!db||!coupleId||!dateKey) return;
+
+    // Set date label
+    const dateLabel = document.getElementById('dn-planner-date');
+    if(dateLabel && meetupDate){
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      dateLabel.textContent = `${meetupDate.getDate()} ${months[meetupDate.getMonth()]}`;
+    }
+
+    _dnUnsub = fbOnValue(dbRef(db,`couples/${coupleId}/datePlan/${dateKey}`), snap=>{
+      const d = snap.val()||{};
+      _dnCurrentPlan = d;
+      // Update display divs
+      const whereEl = document.getElementById('dn-where-display');
+      const whatEl = document.getElementById('dn-what-display');
+      const whoEl = document.getElementById('dn-who-display');
+      if(whereEl){ whereEl.textContent = d.where||'Not set yet'; whereEl.className = d.where ? 'dn-display-value' : 'dn-display-empty'; }
+      if(whatEl){ whatEl.textContent = d.what||'Not set yet'; whatEl.className = d.what ? 'dn-display-value' : 'dn-display-empty'; }
+      if(whoEl){ whoEl.textContent = d.who||'Not set yet'; whoEl.className = d.who ? 'dn-display-value' : 'dn-display-empty'; }
+    });
+  }
+
+  window.saveDnPlan = function(){
+    clearTimeout(_dnSaveTimer);
+    _dnSaveTimer = setTimeout(async ()=>{
+      const dateKey = _dnDateKey();
+      if(!db||!coupleId||!dateKey) return;
+      const plan = {
+        where: document.getElementById('dn-where')?.value||'',
+        what: document.getElementById('dn-what')?.value||'',
+        who: document.getElementById('dn-who')?.value||'',
+        updatedAt: Date.now()
+      };
+      try{ await dbSet(dbRef(db,`couples/${coupleId}/datePlan/${dateKey}`), plan); }
+      catch(e){ console.error('saveDnPlan failed:',e); }
+    }, 800);
+  };
+
+  // ── Today's plan ─────────────────────────────────────────────
+  let _tpUnsub = null;
+  let _tpSaveTimer = null;
+
+  function _tpTodayKey(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function loadTodaysPlan(){
+    if(_tpUnsub){ try{_tpUnsub();}catch(e){} _tpUnsub=null; }
+    if(!db||!coupleId||!myUid||!partnerUid) return;
+    const today = _tpTodayKey();
+
+    // Set avatars
+    const myAv = document.getElementById('tp-my-avatar');
+    const otherAv = document.getElementById('tp-other-avatar');
+    if(myAv) myAv.textContent = (ME||'?')[0].toUpperCase();
+    if(otherAv) otherAv.textContent = (OTHER||'?')[0].toUpperCase();
+
+    _tpUnsub = fbOnValue(dbRef(db,`couples/${coupleId}/todaysPlan/${today}`), snap=>{
+      const d = snap.val()||{};
+      _tpMyCurrentVal = d[myUid]||'';
+      // My display
+      const myDisplay = document.getElementById('tp-my-display');
+      if(myDisplay){
+        myDisplay.textContent = d[myUid]||'Nothing yet today';
+        myDisplay.className = d[myUid] ? 'tp-display-value' : 'tp-display-empty';
+      }
+      // Other display
+      const otherEl = document.getElementById('tp-other-text');
+      if(otherEl){
+        otherEl.textContent = d[partnerUid]||'Waiting for their plan…';
+        otherEl.className = d[partnerUid] ? 'tp-display-value' : 'tp-display-empty';
+      }
+    });
+  }
+
+  window.saveTodaysPlan = function(){
+    clearTimeout(_tpSaveTimer);
+    _tpSaveTimer = setTimeout(async ()=>{
+      if(!db||!coupleId||!myUid) return;
+      const today = _tpTodayKey();
+      const val = document.getElementById('tp-my-input')?.value||'';
+      try{ await dbSet(dbRef(db,`couples/${coupleId}/todaysPlan/${today}/${myUid}`), val); }
+      catch(e){ console.error('saveTodaysPlan failed:',e); }
+    }, 800);
+  };
+
+  // Show/hide Together mode features in applyMode is handled below
+  // Called when mode changes or on startup
+
+  // ── BOTTOM SHEET SWIPE DISMISS ────────────────────────────────
+  function _initSheetSwipe(sheetId, overlayId, closeFn){
+    const sheet = document.getElementById(sheetId);
+    const handle = sheet?.querySelector('.together-sheet-handle');
+    if(!sheet || !handle) return;
+    // Remove previous listeners to prevent accumulation on repeat opens
+    if(handle._swipeCleanup) handle._swipeCleanup();
+    let startY = 0, currentY = 0, dragging = false;
+    const onStart = (e) => {
+      startY = (e.touches ? e.touches[0].clientY : e.clientY);
+      dragging = true;
+      sheet.style.transition = 'none';
+    };
+    const onMove = (e) => {
+      if(!dragging) return;
+      currentY = (e.touches ? e.touches[0].clientY : e.clientY);
+      const dy = Math.max(0, currentY - startY);
+      sheet.style.transform = `translateY(${dy}px)`;
+      if(e.cancelable) e.preventDefault();
+    };
+    const onEnd = () => {
+      if(!dragging) return;
+      dragging = false;
+      sheet.style.transition = 'transform .25s ease';
+      const dy = Math.max(0, currentY - startY);
+      if(dy > 80){
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(()=>{ closeFn(); sheet.style.transform=''; sheet.style.transition=''; },250);
+      } else {
+        sheet.style.transform = '';
+        setTimeout(()=>{ sheet.style.transition=''; },250);
+      }
+    };
+    handle.addEventListener('touchstart', onStart, {passive:true});
+    handle.addEventListener('touchmove', onMove, {passive:false});
+    handle.addEventListener('touchend', onEnd);
+    handle.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    // Store cleanup fn on handle element for next open
+    handle._swipeCleanup = () => {
+      handle.removeEventListener('touchstart', onStart);
+      handle.removeEventListener('touchmove', onMove);
+      handle.removeEventListener('touchend', onEnd);
+      handle.removeEventListener('mousedown', onStart);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+    };
+  }
+
+  // ── Date Night Sheet ────────────────────────────────────────
+  window.openDnSheet = function(){
+    // Pre-fill with current values
+    const d = _dnCurrentPlan||{};
+    const w = document.getElementById('dn-sheet-where');
+    const wh = document.getElementById('dn-sheet-what');
+    const who = document.getElementById('dn-sheet-who');
+    if(w) w.value = d.where||'';
+    if(wh) wh.value = d.what||'';
+    if(who) who.value = d.who||'';
+    document.getElementById('dn-sheet-overlay').classList.add('open');
+    setTimeout(()=>w?.focus(),100);
+    _initSheetSwipe('dn-sheet','dn-sheet-overlay', closeDnSheet);
+  };
+
+  window.closeDnSheet = function(){
+    document.getElementById('dn-sheet-overlay').classList.remove('open');
+  };
+
+  window.saveDnSheet = async function(){
+    const dateKey = _dnDateKey();
+    if(!db||!coupleId||!dateKey) return;
+    const plan = {
+      where: document.getElementById('dn-sheet-where')?.value.trim()||'',
+      what: document.getElementById('dn-sheet-what')?.value.trim()||'',
+      who: document.getElementById('dn-sheet-who')?.value.trim()||'',
+      updatedAt: Date.now()
+    };
+    try{
+      await dbSet(dbRef(db,`couples/${coupleId}/datePlan/${dateKey}`), plan);
+      closeDnSheet();
+    }catch(e){ console.error('saveDnSheet failed:',e); }
+  };
+
+  let _dnCurrentPlan = {};
+
+  // ── Today's Plan Sheet ──────────────────────────────────────
+  window.openTpSheet = function(){
+    const inp = document.getElementById('tp-sheet-input');
+    const ctr = document.getElementById('tp-sheet-counter');
+    if(inp){ inp.value = _tpMyCurrentVal||''; }
+    if(ctr && inp) ctr.textContent = (inp.value.length)+'/150';
+    document.getElementById('tp-sheet-overlay').classList.add('open');
+    setTimeout(()=>inp?.focus(),100);
+    _initSheetSwipe('tp-sheet','tp-sheet-overlay', closeTpSheet);
+  };
+
+  window.closeTpSheet = function(){
+    document.getElementById('tp-sheet-overlay').classList.remove('open');
+  };
+
+  window.saveTpSheet = async function(){
+    if(!db||!coupleId||!myUid) return;
+    const today = _tpTodayKey();
+    const val = document.getElementById('tp-sheet-input')?.value.trim()||'';
+    try{
+      await dbSet(dbRef(db,`couples/${coupleId}/todaysPlan/${today}/${myUid}`), val);
+      closeTpSheet();
+    }catch(e){ console.error('saveTpSheet failed:',e); }
+  };
+
+  let _tpMyCurrentVal = '';
+
+  // ── Memory Jar Sheet ────────────────────────────────────────
+  window.openMjSheet = function(){
+    if(_mjMyEntry?.text) return; // already written today
+    const inp = document.getElementById('mj-sheet-input');
+    const ctr = document.getElementById('mj-sheet-counter');
+    if(inp){ inp.value = ''; }
+    if(ctr) ctr.textContent = '0/200';
+    document.getElementById('mj-sheet-overlay').classList.add('open');
+    setTimeout(()=>inp?.focus(),100);
+    _initSheetSwipe('mj-sheet','mj-sheet-overlay', closeMjSheet);
+  };
+
+  window.closeMjSheet = function(){
+    document.getElementById('mj-sheet-overlay').classList.remove('open');
+  };
+
+  window.saveMjSheet = async function(){
+    const inp = document.getElementById('mj-sheet-input');
+    const text = inp?.value.trim()||'';
+    if(!text||!db||!coupleId||!myUid) return;
+    if(_mjMyEntry?.text) return;
+    const saveBtn = document.getElementById('mj-sheet-save');
+    if(saveBtn) saveBtn.disabled = true;
+    const today = _mjTodayKey();
+    const entry = { text, createdAt: Date.now() };
+    try{
+      await dbSet(dbRef(db,`couples/${coupleId}/memoryJar/${today}/${myUid}`), entry);
+      closeMjSheet();
+    }catch(e){
+      console.error('saveMjSheet failed:',e);
+      if(saveBtn) saveBtn.disabled = false;
     }
   };
 
@@ -4317,6 +4760,33 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     _selectedActivity = myStatus?.activity||null;
     _selectedMood = myStatus?.mood||null;
     document.getElementById('status-sheet-overlay').classList.add('open');
+    // Wire swipe-to-dismiss on the status sheet handle
+    const sheet = document.getElementById('status-sheet-overlay')?.querySelector('.status-sheet');
+    const handle = sheet?.querySelector('.status-sheet-handle');
+    if(sheet && handle){
+      // Clean up previous listeners before adding new ones
+      if(handle._swipeCleanup) handle._swipeCleanup();
+      let startY=0, currentY=0, dragging=false;
+      const onStart=(e)=>{ startY=(e.touches?e.touches[0].clientY:e.clientY); dragging=true; sheet.style.transition='none'; };
+      const onMove=(e)=>{ if(!dragging)return; currentY=(e.touches?e.touches[0].clientY:e.clientY); const dy=Math.max(0,currentY-startY); sheet.style.transform=`translateY(${dy}px)`; if(e.cancelable)e.preventDefault(); };
+      const onEnd=()=>{ if(!dragging)return; dragging=false; sheet.style.transition='transform .25s ease'; const dy=Math.max(0,currentY-startY); if(dy>80){ sheet.style.transform='translateY(100%)'; setTimeout(()=>{ window.closeStatusSheet(); sheet.style.transform=''; sheet.style.transition=''; },250); } else { sheet.style.transform=''; setTimeout(()=>{ sheet.style.transition=''; },250); } };
+      handle.addEventListener('touchstart', onStart, {passive:true});
+      handle.addEventListener('touchmove', onMove, {passive:false});
+      handle.addEventListener('touchend', onEnd);
+      handle.addEventListener('mousedown', onStart);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+      // Remove previous listeners on next open
+      if(handle._swipeCleanup) handle._swipeCleanup();
+      handle._swipeCleanup = () => {
+        handle.removeEventListener('touchstart', onStart);
+        handle.removeEventListener('touchmove', onMove);
+        handle.removeEventListener('touchend', onEnd);
+        handle.removeEventListener('mousedown', onStart);
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+      };
+    }
   };
 
   window.closeStatusSheet = function(){
@@ -4359,6 +4829,144 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     statusRefreshInterval = setInterval(()=>{ renderStatusCard(); }, 60000);
   }
 
+  // ── LDR / TOGETHER MODE ────────────────────────────────────
+  let _coupleTypeUnsub = null;
+
+  // IDs to hide in Together mode
+  const TOGETHER_HIDE = ['home-dist-strip','sleep-my','sleep-other'];
+  const TOGETHER_HIDE_CARDS = ['map','my-time','other-time']; // handled by section heading
+
+  function applyMode(type){
+    coupleType = type;
+    const isLDR = type === 'ldr';
+    const isTogether = type === 'together';
+
+    // Map card + weather — hide in Together (just hide the whole map-card section)
+    const mapCard = document.querySelector('.home-map-card');
+    if(mapCard) mapCard.style.display = isLDR ? '' : 'none';
+
+    // "Where you are" heading — hide in Together
+    const whereHeading = document.querySelector('#panel-now .section-heading');
+    if(whereHeading && whereHeading.textContent.includes('Where')) whereHeading.style.display = isLDR ? '' : 'none';
+
+    // Clocks (grid-2 with my-time) — hide in Together
+    const clockGrid = document.getElementById('my-time')?.closest('.grid-2');
+    if(clockGrid) clockGrid.style.display = isLDR ? '' : 'none';
+
+    // "Right now" heading — hide in Together
+    const rightNowHeadings = document.querySelectorAll('#panel-now .section-heading');
+    rightNowHeadings.forEach(h=>{ if(h.textContent.includes('Right now')) h.style.display = isLDR ? '' : 'none'; });
+
+    // Distance strip — hide in Together
+    const distStrip = document.getElementById('home-dist-strip');
+    if(distStrip) distStrip.style.display = isLDR ? '' : 'none';
+
+    // Sleep indicators — hide in Together
+    ['sleep-my','sleep-other'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = isLDR ? '' : 'none';
+    });
+
+    // Countdown label — "Next meetup" vs "Next date night"
+    const cdLabel = document.querySelector('#panel-us .card-label');
+    if(cdLabel) cdLabel.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>${isLDR ? 'Next meetup' : 'Next date night'}`;
+
+    // Sidebar countdown label
+    const scdLabel = document.querySelector('.sidebar-cd-label');
+    if(scdLabel) scdLabel.textContent = isLDR ? 'Next meetup' : 'Next date night';
+
+    // Moments tab letter subtitle
+    const letterSub = document.getElementById('moments-letter-sub');
+    if(letterSub) letterSub.textContent = isLDR ? 'Sealed until you meet' : 'Sealed until your date night';
+
+    // Update settings toggle if visible
+    const settingsLdr = document.getElementById('settings-mode-ldr');
+    const settingsTog = document.getElementById('settings-mode-together');
+    if(settingsLdr) settingsLdr.classList.toggle('active', isLDR);
+    if(settingsTog) settingsTog.classList.toggle('active', isTogether);
+
+    // Letter page eyebrow
+    const eyebrow = document.getElementById('letter-page-eyebrow');
+    if(eyebrow) eyebrow.textContent = isLDR ? 'For the day we meet' : 'For our date night';
+
+    // Time picker — Together mode only
+    _showTimeInput && _showTimeInput(isTogether);
+
+    // Date night planner — Together mode only, only if meetupDate is set
+    const dnPlanner = document.getElementById('dn-planner');
+    if(dnPlanner){
+      const show = isTogether && !!meetupDate && meetupDate > new Date();
+      dnPlanner.classList.toggle('visible', show);
+      if(show) loadDnPlanner && loadDnPlanner();
+    }
+
+    // Today's plan — Together mode only
+    const todaysPlan = document.getElementById('todays-plan');
+    if(todaysPlan){
+      todaysPlan.classList.toggle('visible', isTogether);
+      if(isTogether) loadTodaysPlan && loadTodaysPlan();
+    }
+  }
+
+  function startCoupleTypeListener(){
+    if(_coupleTypeUnsub){ try{_coupleTypeUnsub();}catch(e){} _coupleTypeUnsub=null; }
+    if(!db||!coupleId) return;
+    _coupleTypeUnsub = fbOnValue(dbRef(db,`couples/${coupleId}/coupleType`), snap=>{
+      const type = snap.val()||'ldr';
+      applyMode(type);
+    });
+  }
+
+  window.selectCreateMode = function(mode){
+    document.getElementById('couple-type-input').value = mode;
+    document.getElementById('create-mode-ldr').classList.toggle('active', mode==='ldr');
+    document.getElementById('create-mode-together').classList.toggle('active', mode==='together');
+  };
+
+  window.selectSettingsMode = async function(mode){
+    if(!db||!coupleId) return;
+    if(mode === coupleType) return; // already in this mode
+
+    // Check if there's an active letter round or a date set
+    const hasDate = !!meetupDate && meetupDate > new Date();
+    const hasActiveRound = letterRounds && letterRounds.some(r => {
+      const ud = new Date(r.unlockDate);
+      return ud > new Date();
+    });
+    const needsPrompt = hasDate || hasActiveRound;
+
+    if(needsPrompt){
+      const modeLabel = mode === 'together' ? 'Living together' : 'Long distance';
+      const confirmed = window.confirm(
+        `Switch to ${modeLabel} mode?
+
+Your letters will be kept but your current date will be cleared. You can set a new one after switching.`
+      );
+      if(!confirmed){
+        // Re-sync toggle back to current mode
+        const ldrBtn = document.getElementById('settings-mode-ldr');
+        const togBtn = document.getElementById('settings-mode-together');
+        if(ldrBtn) ldrBtn.classList.toggle('active', coupleType==='ldr');
+        if(togBtn) togBtn.classList.toggle('active', coupleType==='together');
+        return;
+      }
+      // Clear the date
+      try{
+        await dbSet(dbRef(db,`couples/${coupleId}/meetupDate`), '');
+        meetupDate = null;
+        // Update countdown UI
+        if(window.startCountdown) startCountdown();
+        const input = document.getElementById('meetup-date-input');
+        if(input) input.value = '';
+      }catch(e){ console.error('clearMeetupDate failed:',e); }
+    }
+
+    try{
+      await dbSet(dbRef(db,`couples/${coupleId}/coupleType`), mode);
+      // Listener fires on both devices automatically
+    }catch(e){ console.error('selectSettingsMode failed:',e); }
+  };;
+
   window.doSignOut = async function(){
     if(fbAuth && fbAuth.signOut){
       await fbAuth.signOut();
@@ -4368,7 +4976,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       myStatus=null;otherStatus=null;
       if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
       if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
+      if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+      if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
+      if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
       _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
+      coupleType='ldr';
       myCity=null;otherCity=null;myCoords=null;otherCoords=null;
       myTz=null;otherTz=null;
       coupleStartDate=null;coupleMeetupDate=null;meetupDate=null;
@@ -4485,6 +5097,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         renderStatusCard&&renderStatusCard();
         startStatusRefresh&&startStatusRefresh();
         _mjLoadAndRender&&_mjLoadAndRender();
+        applyMode&&applyMode(coupleType);
       });
       // Milestones
       if(unsubMilestones)unsubMilestones();
@@ -4567,5 +5180,53 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       });
     }
   </script>
+  <!-- ── Date Night Sheet ──────────────────────────────── -->
+  <div class="together-sheet-overlay" id="dn-sheet-overlay" onclick="if(event.target===this)closeDnSheet()">
+    <div class="together-sheet" id="dn-sheet">
+      <div class="together-sheet-handle" id="dn-sheet-handle"></div>
+      <div class="together-sheet-title">Date night plan</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Where are you going?</label>
+        <input class="together-sheet-input" id="dn-sheet-where" placeholder="Restaurant, place…" maxlength="100" type="text"/>
+        <label class="together-sheet-label">What are you doing?</label>
+        <input class="together-sheet-input" id="dn-sheet-what" placeholder="Dinner, cinema, walk…" maxlength="100" type="text"/>
+        <label class="together-sheet-label">Who's booking?</label>
+        <input class="together-sheet-input" id="dn-sheet-who" placeholder="Name or both of you" maxlength="60" type="text"/>
+      </div>
+      <button class="together-sheet-save" onclick="saveDnSheet()">Save plan</button>
+      <button class="together-sheet-cancel" onclick="closeDnSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Today's Plan Sheet ─────────────────────────────── -->
+  <div class="together-sheet-overlay" id="tp-sheet-overlay" onclick="if(event.target===this)closeTpSheet()">
+    <div class="together-sheet" id="tp-sheet">
+      <div class="together-sheet-handle" id="tp-sheet-handle"></div>
+      <div class="together-sheet-title">Today's plan</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">What's your plan for today?</label>
+        <textarea class="together-sheet-input together-sheet-textarea" id="tp-sheet-input" placeholder="What are you up to today?" maxlength="150" oninput="document.getElementById('tp-sheet-counter').textContent=this.value.length+'/150'"></textarea>
+        <div class="together-sheet-counter" id="tp-sheet-counter">0/150</div>
+      </div>
+      <button class="together-sheet-save" onclick="saveTpSheet()">Save plan</button>
+      <button class="together-sheet-cancel" onclick="closeTpSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Memory Jar Sheet ───────────────────────────────── -->
+  <div class="together-sheet-overlay" id="mj-sheet-overlay" onclick="if(event.target===this)closeMjSheet()">
+    <div class="together-sheet" id="mj-sheet">
+      <div class="together-sheet-handle" id="mj-sheet-handle"></div>
+      <div class="together-sheet-title">Today's memory</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Something that made you smile today…</label>
+        <textarea class="together-sheet-input together-sheet-textarea" id="mj-sheet-input" placeholder="Your moment for today…" maxlength="200" oninput="document.getElementById('mj-sheet-counter').textContent=this.value.length+'/200'"></textarea>
+        <div class="together-sheet-counter" id="mj-sheet-counter">0/200</div>
+      </div>
+      <button class="together-sheet-save" id="mj-sheet-save" onclick="saveMjSheet()">Save memory</button>
+      <button class="together-sheet-cancel" onclick="closeMjSheet()">Cancel</button>
+    </div>
+  </div>
+
 </body>
 </html>
