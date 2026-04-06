@@ -772,6 +772,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .mj-day-date{font-size:.72rem;font-weight:600;color:var(--text);}
   .mj-day-badge{font-size:.52rem;color:var(--muted);}
   .mj-day-badge.both{color:var(--k);}
+  /* ── Memory jar month grouping ────────────────────────── */
+  .mj-month-group{margin-bottom:.75rem;}
+  .mj-month-header{display:flex;align-items:center;justify-content:space-between;padding:.55rem .9rem;background:var(--surface);border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:opacity .2s;margin-bottom:.4rem;user-select:none;}
+  .mj-month-header:hover{opacity:.8;}
+  .mj-month-name{font-size:.72rem;font-weight:600;color:var(--text);}
+  .mj-month-meta{font-size:.58rem;color:var(--muted);}
+  .mj-month-arrow{font-size:.8rem;color:var(--muted);transition:transform .25s;}
+  .mj-month-arrow.open{transform:rotate(90deg);}
+  .mj-month-days{display:none;}
+  .mj-month-days.open{display:block;}
   </style>
 </head>
 <body>
@@ -4032,28 +4042,27 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       renderMemoryJarPage();
     });
 
-    // Calculate streak — read last 30 days and count consecutive days both wrote
+    // Calculate streak — lenient: today is skipped if incomplete (still in progress)
     try{
       await new Promise(res=>fbOnValue(dbRef(db,`couples/${coupleId}/memoryJar`), snap=>{
         const all = snap.val()||{};
-        const keys = Object.keys(all).sort().reverse(); // newest first
         let streak = 0;
         const todayKey = _mjTodayKey();
-        // Check each of last 30 days
-        for(let i=0; i<30; i++){
+        for(let i=0; i<365; i++){
           const d = new Date();
           d.setDate(d.getDate()-i);
           const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           const dayData = all[key]||{};
           const bothWrote = dayData[myUid]?.text && dayData[partnerUid]?.text;
-          if(key===todayKey){
-            // Today counts only if both wrote
+          if(key === todayKey){
+            // Today: if both wrote count it; if only one wrote, skip today (still in progress) and check yesterday
             if(bothWrote) streak++;
-            else if(i===0) continue; // today not done yet, check yesterday
-          } else {
-            if(bothWrote) streak++;
-            else break; // streak broken
+            // either way continue to yesterday — today being incomplete doesn't break streak
+            continue;
           }
+          // Past days: both must have written, otherwise streak is broken
+          if(bothWrote) streak++;
+          else break;
         }
         _mjStreakCount = streak;
         res();
@@ -4070,51 +4079,88 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const histEl = document.getElementById('mj-history-list');
     if(!histEl) return;
     const today = _mjTodayKey();
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
 
     fbOnValue(dbRef(db,`couples/${coupleId}/memoryJar`), snap=>{
       const all = snap.val()||{};
       const pastKeys = Object.keys(all)
         .filter(k=>k!==today)
-        .sort().reverse(); // newest first
+        .sort().reverse();
 
       if(!pastKeys.length){
         histEl.innerHTML = '<p class="empty">No earlier memories yet — start writing!</p>';
         return;
       }
 
-      histEl.innerHTML = pastKeys.slice(0,60).map(dateKey=>{
-        const dayData = all[dateKey]||{};
-        const myEntry = dayData[myUid];
-        const otherEntry = dayData[partnerUid];
-        const count = (myEntry?.text?1:0)+(otherEntry?.text?1:0);
-        const badge = count===2?'both wrote':count===1?'1 of 2':'';
-        const badgeClass = count===2?'mj-day-badge both':'mj-day-badge';
+      // Group by YYYY-MM
+      const byMonth = {};
+      pastKeys.forEach(dateKey=>{
+        const monthKey = dateKey.substring(0,7); // YYYY-MM
+        if(!byMonth[monthKey]) byMonth[monthKey]=[];
+        byMonth[monthKey].push(dateKey);
+      });
 
-        const meRow = myEntry?.text
-          ? `<div class="mj-entry-row">
-              <div class="mj-avatar mj-avatar-me">${(ME||'?')[0].toUpperCase()}</div>
-              <div style="flex:1;"><div class="mj-entry-text">${_mjEscape(myEntry.text)}</div>
-              <div class="mj-entry-meta">${ME} · ${_mjFmtTime(myEntry.createdAt)}</div></div>
-             </div>`
-          : '';
-        const otherRow = otherEntry?.text
-          ? `<div class="mj-entry-row">
-              <div class="mj-avatar mj-avatar-other">${(OTHER||'?')[0].toUpperCase()}</div>
-              <div style="flex:1;"><div class="mj-entry-text">${_mjEscape(otherEntry.text)}</div>
-              <div class="mj-entry-meta">${OTHER} · ${_mjFmtTime(otherEntry.createdAt)}</div></div>
-             </div>`
-          : '';
+      const monthKeys = Object.keys(byMonth).sort().reverse();
+      const isCurrentMonth = (mk) => {
+        const t = new Date();
+        return mk === `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
+      };
 
-        return `<div class="mj-day-card">
-          <div class="mj-day-header">
-            <span class="mj-day-date">${_mjFmtDate(dateKey)}</span>
-            <span class="${badgeClass}">${badge}</span>
+      histEl.innerHTML = monthKeys.map((monthKey, mIdx)=>{
+        const [yr, mo] = monthKey.split('-');
+        const monthName = `${MONTHS[parseInt(mo)-1]} ${yr}`;
+        const days = byMonth[monthKey];
+        const totalDays = days.length;
+        const bothCount = days.filter(dk=>{
+          const dd = all[dk]||{};
+          return dd[myUid]?.text && dd[partnerUid]?.text;
+        }).length;
+        const isOpen = mIdx === 0; // most recent month open by default
+        const groupId = `mj-month-${monthKey.replace('-','_')}`;
+
+        const dayCards = days.map(dateKey=>{
+          const dayData = all[dateKey]||{};
+          const myEntry = dayData[myUid];
+          const otherEntry = dayData[partnerUid];
+          const count = (myEntry?.text?1:0)+(otherEntry?.text?1:0);
+          const badge = count===2?'both wrote ✓':count===1?'1 of 2':'';
+          const badgeClass = count===2?'mj-day-badge both':'mj-day-badge';
+          const meRow = myEntry?.text
+            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-me">${(ME||'?')[0].toUpperCase()}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(myEntry.text)}</div><div class="mj-entry-meta">${ME} · ${_mjFmtTime(myEntry.createdAt)}</div></div></div>`
+            : '';
+          const otherRow = otherEntry?.text
+            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-other">${(OTHER||'?')[0].toUpperCase()}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(otherEntry.text)}</div><div class="mj-entry-meta">${OTHER} · ${_mjFmtTime(otherEntry.createdAt)}</div></div></div>`
+            : '';
+          return `<div class="mj-day-card"><div class="mj-day-header"><span class="mj-day-date">${_mjFmtDate(dateKey)}</span><span class="${badgeClass}">${badge}</span></div>${meRow}${otherRow}</div>`;
+        }).join('');
+
+        const metaText = `${totalDays} day${totalDays!==1?'s':''} · both wrote ${bothCount} time${bothCount!==1?'s':''}`;
+
+        return `<div class="mj-month-group">
+          <div class="mj-month-header" onclick="window._mjToggleMonth('${groupId}')">
+            <div>
+              <div class="mj-month-name">${monthName}</div>
+              <div class="mj-month-meta">${metaText}</div>
+            </div>
+            <span class="mj-month-arrow${isOpen?' open':''}" id="${groupId}-arrow">›</span>
           </div>
-          ${meRow}${otherRow}
+          <div class="mj-month-days${isOpen?' open':''}" id="${groupId}">
+            ${dayCards}
+          </div>
         </div>`;
       }).join('');
     },{onlyOnce:true});
   }
+
+  window._mjToggleMonth = function(groupId){
+    const days = document.getElementById(groupId);
+    const arrow = document.getElementById(groupId+'-arrow');
+    if(!days||!arrow) return;
+    const isOpen = days.classList.contains('open');
+    days.classList.toggle('open', !isOpen);
+    arrow.classList.toggle('open', !isOpen);
+  };
 
   function _mjEscape(str){
     return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
