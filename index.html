@@ -668,12 +668,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .timeline-end::before{content:'';position:absolute;left:3px;top:50%;transform:translateY(-50%);width:2px;height:10px;background:linear-gradient(180deg,rgba(232,98,42,0.2),transparent);border-radius:2px}
   2),transparent);border-radius:2px}
   /* ── Settings ───────────────────────────────────────────── */
-  .settings-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:.85rem 1rem;margin-bottom:.6rem;}
-  .settings-row{margin-bottom:.6rem;}
+  .settings-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:.85rem 1rem .75rem;margin-bottom:.6rem;}
+  .settings-row{margin-bottom:.5rem;}
+  .settings-row:last-of-type{margin-bottom:0;}
   .settings-label{display:block;font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;}
   .settings-input{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);background:var(--bg);outline:none;box-sizing:border-box;transition:border-color .2s;}
   .settings-input:focus{border-color:var(--k);}
-  .settings-btn{display:inline-flex;align-items:center;padding:.38rem .95rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:600;cursor:pointer;margin-top:.4rem;transition:opacity .2s;}
+  .settings-btn{display:inline-flex;align-items:center;padding:.38rem .95rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:600;cursor:pointer;margin-top:.55rem;transition:opacity .2s;}
   .settings-btn:hover{opacity:.88;}
   .settings-btn:disabled{opacity:.45;cursor:not-allowed;}
   .settings-success{font-size:.62rem;color:var(--green,#2a9d5c);margin:.3rem 0 0;display:none;}
@@ -1610,7 +1611,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         currentUser: null,
         createUserWithEmailAndPassword:(email,pw)=>createUserWithEmailAndPassword(auth,email,pw),
         signInWithEmailAndPassword:(email,pw)=>signInWithEmailAndPassword(auth,email,pw),
-        signOut:()=>signOut(auth)
+        signOut:()=>signOut(auth),
+        sendPasswordResetEmail:(email)=>sendPasswordResetEmail(auth,email),
+        updatePassword:(user,pw)=>updatePassword(user,pw),
+        updateEmail:(user,email)=>updateEmail(user,email),
+        reauthenticateWithCredential:(user,cred)=>reauthenticateWithCredential(user,cred),
+        EmailAuthProvider: EmailAuthProvider
       };
       // Watch auth state
       onAuthStateChanged(auth, async user=>{
@@ -3322,7 +3328,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(!email){ err.textContent = 'Please enter your email address.'; return; }
     btn.textContent = 'Sending…'; btn.disabled = true;
     try{
-      await sendPasswordResetEmail(fbAuth, email);
+      await fbAuth.sendPasswordResetEmail(email);
       success.textContent = 'Reset link sent! Check your inbox (and spam folder).';
       success.style.display = 'block';
       btn.textContent = 'Send reset link'; btn.disabled = false;
@@ -3448,10 +3454,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     btn.textContent = 'Changing…'; btn.disabled = true;
     try{
       // Re-authenticate first
-      const credential = EmailAuthProvider.credential(fbAuth.currentUser.email, currentPw);
-      await reauthenticateWithCredential(fbAuth.currentUser, credential);
+      const credential = fbAuth.EmailAuthProvider.credential(fbAuth.currentUser.email, currentPw);
+      await fbAuth.reauthenticateWithCredential(fbAuth.currentUser, credential);
       // Update password
-      await updatePassword(fbAuth.currentUser, newPw);
+      await fbAuth.updatePassword(fbAuth.currentUser, newPw);
       success.textContent = 'Password changed successfully ✓';
       success.style.display = 'block';
       // Clear fields
@@ -3485,10 +3491,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     btn.textContent = 'Changing…'; btn.disabled = true;
     try{
       // Re-authenticate first
-      const credential = EmailAuthProvider.credential(fbAuth.currentUser.email, pw);
-      await reauthenticateWithCredential(fbAuth.currentUser, credential);
+      const credential = fbAuth.EmailAuthProvider.credential(fbAuth.currentUser.email, pw);
+      await fbAuth.reauthenticateWithCredential(fbAuth.currentUser, credential);
       // Update email in Firebase Auth
-      await updateEmail(fbAuth.currentUser, newEmail);
+      await fbAuth.updateEmail(fbAuth.currentUser, newEmail);
       // Update email in DB
       await dbSet(dbRef(db, `users/${myUid}/email`), newEmail);
       success.textContent = "Done! Check your new inbox for a verification link — your email won't update until you verify it. ✓";
