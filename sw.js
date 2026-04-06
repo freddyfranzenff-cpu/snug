@@ -1,6 +1,6 @@
 // ── Your Little Corner — Service Worker ──────────────────
 // Version: bump this string to force all clients to update
-const CACHE_VERSION = 'ylc-v14';
+const CACHE_VERSION = 'ylc-v15';
 
 // App shell — these files are cached on first install
 // and served from cache on every subsequent load (cache-first)
