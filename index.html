@@ -3462,7 +3462,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       await updateEmail(fbAuth.currentUser, newEmail);
       // Update email in DB
       await dbSet(dbRef(db, `users/${myUid}/email`), newEmail);
-      success.textContent = 'Done! Check your new inbox for a verification link — your email won't update until you verify it. ✓';
+      success.textContent = "Done! Check your new inbox for a verification link — your email won't update until you verify it. ✓";
       success.style.display = 'block';
       ['settings-new-email','settings-email-pw'].forEach(id=>{
         const el = document.getElementById(id); if(el) el.value = '';
