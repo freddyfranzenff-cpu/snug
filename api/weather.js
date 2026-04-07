@@ -1,28 +1,34 @@
-import https from 'https';
-
-export default async function handler(req, res) {
-  const { lat, lng } = req.query;
+export const config = { runtime: 'edge' };
+ 
+export default async function handler(req) {
+  const { searchParams } = new URL(req.url);
+  const lat = searchParams.get('lat');
+  const lng = searchParams.get('lng');
+ 
   if (!lat || !lng) {
-    return res.status(400).json({ error: 'lat and lng required' });
-  }
-
-  const path = `/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
-
-  try {
-    const data = await new Promise((resolve, reject) => {
-      https.get(`https://api.open-meteo.com${path}`, (r) => {
-        let body = '';
-        r.on('data', chunk => body += chunk);
-        r.on('end', () => {
-          try { resolve(JSON.parse(body)); }
-          catch(e) { reject(new Error('Invalid JSON from open-meteo')); }
-        });
-      }).on('error', reject);
+    return new Response(JSON.stringify({ error: 'lat and lng required' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
     });
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
-    return res.status(200).json(data);
+  }
+ 
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
+    const r = await fetch(url);
+    const data = await r.json();
+ 
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 's-maxage=600, stale-while-revalidate'
+      }
+    });
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
