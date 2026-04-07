@@ -1,6 +1,6 @@
 // ── Your Little Corner — Service Worker ──────────────────
 // Version: bump this string to force all clients to update
-const CACHE_VERSION = 'ylc-v38';
+const CACHE_VERSION = 'ylc-v39';
 
 // App shell — these files are cached on first install
 // and served from cache on every subsequent load (cache-first)
@@ -68,10 +68,11 @@ self.addEventListener('fetch', event => {
     return; // fall through to network
   }
 
-  // ── 2. Never intercept weather API ────────────────────
+  // ── 2. Never intercept weather API or Vercel functions ─
   if (url.hostname.includes('open-meteo.com') ||
       url.hostname.includes('nominatim.openstreetmap.org') ||
-      url.hostname.includes('timeapi.io')) {
+      url.hostname.includes('timeapi.io') ||
+      url.pathname.startsWith('/api/')) {
     return; // always fresh
   }
 
