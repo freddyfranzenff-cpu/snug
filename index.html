@@ -750,7 +750,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .mj-streak{font-size:.62rem;font-weight:600;color:var(--k);}
   .mj-entry-row{display:flex;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);align-items:flex-start;}
   .mj-entry-row:last-of-type{border-bottom:none;}
-  .mj-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0;margin-top:.1rem;}
+  .mj-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0;margin-top:.1rem;overflow:hidden;}
   .mj-avatar-me{background:rgba(232,98,42,0.15);color:var(--k);}
   .mj-avatar-other{background:rgba(124,58,237,0.12);color:#7c3aed;}
   .mj-entry-text{font-size:.72rem;color:var(--text);line-height:1.45;flex:1;}
@@ -810,7 +810,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .todays-plan-label{font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
   .tp-entry-row{display:flex;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);align-items:flex-start;}
   .tp-entry-row:last-of-type{border-bottom:none;}
-  .tp-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0;margin-top:.1rem;}
+  .tp-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:600;flex-shrink:0;margin-top:.1rem;overflow:hidden;}
   .tp-avatar-me{background:rgba(232,98,42,0.15);color:var(--k);}
   .tp-avatar-other{background:rgba(124,58,237,0.12);color:#7c3aed;}
   .tp-input{flex:1;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);outline:none;resize:none;line-height:1.4;}
@@ -842,6 +842,37 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .tp-display-row:last-of-type{border-bottom:none;}
   .tp-display-value{font-size:.75rem;color:var(--text);flex:1;line-height:1.4;}
   .tp-display-empty{font-size:.72rem;color:var(--muted);font-style:italic;flex:1;}
+  /* ── Settings redesign ─────────────────────────────── */
+  .settings-section-heading{font-size:.48rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:1.25rem 0 .5rem;padding:0;}
+  .settings-section-heading:first-of-type{margin-top:0;}
+  .settings-group{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.1rem;}
+  .settings-row-new{display:flex;align-items:center;gap:.85rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+  .settings-row-new:last-child{border-bottom:none;}
+  .settings-row-new.tappable{cursor:pointer;}
+  .settings-row-new.tappable:active{background:var(--kll);}
+  .settings-row-label{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
+  .settings-row-value{font-size:.8rem;color:var(--text);}
+  .settings-row-muted{font-size:.72rem;color:var(--muted);}
+  .settings-row-desc{font-size:.65rem;color:var(--muted);margin-top:.2rem;line-height:1.5;}
+  .settings-badge{font-size:.52rem;padding:.15rem .5rem;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+  .settings-badge-muted{background:var(--kll);color:var(--muted);}
+  .settings-badge-accent{background:rgba(232,98,42,0.1);color:var(--k);}
+  .settings-chevron{flex-shrink:0;opacity:.4;}
+  .settings-expandable{display:none;padding:.75rem 1rem;border-top:1px solid var(--border);background:var(--bg);}
+  .settings-expandable.open{display:block;}
+  /* Avatar */
+  .settings-avatar-wrap{width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer;}
+  .settings-avatar-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .settings-avatar-initials{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:600;flex-shrink:0;}
+  .settings-avatar-me{background:rgba(232,98,42,0.12);color:var(--k);}
+  /* Photo in status + todays plan + mj */
+  .avatar-img-circle{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+  /* ── Sidebar mode pill ──────────────────────────── */
+  .mode-pill{display:inline-flex;align-items:center;gap:.3rem;margin:.7rem 1.4rem 0;
+    background:rgba(232,98,42,0.08);border:1px solid rgba(232,98,42,0.2);
+    border-radius:20px;padding:.17rem .55rem;font-size:.58rem;letter-spacing:.06em;
+    color:var(--k);font-weight:500;transition:background .15s;}
+  .mode-pill:hover{background:rgba(232,98,42,0.14);}
   </style>
 </head>
 <body>
@@ -908,6 +939,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <p class="login-eyebrow">almost there</p>
     <h1 class="login-title">Tell us about <em>you</em></h1>
     <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.25rem;">Just a few details to personalise your Snug.</p>
+
+    <!-- Avatar upload — optional -->
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1.25rem;">
+      <div id="onboard-avatar-wrap" onclick="window.triggerOnboardAvatarUpload()"
+           style="width:72px;height:72px;border-radius:50%;background:rgba(232,98,42,0.1);
+                  border:2px dashed rgba(232,98,42,0.3);display:flex;align-items:center;
+                  justify-content:center;cursor:pointer;overflow:hidden;position:relative;
+                  transition:border-color .2s;flex-shrink:0;">
+        <span id="onboard-avatar-icon" style="font-size:1.5rem;">🙂</span>
+        <img id="onboard-avatar-preview" src="" alt="" style="display:none;position:absolute;
+             inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+      </div>
+      <p id="onboard-avatar-hint" style="font-size:.6rem;color:var(--muted);margin-top:.5rem;">
+        Add a photo <span style="opacity:.6;">(optional)</span>
+      </p>
+      <input type="file" id="onboard-avatar-input" accept="image/*" style="display:none;"
+             onchange="window.handleOnboardAvatarUpload(this)"/>
+    </div>
+
     <label class="auth-label">Your first name</label>
     <input type="text" class="auth-field" id="onboard-name" placeholder="e.g. Freddy" autocomplete="given-name"/>
     <label class="auth-label">Your city</label>
@@ -920,6 +970,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <div class="auth-screen-card" id="screen-linking" style="display:none;">
     <p class="login-eyebrow">link with your partner</p>
     <h1 class="login-title">Find your <em>Snug</em></h1>
+    <!-- Shown when partner deletes the couple -->
+    <div id="linking-deleted-msg" style="display:none;background:rgba(192,57,43,0.07);border:1px solid rgba(192,57,43,0.2);border-radius:12px;padding:.75rem .9rem;margin-bottom:1rem;">
+      <p style="font-size:.7rem;font-weight:500;color:#c0392b;margin:0 0 .2rem;">Your Snug has ended</p>
+      <p style="font-size:.63rem;color:var(--muted);margin:0;line-height:1.5;">Your partner has deleted this Snug. You can start a new one below.</p>
+    </div>
 
     <!-- Join existing couple — shown first, highlighted when code present -->
     <div id="linking-join-section">
@@ -949,6 +1004,34 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
       <input type="hidden" id="couple-type-input" value="ldr"/>
       <button class="auth-submit-btn" style="background:var(--surface);color:var(--k);border:1.5px solid var(--border);" onclick="doCreateCouple()" id="create-couple-btn">Create our Snug</button>
+    </div>
+
+    <!-- Delete account option — only shown for existing accounts, not during onboarding -->
+    <div id="linking-delete-wrap" style="display:none;margin-top:1.5rem;text-align:center;">
+      <button onclick="window.toggleLinkingDeleteConfirm()" style="background:none;border:none;font-size:.62rem;color:var(--muted);cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px;opacity:.7;">
+        Want to delete your account instead?
+      </button>
+    </div>
+    <div id="linking-delete-confirm" style="display:none;margin-top:.75rem;background:var(--surface);border:1px solid rgba(192,57,43,0.25);border-radius:14px;padding:.85rem .9rem;">
+      <p style="font-size:.68rem;font-weight:500;color:var(--text);margin:0 0 .3rem;">Delete your account?</p>
+      <p style="font-size:.62rem;color:var(--muted);line-height:1.6;margin:0 0 .6rem;">This will permanently delete your account and all your data. This cannot be undone.</p>
+      <p style="font-size:.62rem;color:var(--muted);margin:0 0 .35rem;">Type <strong>DELETE</strong> to confirm:</p>
+      <input type="text" id="linking-delete-input" class="auth-field" placeholder="DELETE"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             style="margin-bottom:.4rem;letter-spacing:.05em;"/>
+      <p style="font-size:.62rem;color:var(--muted);margin:0 0 .35rem;">Enter your password:</p>
+      <input type="password" id="linking-delete-pw" class="auth-field" placeholder="Your password"
+             autocomplete="current-password"
+             style="margin-bottom:.5rem;"/>
+      <p class="auth-field-error" id="linking-delete-error" style="margin-bottom:.35rem;"></p>
+      <button id="linking-delete-btn" onclick="window.doLinkingDeleteAccount()"
+              style="display:block;width:100%;padding:.55rem;border-radius:10px;border:1px solid rgba(192,57,43,0.3);background:rgba(192,57,43,0.07);color:#c0392b;font-family:inherit;font-size:.75rem;cursor:pointer;margin-bottom:.4rem;">
+        Delete my account
+      </button>
+      <button onclick="window.toggleLinkingDeleteConfirm()"
+              style="display:block;width:100%;background:none;border:none;font-size:.65rem;color:var(--muted);cursor:pointer;padding:.25rem;font-family:inherit;">
+        Cancel
+      </button>
     </div>
   </div>
 
@@ -989,7 +1072,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <p class="sidebar-title" id="sidebar-couple-name">Snug</p>
     <svg class="sidebar-ornament" width="90" height="10" viewBox="0 0 90 10"><line x1="0" y1="5" x2="34" y2="5" stroke="#f0956a" stroke-width=".6"/><circle cx="45" cy="5" r="2.5" fill="none" stroke="#f0956a" stroke-width=".6"/><circle cx="45" cy="5" r="1" fill="#f0956a"/><line x1="56" y1="5" x2="90" y2="5" stroke="#f0956a" stroke-width=".6"/></svg>
   </div>
-  <div class="user-badge"><div class="user-dot"></div><span class="user-name" id="sidebar-user">—</span></div><button id="register-bio-btn" onclick="registerThisDevice()" style="display:none;margin:.5rem 1.4rem 0;background:none;border:1px solid rgba(232,98,42,0.2);border-radius:8px;padding:.3rem .75rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;width:calc(100% - 2.8rem);text-align:left;transition:all .2s;" onmouseover="this.style.borderColor='rgba(232,98,42,0.5)';this.style.color='var(--k)'" onmouseout="this.style.borderColor='rgba(232,98,42,0.2)';this.style.color='var(--muted)'">⬡ Register fingerprint</button>
+  <div class="mode-pill" id="sidebar-mode-pill" onclick="window.showPage&&window.showPage('settings')" style="cursor:pointer;">📍 Long distance</div><button id="register-bio-btn" onclick="registerThisDevice()" style="display:none;margin:.5rem 1.4rem 0;background:none;border:1px solid rgba(232,98,42,0.2);border-radius:8px;padding:.3rem .75rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;width:calc(100% - 2.8rem);text-align:left;transition:all .2s;" onmouseover="this.style.borderColor='rgba(232,98,42,0.5)';this.style.color='var(--k)'" onmouseout="this.style.borderColor='rgba(232,98,42,0.2)';this.style.color='var(--muted)'">⬡ Register fingerprint</button>
   <nav class="sidebar-nav">
     <p class="nav-section-label">Navigate</p>
     <button class="nav-item active" id="nav-home" onclick="showPage('home')"><svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6.5L8 2l6 4.5V14H2V6.5z"/></svg>Home</button>
@@ -1588,73 +1671,187 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <!-- SETTINGS PAGE -->
   <div class="page" id="page-settings">
     <div class="page-header">
-      <h1 class="page-title">Your <em>settings</em></h1>
+      <div><p class="page-eyebrow">Your account</p><h1 class="page-title">Your <em>settings</em></h1></div>
     </div>
 
-    <!-- Relationship mode -->
-    <div class="section-heading">Relationship</div>
-    <div class="settings-card">
-      <div class="settings-row">
-        <label class="settings-label">Your relationship type</label>
+    <!-- PROFILE -->
+    <p class="settings-section-heading">Profile</p>
+    <div class="settings-group">
+
+      <!-- Avatar row -->
+      <div class="settings-row-new" onclick="window.triggerAvatarUpload()" style="cursor:pointer;">
+        <div class="settings-avatar-wrap settings-avatar-me settings-avatar-initials" id="settings-avatar-wrap">
+          <span id="settings-avatar-initial">F</span>
+          <img id="settings-avatar-img" class="settings-avatar-img" src="" style="display:none;position:absolute;inset:0;"/>
+        </div>
+        <div style="flex:1;">
+          <div class="settings-row-label">Profile photo</div>
+          <div class="settings-row-muted" id="settings-avatar-hint">Tap to upload a photo</div>
+        </div>
+        <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 12l4-4-4-4"/></svg>
+        <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="window.handleAvatarUpload(this)"/>
+      </div>
+
+      <!-- Name row -->
+      <div class="settings-row-new">
+        <div style="flex:1;">
+          <div class="settings-row-label">Name</div>
+          <input type="text" class="settings-input" id="settings-name" placeholder="Your first name" autocomplete="given-name" onblur="window.autoSaveName(this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="border:none;background:none;padding:0 0 0 1px;font-size:.8rem;color:var(--text);width:100%;outline:none;font-family:inherit;"/>
+        </div>
+      </div>
+
+      <!-- Email row -->
+      <div class="settings-row-new">
+        <div style="flex:1;">
+          <div class="settings-row-label">Email</div>
+          <div class="settings-row-value" id="settings-email-display">—</div>
+        </div>
+        <span class="settings-badge settings-badge-accent">read-only</span>
+      </div>
+
+      <!-- City row -->
+      <div class="settings-row-new">
+        <div style="flex:1;">
+          <div class="settings-row-label">Current city</div>
+          <div class="settings-row-value" id="settings-city-display">—</div>
+        </div>
+        <span class="settings-badge settings-badge-muted">GPS only</span>
+      </div>
+
+    </div>
+
+    <!-- Profile feedback (auto-save) -->
+    <p class="auth-field-error" id="settings-profile-error" style="margin-bottom:.4rem;"></p>
+    <p id="settings-profile-success" style="display:none;font-size:.65rem;color:var(--green);margin-bottom:.4rem;"></p>
+
+    <!-- SECURITY -->
+    <p class="settings-section-heading">Security</p>
+    <div class="settings-group">
+
+      <!-- Change password -->
+      <div class="settings-row-new tappable" onclick="window.toggleSettingsExpand('expand-pw')">
+        <div style="flex:1;">
+          <div class="settings-row-value" style="font-weight:500;">Change password</div>
+          <div class="settings-row-muted">Requires current password</div>
+        </div>
+        <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 12l4-4-4-4"/></svg>
+      </div>
+      <div class="settings-expandable" id="expand-pw">
+        <div class="settings-row" style="padding:0 0 .5rem;">
+          <label class="settings-label">Current password</label>
+          <input type="password" class="settings-input" id="settings-current-pw" placeholder="Current password" autocomplete="current-password"/>
+        </div>
+        <div class="settings-row" style="padding:0 0 .5rem;">
+          <label class="settings-label">New password</label>
+          <input type="password" class="settings-input" id="settings-new-pw" placeholder="New password" autocomplete="new-password"/>
+        </div>
+        <div class="settings-row" style="padding:0 0 .5rem;">
+          <label class="settings-label">Confirm new password</label>
+          <input type="password" class="settings-input" id="settings-confirm-pw" placeholder="Confirm new password" autocomplete="new-password"/>
+        </div>
+        <p class="auth-field-error" id="settings-pw-error"></p>
+        <p id="settings-pw-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
+        <button class="settings-btn" id="btn-save-password" onclick="savePasswordSettings()">Change password</button>
+      </div>
+
+      <!-- Change email -->
+      <div class="settings-row-new tappable" onclick="window.toggleSettingsExpand('expand-email')">
+        <div style="flex:1;">
+          <div class="settings-row-value" style="font-weight:500;">Change email</div>
+          <div class="settings-row-muted">Requires current password</div>
+        </div>
+        <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 12l4-4-4-4"/></svg>
+      </div>
+      <div class="settings-expandable" id="expand-email">
+        <div class="settings-row" style="padding:0 0 .5rem;">
+          <label class="settings-label">New email address</label>
+          <input type="email" class="settings-input" id="settings-new-email" placeholder="New email address" autocomplete="email"/>
+        </div>
+        <div class="settings-row" style="padding:0 0 .5rem;">
+          <label class="settings-label">Current password</label>
+          <input type="password" class="settings-input" id="settings-email-pw" placeholder="Confirm with your password" autocomplete="current-password"/>
+        </div>
+        <p class="auth-field-error" id="settings-email-error"></p>
+        <p id="settings-email-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
+        <button class="settings-btn" id="btn-save-email" onclick="saveEmailSettings()">Change email</button>
+      </div>
+
+    </div>
+
+    <!-- YOUR SNUG -->
+    <p class="settings-section-heading">Your Snug</p>
+    <div class="settings-group">
+
+      <!-- Relationship type -->
+      <div class="settings-row-new" style="flex-direction:column;align-items:stretch;">
+        <div class="settings-row-label" style="margin-bottom:.5rem;">Relationship type</div>
         <div class="mode-toggle">
           <button class="mode-toggle-btn active" id="settings-mode-ldr" onclick="selectSettingsMode('ldr')">📍 Long distance</button>
           <button class="mode-toggle-btn" id="settings-mode-together" onclick="selectSettingsMode('together')">🏠 Living together</button>
         </div>
-        <p style="font-size:.58rem;color:var(--muted);margin-top:.4rem;line-height:1.5;">Switching modes updates the app for both of you instantly.</p>
+        <div class="settings-row-desc">Updates instantly for both of you.</div>
+      </div>
+
+      <!-- Together since -->
+      <div class="settings-row-new">
+        <div style="flex:1;">
+          <div class="settings-row-label">Together since</div>
+          <input type="date" class="settings-input" id="settings-start-date" onchange="window.autoSaveStartDate(this.value)" style="border:none;background:none;padding:0 0 0 1px;font-size:.8rem;color:var(--text);outline:none;font-family:inherit;"/>
+        </div>
+      </div>
+
+      <!-- Invite partner -->
+      <div class="settings-row-new tappable" onclick="window.showInviteFromSettings()" id="settings-invite-row">
+        <div style="flex:1;">
+          <div class="settings-row-value" style="font-weight:500;">Invite partner</div>
+          <div class="settings-row-muted" id="settings-invite-sub">Share a new invite link</div>
+        </div>
+        <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 12l4-4-4-4"/></svg>
+      </div>
+
+    </div>
+
+    <!-- Sign out -->
+    <div class="settings-group" style="margin-top:.5rem;">
+      <div class="settings-row-new tappable" onclick="doSignOut()" style="justify-content:center;">
+        <div class="settings-row-value" style="color:var(--muted);text-align:center;">Sign out</div>
       </div>
     </div>
 
-    <!-- Profile section -->
-    <div class="section-heading">Profile</div>
-    <div class="settings-card">
-      <div class="settings-row">
-        <label class="settings-label">Your name</label>
-        <input type="text" class="settings-input" id="settings-name" placeholder="Your first name" autocomplete="given-name"/>
+    <!-- Delete account -->
+    <div class="settings-group" style="margin-top:.5rem;" id="settings-delete-group">
+      <div class="settings-row-new tappable" onclick="window.showDeleteConfirm()" style="justify-content:center;">
+        <div class="settings-row-value" style="color:var(--danger,#c0392b);text-align:center;">Delete account</div>
       </div>
-      <p class="auth-field-error" id="settings-profile-error"></p>
-      <p id="settings-profile-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
-      <button class="settings-btn" id="btn-save-profile" onclick="saveProfileSettings()">Save profile</button>
     </div>
 
-    <!-- Change password section -->
-    <div class="section-heading" style="margin-top:1.25rem;">Change password</div>
-    <div class="settings-card">
-      <div class="settings-row">
-        <label class="settings-label">Current password</label>
-        <input type="password" class="settings-input" id="settings-current-pw" placeholder="Current password" autocomplete="current-password"/>
-      </div>
-      <div class="settings-row">
-        <label class="settings-label">New password</label>
-        <input type="password" class="settings-input" id="settings-new-pw" placeholder="New password" autocomplete="new-password"/>
-      </div>
-      <div class="settings-row">
-        <label class="settings-label">Confirm new password</label>
-        <input type="password" class="settings-input" id="settings-confirm-pw" placeholder="Confirm new password" autocomplete="new-password"/>
-      </div>
-      <p class="auth-field-error" id="settings-pw-error"></p>
-      <p id="settings-pw-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
-      <button class="settings-btn" id="btn-save-password" onclick="savePasswordSettings()">Change password</button>
-    </div>
-
-    <!-- Change email section -->
-    <div class="section-heading" style="margin-top:1.25rem;">Change email</div>
-    <div class="settings-card">
-      <div class="settings-row">
-        <label class="settings-label">New email address</label>
-        <input type="email" class="settings-input" id="settings-new-email" placeholder="New email address" autocomplete="email"/>
-      </div>
-      <div class="settings-row">
-        <label class="settings-label">Current password</label>
-        <input type="password" class="settings-input" id="settings-email-pw" placeholder="Confirm with your password" autocomplete="current-password"/>
-      </div>
-      <p class="auth-field-error" id="settings-email-error"></p>
-      <p id="settings-email-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
-      <button class="settings-btn" id="btn-save-email" onclick="saveEmailSettings()">Change email</button>
+    <!-- Delete confirmation — expands inline -->
+    <div id="settings-delete-confirm" style="display:none;background:var(--surface);border:1px solid rgba(192,57,43,0.25);border-radius:14px;padding:1rem 1rem .85rem;margin-top:.5rem;">
+      <p style="font-size:.72rem;font-weight:500;color:var(--text);margin:0 0 .35rem;">Are you sure?</p>
+      <p style="font-size:.65rem;color:var(--muted);line-height:1.6;margin:0 0 .75rem;">This will permanently delete your account and all shared data — notes, memories, letters, everything. Your partner will lose access too. This cannot be undone.</p>
+      <p style="font-size:.65rem;color:var(--muted);margin:0 0 .4rem;">Type <strong>DELETE</strong> to confirm:</p>
+      <input type="text" id="settings-delete-input" class="settings-input" placeholder="DELETE"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             style="margin-bottom:.5rem;letter-spacing:.05em;"/>
+      <p style="font-size:.65rem;color:var(--muted);margin:0 0 .4rem;">Enter your password:</p>
+      <input type="password" id="settings-delete-pw" class="settings-input" placeholder="Your password"
+             autocomplete="current-password"
+             style="margin-bottom:.65rem;"/>
+      <p class="auth-field-error" id="settings-delete-error" style="margin-bottom:.4rem;"></p>
+      <button id="btn-delete-account" class="settings-btn"
+              onclick="window.doDeleteAccount()"
+              style="background:rgba(192,57,43,0.08);color:#c0392b;border-color:rgba(192,57,43,0.25);margin-bottom:.4rem;">
+        Delete everything
+      </button>
+      <button onclick="window.hideDeleteConfirm()"
+              style="display:block;width:100%;background:none;border:none;font-size:.68rem;color:var(--muted);cursor:pointer;padding:.3rem;font-family:inherit;">
+        Cancel
+      </button>
     </div>
 
   </div>
 
-  <!-- Status bottom sheet -->
+    <!-- Status bottom sheet -->
   <div class="status-sheet-overlay" id="status-sheet-overlay" onclick="if(event.target===this)closeStatusSheet()">
     <div class="status-sheet">
       <div class="status-sheet-handle"></div>
@@ -1699,12 +1896,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   // ── Global state ────────────────────────────────────────
   let db=null,dbRef=null,dbSet=null,dbPush=null,dbRemove=null,fbOnValue=null,dbUpdate=null;
   let storage=null,fbStorageRef=null,fbUploadBytes=null,fbGetDownloadURL=null,fbDeleteObject=null;
-  let fbAuth=null,fbCurrentUser=null;
+  let fbAuth=null;
   // Couple data (loaded after auth)
   let ME=null,OTHER=null,myUid=null,partnerUid=null,coupleId=null;
   let myTz=null,otherTz=null,myCity=null,otherCity=null,myCoords=null,otherCoords=null;
   let myName=null,otherName=null,myRole=null;
   let coupleType='ldr'; // 'ldr' | 'together'
+  let myAvatarUrl=null,otherAvatarUrl=null;
+  let _onboardAvatarBlob=null;
+  let _myAvatarUnsub=null,_otherAvatarUnsub=null;
+  let _letterCountdownInterval=null;
+  let _selfDeleting=false; // true when this user initiated couple deletion
   let myStatus=null,otherStatus=null;
   let statusRefreshInterval=null;
   // Couple info
@@ -1716,10 +1918,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       .forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
     // Reset linking screen sections to visible when navigating to it
     if(id==='screen-linking'){
+      const dm=document.getElementById('linking-deleted-msg'); if(dm) dm.style.display='none';
+      const ldc=document.getElementById('linking-delete-confirm'); if(ldc) ldc.style.display='none';
+      // Hide delete-account option by default — shown only for existing accounts, not onboarding
+      const ldw=document.getElementById('linking-delete-wrap'); if(ldw) ldw.style.display='none';
       const cs=document.getElementById('linking-create-section');
       const od=document.getElementById('linking-or-divider');
       if(cs)cs.style.display='';
       if(od)od.style.display='';
+      // Prevent future dates in the "Together since" picker
+      const sdInput=document.getElementById('couple-startdate');
+      if(sdInput) sdInput.max=new Date().toLocaleDateString('en-CA');
     }
     const target = document.getElementById(id);
     if(target) target.style.display='block';
@@ -1821,6 +2030,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         name, city: city||'', email: fbAuth.currentUser.email,
         createdAt: Date.now()
       });
+      // Upload avatar if user selected one (non-blocking)
+      if(_onboardAvatarBlob) _uploadOnboardAvatar(uid);
       // Go to couple linking
       showAuthScreen('screen-linking');
           const _pending=(sessionStorage.getItem('pendingJoinCode')||localStorage.getItem('pendingJoinCode'));
@@ -1856,6 +2067,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       // Read start date
       const startDate = document.getElementById('couple-startdate')?.value||'';
       if(!startDate){ document.getElementById('linking-error').textContent='Please enter your start date.'; btn.textContent='Create our Snug'; btn.disabled=false; return; }
+      if(new Date(startDate+'T12:00:00') > new Date()){ document.getElementById('linking-error').textContent='Start date can\'t be in the future.'; btn.textContent='Create our Snug'; btn.disabled=false; return; }
       // Unique code generation with collision check
       let code = '';
       for(let i=0;i<10;i++){
@@ -1885,9 +2097,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       await dbSet(dbRef(db,`invites/${code}`), {
         coupleId: newCoupleId, createdBy: uid, createdAt: Date.now(), expiresAt, used: false
       });
-      // Link user to couple
+      // Link user to couple + store code on couple doc so either partner can clean it up
       await dbSet(dbRef(db,`users/${uid}/coupleId`), newCoupleId);
       await dbSet(dbRef(db,`users/${uid}/inviteCode`), code);
+      await dbSet(dbRef(db,`couples/${newCoupleId}/inviteCode`), code);
       // Show invite screen
       const inviteUrl=`${location.origin}/?join=${code}`;
       document.getElementById('invite-link-display').textContent=inviteUrl;
@@ -2073,7 +2286,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const{initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
       const{getDatabase,ref,set,push,onValue,remove,serverTimestamp,update}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
       const{getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
-      const{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+      const{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
       const app=initializeApp(FIREBASE_CONFIG);
       db=getDatabase(app);dbRef=ref;dbSet=set;dbPush=push;dbRemove=remove;fbOnValue=onValue;dbUpdate=update;
       // Auth setup
@@ -2087,7 +2300,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         updatePassword:(user,pw)=>updatePassword(user,pw),
         updateEmail:(user,email)=>updateEmail(user,email),
         reauthenticateWithCredential:(user,cred)=>reauthenticateWithCredential(user,cred),
-        EmailAuthProvider: EmailAuthProvider
+        EmailAuthProvider: EmailAuthProvider,
+        deleteUser:(user)=>deleteUser(user)
       };
       // Watch auth state
       onAuthStateChanged(auth, async user=>{
@@ -2099,29 +2313,40 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
           if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
           if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+          if(_myAvatarUnsub){try{_myAvatarUnsub();}catch(e){}_myAvatarUnsub=null;}
+          if(_otherAvatarUnsub){try{_otherAvatarUnsub();}catch(e){}_otherAvatarUnsub=null;}
+          myAvatarUrl=null;otherAvatarUrl=null;
+          if(_onboardAvatarBlob){ _onboardAvatarBlob=null; }
+          // Revoke any preview object URLs
+          const onboardPreview = document.getElementById('onboard-avatar-preview');
+          if(onboardPreview && onboardPreview.src && onboardPreview.src.startsWith('blob:')){ URL.revokeObjectURL(onboardPreview.src); onboardPreview.src=''; onboardPreview.style.display='none'; }
+          const onboardIcon = document.getElementById('onboard-avatar-icon');
+          if(onboardIcon) onboardIcon.style.display='';
           if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
           if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
-      if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
-      if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
           _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
           coupleType='ldr';
-      myStatus=null;otherStatus=null;
-      if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
-      if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
-      if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
-      _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
-      coupleType='ldr';
           myTz=null;otherTz=null;myCity=null;otherCity=null;myCoords=null;otherCoords=null;
+          _stopLetterCountdown && _stopLetterCountdown();
           meetupDate=null;localNotes=[];localMilestones=[];localBucket=[];letterRounds=[];
           if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
           if(distanceInterval){clearInterval(distanceInterval);distanceInterval=null;}
           if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;}
           if(pulseTimeInterval){clearInterval(pulseTimeInterval);pulseTimeInterval=null;}
           if(unsubNotes){try{unsubNotes();}catch(e){}unsubNotes=null;}
+          if(unsubMilestones){try{unsubMilestones();}catch(e){}unsubMilestones=null;}
+          if(unsubBucket){try{unsubBucket();}catch(e){}unsubBucket=null;}
           if(unsubPulse){try{unsubPulse();}catch(e){}unsubPulse=null;}
           if(_watchPartnerUnsub){try{_watchPartnerUnsub();}catch(e){}_watchPartnerUnsub=null;}
           if(_unsubWatchOther){try{_unsubWatchOther();}catch(e){}_unsubWatchOther=null;}
           if(mapInstance){try{mapInstance.remove();}catch(e){}mapInstance=null;}
+          if(placesMapInstance){try{placesMapInstance.remove();}catch(e){}placesMapInstance=null;}
+          _msRegistry.clear();
+          _lastPulseSent=0;
+          _dnCurrentPlan={};_tpMyCurrentVal='';
+          _dnTimeVal='19:00';
+          _selectedActivity=null;_selectedMood=null;
+          repositionKey=null;repositionDragging=false;pendingPhotoForKey=null;
           showAuthWrap();
           showAuthScreen('screen-login');
           return;
@@ -2137,8 +2362,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           }
           if(!userData.coupleId){
             // Has profile but no couple — show linking
+            myUid = user.uid; // needed for doLinkingDeleteAccount
             showAuthWrap();
             showAuthScreen('screen-linking');
+            // Show delete option — existing account without a couple
+            const _ldw=document.getElementById('linking-delete-wrap'); if(_ldw) _ldw.style.display='block';
             // Pre-fill pending join code
             const _p=(sessionStorage.getItem('pendingJoinCode')||localStorage.getItem('pendingJoinCode'));
             if(_p){
@@ -2151,9 +2379,56 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           }
           // Has couple — derive partner uid from members (no partnerId stored on user)
           const cId = userData.coupleId;
+          let _coupleInitFired = false;
           fbOnValue(dbRef(db,`couples/${cId}/members`), snap2=>{
             const members = snap2.val();
-            const uids = members ? Object.keys(members) : [];
+            if(_coupleInitFired && !members){
+              if(_selfDeleting) return; // we triggered it — onAuthStateChanged handles redirect
+              // Partner deleted the couple — clean up all listeners first
+              if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+              if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
+              if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
+              if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
+              if(unsubNotes){try{unsubNotes();}catch(e){}unsubNotes=null;}
+              if(unsubMilestones){try{unsubMilestones();}catch(e){}unsubMilestones=null;}
+              if(unsubBucket){try{unsubBucket();}catch(e){}unsubBucket=null;}
+              if(unsubPulse){try{unsubPulse();}catch(e){}unsubPulse=null;}
+              // Clean up User 2's stale coupleId from their own user record (fire-and-forget)
+              dbSet(dbRef(db,`users/${user.uid}/coupleId`), null).catch(e=>console.warn('Could not clear stale coupleId:', e));
+              // Clear any stale pending join code so linking screen doesn't pre-fill a dead code
+              try{ sessionStorage.removeItem('pendingJoinCode'); localStorage.removeItem('pendingJoinCode'); }catch(e){}
+              // Show message
+              coupleId=null;
+              document.getElementById('main').style.display='none';
+              showAuthWrap();
+              showAuthScreen('screen-linking');
+              const msg = document.getElementById('linking-deleted-msg');
+              if(msg) msg.style.display = 'block';
+              // Show delete option — partner deleted, existing user may want to leave
+              const _ldw2=document.getElementById('linking-delete-wrap'); if(_ldw2) _ldw2.style.display='block';
+              return;
+            }
+
+            if(_coupleInitFired) return; // already loaded, ignore member updates
+            _coupleInitFired = true;
+
+            // Couple doc deleted (partner deleted while we were offline/logging in)
+            if(!members){
+              myUid = user.uid; // needed for doLinkingDeleteAccount
+              // Clean up User 2's stale coupleId from their own user record (fire-and-forget)
+              dbSet(dbRef(db,`users/${user.uid}/coupleId`), null).catch(e=>console.warn('Could not clear stale coupleId:', e));
+              // Clear any stale pending join code so linking screen doesn't pre-fill a dead code
+              try{ sessionStorage.removeItem('pendingJoinCode'); localStorage.removeItem('pendingJoinCode'); }catch(e){}
+              showAuthWrap();
+              showAuthScreen('screen-linking');
+              const msg = document.getElementById('linking-deleted-msg');
+              if(msg) msg.style.display = 'block';
+              // Show delete option — existing user whose couple was deleted
+              const _ldw3=document.getElementById('linking-delete-wrap'); if(_ldw3) _ldw3.style.display='block';
+              return;
+            }
+
+            const uids = Object.keys(members);
             const pId = uids.find(u => u !== user.uid);
             if(!pId){
               // Only one member — still waiting for partner
@@ -2166,7 +2441,33 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
               return;
             }
             loadCoupleAndStart(cId, user.uid, pId, members);
-          },{onlyOnce:true});
+          }, (error) => {
+            // Permission denied — couple was deleted, this user is no longer a member
+            console.warn('Could not read couple members — couple likely deleted:', error.code);
+            if(_selfDeleting) return; // we triggered it ourselves
+            // Works for both login-time and live-in-app cases
+            myUid = myUid || user.uid; // may already be set if live in app
+            coupleId = null;
+            dbSet(dbRef(db,`users/${user.uid}/coupleId`), null).catch(e=>console.warn('Could not clear stale coupleId:', e));
+            try{ sessionStorage.removeItem('pendingJoinCode'); localStorage.removeItem('pendingJoinCode'); }catch(e){}
+            // Tear down any active listeners if we were live in the app
+            if(_coupleInitFired){
+              if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+              if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
+              if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
+              if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
+              if(unsubNotes){try{unsubNotes();}catch(e){}unsubNotes=null;}
+              if(unsubMilestones){try{unsubMilestones();}catch(e){}unsubMilestones=null;}
+              if(unsubBucket){try{unsubBucket();}catch(e){}unsubBucket=null;}
+              if(unsubPulse){try{unsubPulse();}catch(e){}unsubPulse=null;}
+              document.getElementById('main').style.display='none';
+            }
+            showAuthWrap();
+            showAuthScreen('screen-linking');
+            const msg = document.getElementById('linking-deleted-msg');
+            if(msg) msg.style.display = 'block';
+            const _ldw4=document.getElementById('linking-delete-wrap'); if(_ldw4) _ldw4.style.display='block';
+          });
         },{onlyOnce:true});
       });
       storage=getStorage(app);fbStorageRef=storageRef;fbUploadBytes=uploadBytes;fbGetDownloadURL=getDownloadURL;fbDeleteObject=deleteObject;
@@ -2235,6 +2536,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   // Weather
   function wIcon(c){
+    // WMO codes (0–99) from open-meteo used on localhost
+    if(c===0)return"☀️";if(c===1||c===2)return"⛅";if(c===3)return"☁️";
+    if(c===45||c===48)return"🌫️";
+    if(c===51||c===53||c===55||c===56||c===57)return"🌦️";
+    if(c===61||c===63||c===65||c===66||c===67||c===80||c===81||c===82)return"🌧️";
+    if(c===71||c===73||c===75||c===77||c===85||c===86)return"❄️";
+    if(c===95)return"⛈️";if(c===96||c===99)return"⛈️";
     // wttr.in codes
     if(c===113)return"☀️";if(c===116)return"⛅";if(c===119||c===122)return"☁️";
     if(c===143||c===248||c===260)return"🌫️";
@@ -2243,10 +2551,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(c===179||c===227||c===230||c===320||c===323||c===326||c===329||c===332||c===335||c===338||c===368||c===371)return"❄️";
     if(c===182||c===185||c===281||c===284||c===311||c===314||c===317||c===362||c===365)return"🌨️";
     if(c===200||c===386||c===389||c===392||c===395)return"⛈️";
-    if(c===350||c===374||c===377)return"🧊";
-    return"🌡️";
+    if(c===350||c===374||c===377)return"🌨️";
+    return"⛅";
   }
   function wDesc(c){
+    // WMO codes (open-meteo / localhost)
+    if(c===0)return"Clear sky";if(c===1)return"Mainly clear";if(c===2)return"Partly cloudy";if(c===3)return"Overcast";
+    if(c===45||c===48)return"Foggy";
+    if(c===51||c===53||c===55)return"Drizzle";if(c===56||c===57)return"Freezing drizzle";
+    if(c===61||c===63)return"Light rain";if(c===65)return"Heavy rain";
+    if(c===66||c===67)return"Freezing rain";
+    if(c===71||c===73)return"Light snow";if(c===75)return"Heavy snow";if(c===77)return"Snow grains";
+    if(c===80||c===81)return"Rain showers";if(c===82)return"Heavy showers";
+    if(c===85||c===86)return"Snow showers";
+    if(c===95)return"Thunderstorm";if(c===96||c===99)return"Thunderstorm with hail";
+    // wttr.in codes
     if(c===113)return"Clear sky";if(c===116)return"Partly cloudy";if(c===119)return"Cloudy";if(c===122)return"Overcast";
     if(c===143||c===248||c===260)return"Foggy";
     if(c===176||c===263||c===266||c===293||c===296)return"Light rain";
@@ -2292,18 +2611,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const myReaction=myUid&&reactions[myUid];
     const heartCount=Object.keys(reactions).length;
     const reactLabel=heartCount>0?`${heartCount}`:"";
+    const k=_esc(note._key||"");
     return`<div class="note-card">
-      <p class="note-text">${note.text}</p>
+      <p class="note-text">${_esc(note.text)}</p>
       <div class="note-footer">
-        <span class="note-author">${note.author}</span>
+        <span class="note-author">${_esc(note.author)}</span>
         ${note.time?`<span class="note-time">${fmtTs(note.time)}</span>`:""}
       </div>
       <div class="note-actions">
-        <button class="note-react-btn${myReaction?" reacted":""}" onclick="reactToNote('${note._key||""}')" title="React with heart">
+        <button class="note-react-btn${myReaction?" reacted":""}" onclick="reactToNote('${k}')" title="React with heart">
           <svg width="12" height="11" viewBox="0 0 32 30" fill="${myReaction?"#e8622a":"none"}" stroke="#e8622a" stroke-width="1.5" stroke-linejoin="round"><path d="M16 28C14 26 2 19 2 10.5A7.5 7.5 0 0116 15a7.5 7.5 0 0114-4.5C30 19 18 26 16 28z"/></svg>
           ${reactLabel}
         </button>
-        ${canDelete&&note._key?`<button class="note-delete-btn" onclick="deleteNote('${note._key}')" title="Delete">✕</button>`:""}
+        ${canDelete&&note._key?`<button class="note-delete-btn" onclick="deleteNote('${k}')" title="Delete">✕</button>`:""}
       </div>
     </div>`;
   }
@@ -2336,6 +2656,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   let editingOriginalAuthor=null;
   function fmtMDate(s){if(!s)return"";const d=new Date(s+"T12:00:00"),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)}`;}
   function fmtMDateRange(s,e){if(!e||e===s)return fmtMDate(s);return`${fmtMDate(s)} – ${fmtMDate(e)}`;}
+  function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+  // Milestone data registry — keyed by Firebase _key
+  // Lets onclick handlers look up URL/position/title without embedding them in HTML attributes
+  const _msRegistry = new Map();
+
   function renderMilestones(items){
     const tl=document.getElementById("milestone-timeline");
     const counter=document.getElementById("milestone-counter");
@@ -2345,17 +2671,34 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(counter)counter.innerHTML=`You have <span>${items.length}</span> milestone${items.length!==1?"s":""} together`;
     let ci=0;
     if(tlEnd)tlEnd.style.display="flex";
+    // Store items in registry so onclick handlers can retrieve URL/position safely
+    _msRegistry.clear();
+    items.forEach(item=>{ if(item._key) _msRegistry.set(item._key, item); });
     tl.innerHTML=items.map(item=>{
       const isFuture=new Date(item.date)>new Date();
       const dc=isFuture?"future":DOT_COLORS[ci++%DOT_COLORS.length];
       const tc=TAG_CLS[item.tag]||"";
       const icon=TAG_ICONS[item.tag]||"";
       const dateStr=fmtMDateRange(item.date,item.endDate);
-      const locationHTML=item.location?`<p class="m-location"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>${item.locationDisplay||item.location}</p>`:"";
-      const photoHTML=item.photoURL?`<div class="m-photo-wrap" onclick="viewMilestonePhoto('${item.photoURL}')"><img src="${item.photoURL}" alt="" style="object-position:${item.photoPosition||'center center'}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();openRepositionModal('${item._key}','${item.photoURL}','${item.title||''}','${item.photoPosition||'center center'}')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${item._key}')">Remove</button></div></div>`:(item._key?`<button class="m-add-photo-btn" onclick="triggerPhotoUploadFor('${item._key}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg>Add photo</button>`:"")+"";
-      return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}">${photoHTML}<div class="m-top"><p class="m-title"><span class="m-icon">${icon}</span>${item.title}</p><span class="m-date-range">${dateStr}</span></div>${item.note?`<p class="m-note">${item.note}</p>`:""}${locationHTML}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${item.tag}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.4rem;"><span class="m-author">${item.addedBy||""}</span>${item._key?`<button class="m-edit" onclick="editMilestone('${item._key}')" title="Edit">✎</button><button class="m-delete" onclick="deleteMilestone('${item._key}')" title="Delete">✕</button>`:""}</div></div></div></div>`;
+      const k=_esc(item._key||"");
+      const locationHTML=item.location?`<p class="m-location"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>${_esc(item.locationDisplay||item.location)}</p>`:"";
+      // Photo actions use registry keys — no URLs in onclick attributes
+      const photoHTML=item.photoURL
+        ?`<div class="m-photo-wrap" onclick="_msViewPhoto('${k}')"><img src="${_esc(item.photoURL)}" alt="" style="object-position:${_esc(item.photoPosition||'center center')}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();_msReposition('${k}')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${k}')">Remove</button></div></div>`
+        :(item._key?`<button class="m-add-photo-btn" onclick="triggerPhotoUploadFor('${k}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M7 6V5a1 1 0 011-1h2M14 5a1 1 0 011 1v1"/></svg>Add photo</button>`:"");
+      return`<div class="milestone"><div class="m-dot ${dc}"></div><div class="m-card${isFuture?" future-card":""}">${photoHTML}<div class="m-top"><p class="m-title"><span class="m-icon">${icon}</span>${_esc(item.title)}</p><span class="m-date-range">${dateStr}</span></div>${item.note?`<p class="m-note">${_esc(item.note)}</p>`:""}${locationHTML}<div class="m-footer">${item.tag?`<span class="m-tag ${tc}">${_esc(item.tag)}</span>`:"<span></span>"}<div style="display:flex;align-items:center;gap:.4rem;"><span class="m-author">${_esc(item.addedBy||"")}</span>${item._key?`<button class="m-edit" onclick="editMilestone('${k}')" title="Edit">✎</button><button class="m-delete" onclick="deleteMilestone('${k}')" title="Delete">✕</button>`:""}</div></div></div></div>`;
     }).join("");
   }
+
+  // Registry-based photo helpers — safe, no URL-in-attr corruption
+  window._msViewPhoto = function(key){
+    const item = _msRegistry.get(key);
+    if(item?.photoURL) viewMilestonePhoto(item.photoURL);
+  };
+  window._msReposition = function(key){
+    const item = _msRegistry.get(key);
+    if(item) openRepositionModal(key, item.photoURL, item.title||'', item.photoPosition||'center center');
+  };
   window.cancelMilestoneEdit=function(){
     editingKey=null;
     editingOriginalAuthor=null;
@@ -2445,7 +2788,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   async function geocodeLocation(locationStr){
     if(!locationStr)return{lat:null,lng:null};
     try{
-      const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationStr)}&format=json&limit=1&addressdetails=1`);
+      const ac=new AbortController();
+      const t=setTimeout(()=>ac.abort(),6000);
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationStr)}&format=json&limit=1&addressdetails=1`,{signal:ac.signal,headers:{'User-Agent':'Snug-App/1.0'}});
+      clearTimeout(t);
       const j=await r.json();
       if(j&&j.length>0){
         const item=j[0];
@@ -2483,15 +2829,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(geo.country)m.country=geo.country;
     }
     if(editingKey){
-      // If new photo selected, delete old photo from Storage first
-      if(pendingPhotoFile && db && fbOnValue){
-        fbOnValue(dbRef(db,`couples/${coupleId}/milestones/${editingKey}/photoPath`), async snap=>{
-          const oldPath = snap.val();
-          if(oldPath && storage && fbStorageRef && fbDeleteObject){
-            try{ await fbDeleteObject(fbStorageRef(storage, oldPath)); }
-            catch(e){ console.warn("Old photo delete failed:", e); }
-          }
-        },{onlyOnce:true});
+      // If new photo selected, delete old photo from Storage using local cache — avoids race with RTDB write
+      if(pendingPhotoFile){
+        const cachedMs = localMilestones.find(x=>x._key===editingKey);
+        const oldPath = cachedMs?.photoPath||null;
+        if(oldPath && storage && fbStorageRef && fbDeleteObject){
+          try{ await fbDeleteObject(fbStorageRef(storage, oldPath)); }
+          catch(e){ console.warn("Old photo delete failed:", e); }
+        }
       }
       const currentEditKey = editingKey;
       // Preserve existing photo fields — only overwrite if a new photo is being uploaded
@@ -2538,15 +2883,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     btn.textContent="Save";
   };
   window.deleteMilestone=async function(key){
-    // Delete photo from Storage first if exists
-    if(db && fbOnValue){
-      fbOnValue(dbRef(db,`couples/${coupleId}/milestones/${key}/photoPath`), async snap=>{
-        const path = snap.val();
-        if(path && storage && fbStorageRef && fbDeleteObject){
-          try{ await fbDeleteObject(fbStorageRef(storage, path)); }
-          catch(e){ console.warn("Storage delete failed:", e); }
-        }
-      },{onlyOnce:true});
+    // Read photoPath from local cache — avoids race between async Firebase read and immediate RTDB delete
+    const cached = localMilestones.find(m=>m._key===key);
+    const photoPath = cached?.photoPath||null;
+    // Delete photo from Storage if exists
+    if(photoPath && storage && fbStorageRef && fbDeleteObject){
+      try{ await fbDeleteObject(fbStorageRef(storage, photoPath)); }
+      catch(e){ console.warn("Storage delete failed:", e); }
     }
     // Delete milestone from database
     if(db&&dbRemove)dbRemove(dbRef(db,`couples/${coupleId}/milestones/${key}`));
@@ -2678,7 +3021,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   }
 
   // Greeting
-  function greeting(name,tz){try{const h=parseInt(new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit"}));const g=h<12?"Good morning":h<18?"Good afternoon":"Good evening";return`${g}, <em>${name}</em>`;}catch(e){return`Good day, <em>${name}</em>`;}}
+  function greeting(name,tz){try{const h=parseInt(new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit"}));const g=h<12?"Good morning":h<18?"Good afternoon":"Good evening";return`${g}, <em>${_esc(name)}</em>`;}catch(e){return`Good day, <em>${_esc(name)}</em>`;}}
   function fmtTime(tz){try{return new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"});}catch(e){return new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}}
   function fmtDate(tz){try{return new Date().toLocaleDateString("en-GB",{timeZone:tz,weekday:"long",day:"numeric",month:"long"});}catch(e){return new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});}}
 
@@ -2757,20 +3100,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   function blItemHTML(item){
     const icon=BL_ICONS[item.category]||BL_ICONS.others;
-    return`<div class="bl-item${item.done?" done":""}" id="bli-${item._key}">
-      <div class="bl-check${item.done?" checked":""}" onclick="toggleBucketDone('${item._key}')">${item.done?'<div class="bl-check-mark"></div>':""}</div>
+    const k=_esc(item._key||"");
+    return`<div class="bl-item${item.done?" done":""}" id="bli-${k}">
+      <div class="bl-check${item.done?" checked":""}" onclick="toggleBucketDone('${k}')">${item.done?'<div class="bl-check-mark"></div>':""}</div>
       <div class="bl-item-icon">${icon}</div>
       <div class="bl-item-body">
-        <p class="bl-item-title">${item.title}</p>
+        <p class="bl-item-title">${_esc(item.title)}</p>
         <div class="bl-item-meta">
-          <span class="bl-item-cat">${item.category||""}</span>
-          <span class="bl-item-who">Added by ${item.addedBy||""}</span>
+          <span class="bl-item-cat">${_esc(item.category||"")}</span>
+          <span class="bl-item-who">Added by ${_esc(item.addedBy||"")}</span>
           ${item.done&&item.completedAt?`<span class="bl-item-who">· ${fmtTs(item.completedAt)}</span>`:""}
         </div>
       </div>
       <div class="bl-item-actions">
-        ${!item.done?`<button class="bl-item-btn" onclick="editBucketItem('${item._key}')" title="Edit">✎</button>`:""}
-        <button class="bl-item-btn" onclick="deleteBucketItem('${item._key}')" title="Delete" style="color:var(--muted)">✕</button>
+        ${!item.done?`<button class="bl-item-btn" onclick="editBucketItem('${k}')" title="Edit">✎</button>`:""}
+        <button class="bl-item-btn" onclick="deleteBucketItem('${k}')" title="Delete" style="color:var(--muted)">✕</button>
       </div>
     </div>`;
   }
@@ -3004,11 +3348,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const sorted = [...group.items].sort((a,b)=>new Date(a.date)-new Date(b.date));
     itemsEl.innerHTML = sorted.map(item => {
       const icon = TAG_ICONS_PLACES[item.tag]||TAG_ICONS_PLACES.moment;
-      const tag = item.tag ? `<span class="m-tag" style="margin-left:auto;flex-shrink:0;">${item.tag}</span>` : "";
+      const tag = item.tag ? `<span class="m-tag" style="margin-left:auto;flex-shrink:0;">${_esc(item.tag)}</span>` : "";
       return `<div class="places-popup-item">
         <div class="places-popup-icon" style="display:flex;align-items:center;justify-content:center;">${icon}</div>
         <div class="places-popup-body" style="flex:1;min-width:0;">
-          <p class="places-popup-title">${item.title}</p>
+          <p class="places-popup-title">${_esc(item.title)}</p>
           <p class="places-popup-date">${fmtMDate(item.date)}${item.endDate?` – ${fmtMDate(item.endDate)}`:""}</p>
         </div>
         ${tag}
@@ -3082,11 +3426,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(toggle)toggle.style.display="block";
     const recent=pulses.slice(0,6);
     list.innerHTML=recent.map(p=>{
-      const isMe=p.from===myUid||p.from===ME;  // support both UID (new) and name (legacy)
+      const isMe=p.from===myUid||p.from===ME;
       const dotClass=isMe?"":"other";
-      const senderName=p.fromName||(isMe?ME:OTHER);
+      const senderName=_esc(p.fromName||(isMe?ME:OTHER));
+      const otherEsc=_esc(OTHER);
       const text=isMe
-        ?`You were thinking of <strong>${OTHER}</strong>`
+        ?`You were thinking of <strong>${otherEsc}</strong>`
         :`<strong>${senderName}</strong> was thinking of you`;
       return`<div class="pulse-history-item">
         <div class="pulse-history-dot ${dotClass}"></div>
@@ -3259,41 +3604,43 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   function renderLetterTile(letter, isMe, roundKey, unlocked, isActive){
     const name = isMe ? ME : OTHER;
     const hasContent = !!(letter && letter.content);
+    const otherEsc = _esc(OTHER);
+    const rk = _esc(roundKey);
 
     if(isMe){
       if(hasContent){
-        const preview = letter.content.substring(0,80) + (letter.content.length>80?"…":"");
+        const preview = _esc(letter.content.substring(0,80) + (letter.content.length>80?"…":""));
         const statusClass = unlocked && letter.readAt ? "read" : "written";
-        const statusText = unlocked && letter.readAt ? "Read by "+OTHER : "Written & sealed";
-        return `<div class="letter-tile${isActive?" clickable":""}" onclick="${isActive?`openLetterModal('${roundKey}',true)`:""}">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${OTHER}</p>
+        const statusText = _esc(unlocked && letter.readAt ? "Read by "+OTHER : "Written & sealed");
+        return `<div class="letter-tile${isActive?" clickable":""}" onclick="${isActive?`openLetterModal('${rk}',true)`:""}">
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${otherEsc}</p>
           <div class="letter-tile-status ${statusClass}">${statusClass==="read"?"✓ "+statusText:"✎ "+statusText}</div>
           <p class="letter-tile-preview">${preview}</p>
-          ${isActive?`<button class="letter-tile-btn" onclick="event.stopPropagation();openLetterModal('${roundKey}',true)">Edit ✎</button>`:`<div class="letter-tile-meta"><span>Written ${letter.writtenAt?new Date(letter.writtenAt).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"}):""}</span></div>`}
+          ${isActive?`<button class="letter-tile-btn" onclick="event.stopPropagation();openLetterModal('${rk}',true)">Edit ✎</button>`:`<div class="letter-tile-meta"><span>Written ${letter.writtenAt?new Date(letter.writtenAt).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"}):""}</span></div>`}
         </div>`;
       } else {
-        return `<div class="letter-tile clickable" onclick="openLetterModal('${roundKey}',true)">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${OTHER}</p>
+        return `<div class="letter-tile clickable" onclick="openLetterModal('${rk}',true)">
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${otherEsc}</p>
           <div class="letter-tile-status empty">Not written yet</div>
-          <p class="letter-tile-preview" style="opacity:.5;">Tap to write your letter to ${OTHER}…</p>
-          <button class="letter-tile-btn primary" onclick="event.stopPropagation();openLetterModal('${roundKey}',true)">Write letter</button>
+          <p class="letter-tile-preview" style="opacity:.5;">Tap to write your letter to ${otherEsc}…</p>
+          <button class="letter-tile-btn primary" onclick="event.stopPropagation();openLetterModal('${rk}',true)">Write letter</button>
         </div>`;
       }
     } else {
       // Other person's letter
       if(unlocked && hasContent){
-        const preview = letter.content.substring(0,80) + (letter.content.length>80?"…":"");
-        return `<div class="letter-tile clickable" onclick="openLetterRead('${roundKey}')">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${OTHER}'s letter to you</p>
+        const preview = _esc(letter.content.substring(0,80) + (letter.content.length>80?"…":""));
+        return `<div class="letter-tile clickable" onclick="openLetterRead('${rk}')">
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${otherEsc}'s letter to you</p>
           <div class="letter-tile-status read">✓ Read</div>
           <p class="letter-tile-preview">${preview}</p>
           <div class="letter-tile-meta"><span>Written ${letter.writtenAt?new Date(letter.writtenAt).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"}):""}</span><span>Read ${letter.readAt?new Date(letter.readAt).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"}):""}</span></div>
         </div>`;
       } else {
         return `<div class="letter-tile sealed">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${OTHER}'s letter to you</p>
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${otherEsc}'s letter to you</p>
           <div class="letter-tile-status sealed"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg> ${hasContent ? "Written &amp; sealed" : "Not written yet"}</div>
-          <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? (coupleType==='together'?'You can read it on your date night.':`You can read it on the day you meet.`) : OTHER+" hasn't written their letter yet."}</p>
+          <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? (coupleType==='together'?'You can read it on your date night.':`You can read it on the day you meet.`) : otherEsc+" hasn't written their letter yet."}</p>
           ${hasContent ? `<button class="letter-tile-btn" style="opacity:.45;pointer-events:none;">Locked until meetup 🔒</button>` : ""}
         </div>`;
       }
@@ -3307,7 +3654,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     const h = Math.floor((diff%86400000)/3600000);
     const m = Math.floor((diff%3600000)/60000);
     const s = Math.floor((diff%60000)/1000);
-    return `<div class="letter-round-cd">
+    return `<div class="letter-round-cd" data-unlock="${unlockDate}">
       <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.3"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/><circle cx="8" cy="11" r="1" fill="var(--muted)" stroke="none"/></svg>
       <span class="letter-round-cd-label">Unlocks on ${new Date(unlockDate).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</span>
       <div class="letter-round-cd-nums">
@@ -3345,6 +3692,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     tl.appendChild(sep);
     const card = document.createElement("div");
     card.className = "letter-round active-round";
+    const otherEsc = _esc(OTHER);
     card.innerHTML = `
       <div class="letter-round-header">
         <p class="letter-round-date">${meetupDate.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</p>
@@ -3352,15 +3700,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
       <div class="letter-tiles">
         <div class="letter-tile clickable" onclick="openLetterModal('new',true)">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${OTHER}</p>
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>Your letter to ${otherEsc}</p>
           <div class="letter-tile-status empty">Not written yet</div>
-          <p class="letter-tile-preview" style="opacity:.5;">Tap to write your letter to ${OTHER}…</p>
+          <p class="letter-tile-preview" style="opacity:.5;">Tap to write your letter to ${otherEsc}…</p>
           <button class="letter-tile-btn primary" onclick="event.stopPropagation();openLetterModal('new',true)">Write letter</button>
         </div>
         <div class="letter-tile sealed">
-          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${OTHER}'s letter to you</p>
+          <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${otherEsc}'s letter to you</p>
           <div class="letter-tile-status empty">Not written yet</div>
-          <p class="letter-tile-preview" style="opacity:.45;">${OTHER} hasn't written their letter yet.</p>
+          <p class="letter-tile-preview" style="opacity:.45;">${otherEsc} hasn't written their letter yet.</p>
         </div>
       </div>
     `;
@@ -3470,26 +3818,59 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const tl = document.getElementById("letter-timeline");
       const backBtn = `<button onclick="initLetterPage()" style="background:none;border:none;cursor:pointer;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;margin-bottom:1rem;display:block;padding:0;">← Back to letters</button>`;
       tl.innerHTML = backBtn + `<div class="letter-read-card">
-        <p class="letter-read-eyebrow">Written by ${OTHER} · ${otherLetter.writtenAt?new Date(otherLetter.writtenAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):""}</p>
-        <p class="letter-read-from">To ${ME}, with love</p>
-        <p class="letter-read-body">${otherLetter.content||""}</p>
-        <p class="letter-read-sig">— ${OTHER} 🤍</p>
+        <p class="letter-read-eyebrow">Written by ${_esc(OTHER)} · ${otherLetter.writtenAt?new Date(otherLetter.writtenAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):""}</p>
+        <p class="letter-read-from">To ${_esc(ME)}, with love</p>
+        <p class="letter-read-body" id="letter-read-body-text"></p>
+        <p class="letter-read-sig">— ${_esc(OTHER)} 🤍</p>
       </div>`;
+      // Set content via textContent — safe, white-space:pre-wrap handles newlines in CSS
+      const bodyEl = document.getElementById('letter-read-body-text');
+      if(bodyEl) bodyEl.textContent = otherLetter.content||"";
     },{onlyOnce:true});
   };
 
-  window.initLetterPage=function(){
+  window.initLetterPage=function(onReady){
     const tl = document.getElementById("letter-timeline");
     if(tl) tl.innerHTML = "";
     if(!db || !fbOnValue){
       renderCurrentRound([]);
+      if(onReady) onReady();
       return;
     }
     fbOnValue(dbRef(db,`couples/${coupleId}/letters`), snap=>{
       const data = snap.val();
       const rounds = data ? Object.entries(data).map(([k,v])=>({...v,_key:k})) : [];
       renderLetterTimeline(rounds);
+      if(onReady) setTimeout(onReady, 150);
     },{onlyOnce:true});
+  }
+
+  function _startLetterCountdown(){
+    if(_letterCountdownInterval) clearInterval(_letterCountdownInterval);
+    _letterCountdownInterval = setInterval(()=>{
+      const cards = document.querySelectorAll('.active-round');
+      cards.forEach(card => {
+        const unlockEl = card.querySelector('.letter-round-cd');
+        if(!unlockEl) return;
+        const unlockDate = unlockEl.dataset.unlock;
+        if(!unlockDate) return;
+        const diff = new Date(unlockDate) - Date.now();
+        if(diff <= 0){ _stopLetterCountdown(); return; }
+        const d = Math.floor(diff/86400000);
+        const h = Math.floor((diff%86400000)/3600000);
+        const m = Math.floor((diff%3600000)/60000);
+        const s = Math.floor((diff%60000)/1000);
+        const nums = unlockEl.querySelectorAll('.letter-round-cd-num');
+        if(nums[0]) nums[0].textContent = d;
+        if(nums[1]) nums[1].textContent = h;
+        if(nums[2]) nums[2].textContent = m;
+        if(nums[3]) nums[3].textContent = s;
+      });
+    }, 1000);
+  }
+
+  function _stopLetterCountdown(){
+    if(_letterCountdownInterval){ clearInterval(_letterCountdownInterval); _letterCountdownInterval=null; }
   }
 
   // Milestone photos
@@ -3592,12 +3973,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       if(position) await dbSet(dbRef(db,`couples/${coupleId}/milestones/${key}/photoPosition`), position);
     }
     // Immediately update card in DOM without waiting for Firebase listener
+    // Update registry so _msViewPhoto/_msReposition work on the new card
+    const regItem = _msRegistry.get(key)||{};
+    _msRegistry.set(key, {...regItem, _key:key, photoURL:url, photoPath:path, photoPosition:position||'center center'});
     const existingPlaceholder = document.querySelector(`.m-photo-placeholder[onclick*="${key}"]`);
     if(existingPlaceholder){
       const wrap = document.createElement("div");
       wrap.className = "m-photo-wrap";
-      wrap.setAttribute("onclick", `viewMilestonePhoto('${url}')`);
-      wrap.innerHTML = `<img src="${url}" alt="" style="object-position:${position||'center center'}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();openRepositionModal('${key}','${url}','','center center')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${key}')">Remove</button></div>`;
+      wrap.setAttribute("onclick", `_msViewPhoto('${key}')`);
+      wrap.innerHTML = `<img src="${url}" alt="" style="object-position:${position||'center center'}"/><div class="m-photo-actions"><button class="m-photo-action-btn" onclick="event.stopPropagation();_msReposition('${key}')">Reposition</button><button class="m-photo-action-btn" onclick="event.stopPropagation();removeMilestonePhoto('${key}')">Remove</button></div>`;
       existingPlaceholder.replaceWith(wrap);
     }
     // Reset save btn
@@ -3784,6 +4168,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     // "existing" mode — just update position in Firebase
     if(!repositionKey) return;
     if(db && dbSet) await dbSet(dbRef(db,`couples/${coupleId}/milestones/${repositionKey}/photoPosition`), posStr);
+    // Update registry so next reposition call has fresh position
+    const regItem = _msRegistry.get(repositionKey);
+    if(regItem) _msRegistry.set(repositionKey, {...regItem, photoPosition: posStr});
     const cardImg = document.querySelector(`.m-photo-wrap[onclick*="${repositionKey}"] img`);
     if(cardImg) cardImg.style.objectPosition = posStr;
     closeRepositionModal();
@@ -3886,9 +4273,46 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   // ── SETTINGS — populate fields when page opens ──────────
   window.openSettingsPage = function(){
+    // Hide delete confirm if open
+    window.hideDeleteConfirm && window.hideDeleteConfirm();
+    // Profile fields
     const nameEl = document.getElementById('settings-name');
     if(nameEl) nameEl.value = ME || '';
-    // Clear all status messages
+    const emailEl = document.getElementById('settings-email-display');
+    if(emailEl) emailEl.textContent = fbAuth?.currentUser?.email || '—';
+    const cityEl = document.getElementById('settings-city-display');
+    if(cityEl){
+      if(!myCity || myCity === '—'){
+        cityEl.textContent = 'Location access denied';
+        cityEl.style.color = 'var(--muted)';
+        // Show hint below if not already there
+        let hint = document.getElementById('settings-city-hint');
+        if(!hint){
+          hint = document.createElement('div');
+          hint.id = 'settings-city-hint';
+          hint.style.cssText = 'font-size:.6rem;color:var(--muted);margin-top:.2rem;line-height:1.5;';
+          hint.textContent = 'Enable location in your browser or device settings to detect your city.';
+          cityEl.parentNode.appendChild(hint);
+        }
+        hint.style.display = '';
+      } else {
+        cityEl.textContent = myCity;
+        cityEl.style.color = '';
+        const hint = document.getElementById('settings-city-hint');
+        if(hint) hint.style.display = 'none';
+      }
+    }
+    // Start date
+    const sdEl = document.getElementById('settings-start-date');
+    if(sdEl){
+      // Set max to today so future dates are greyed out natively
+      const todayStr = new Date().toISOString().split('T')[0];
+      sdEl.max = todayStr;
+      if(coupleStartDate) sdEl.value = coupleStartDate;
+    }
+    // Avatar
+    applyAllAvatars && applyAllAvatars();
+    // Clear messages
     ['settings-profile-error','settings-pw-error','settings-email-error'].forEach(id=>{
       const el = document.getElementById(id); if(el) el.textContent = '';
     });
@@ -3900,88 +4324,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
      'settings-new-email','settings-email-pw'].forEach(id=>{
       const el = document.getElementById(id); if(el) el.value = '';
     });
-    // Sync mode toggle to current coupleType
+    // Close any open expandables
+    document.querySelectorAll('.settings-expandable').forEach(e => e.classList.remove('open'));
+    // Sync mode toggle
     const ldrBtn = document.getElementById('settings-mode-ldr');
     const togBtn = document.getElementById('settings-mode-together');
     if(ldrBtn) ldrBtn.classList.toggle('active', coupleType==='ldr');
     if(togBtn) togBtn.classList.toggle('active', coupleType==='together');
-  };
-
-  // ── SETTINGS — save profile (name + city) ───────────────
-  window.saveProfileSettings = async function(){
-    const name = document.getElementById('settings-name').value.trim();
-    const err = document.getElementById('settings-profile-error');
-    const success = document.getElementById('settings-profile-success');
-    const btn = document.getElementById('btn-save-profile');
-    err.textContent = ''; success.style.display = 'none';
-    if(!name){ err.textContent = 'Name cannot be empty.'; return; }
-    const oldName = ME; // Store before updating
-    btn.textContent = 'Saving…'; btn.disabled = true;
-    try{
-      // Update only name/city fields — never overwrite the full record (would wipe coupleId!)
-      await dbSet(dbRef(db, `users/${myUid}/name`), name);
-      if(myCity) await dbSet(dbRef(db, `users/${myUid}/city`), myCity);
-      // Update couple member record — preserve existing role
-      await dbSet(dbRef(db, `couples/${coupleId}/members/${myUid}`), {
-        name, city: myCity||'', role: myRole||'owner'
-      });
-      // Update local state
-      ME = name;
-      myName = name;
-      // Update existing milestones and bucket items addedBy field
-      if(db && coupleId){
-        // Update milestones
-        const msSnap = await new Promise(res => fbOnValue(dbRef(db,`couples/${coupleId}/milestones`), s=>{res(s);},{onlyOnce:true}));
-        const msData = msSnap.val()||{};
-        for(const [k,v] of Object.entries(msData)){
-          if(v.addedBy === oldName){
-            await dbSet(dbRef(db,`couples/${coupleId}/milestones/${k}/addedBy`), name);
-          }
-        }
-        // Update bucket list
-        const blSnap = await new Promise(res => fbOnValue(dbRef(db,`couples/${coupleId}/bucket`), s=>{res(s);},{onlyOnce:true}));
-        const blData = blSnap.val()||{};
-        for(const [k,v] of Object.entries(blData)){
-          if(v.addedBy === oldName){
-            await dbSet(dbRef(db,`couples/${coupleId}/bucket/${k}/addedBy`), name);
-          }
-        }
-        // Update notes author
-        const nSnap = await new Promise(res => fbOnValue(dbRef(db,`couples/${coupleId}/notes`), s=>{res(s);},{onlyOnce:true}));
-        const nData = nSnap.val()||{};
-        for(const [k,v] of Object.entries(nData)){
-          if(v.author === oldName){
-            await dbSet(dbRef(db,`couples/${coupleId}/notes/${k}/author`), name);
-          }
-        }
-      }
-      // Update UI — all places that display ME
-      const mhEl = document.getElementById('mobile-header-couple-name');
-      const sbEl = document.getElementById('sidebar-couple-name');
-      if(mhEl) mhEl.innerHTML = `${ME} <em>&</em> ${OTHER}`;
-      if(sbEl) sbEl.innerHTML = `${ME} <em>&</em> ${OTHER}`;
-      document.getElementById('sidebar-user').textContent = ME;
-      document.getElementById('home-greeting').innerHTML = greeting(ME, myTz);
-      const myL = `${ME} · ${myCity}`;
-      document.getElementById('my-city').textContent = myL;
-      document.getElementById('my-weather-city').textContent = myL;
-      // Note author name
-      const noteAuthor = document.getElementById('note-author-name');
-      if(noteAuthor) noteAuthor.textContent = ME;
-      // Distance strip name
-      const dna = document.getElementById('home-dist-name-a');
-      if(dna) dna.textContent = ME;
-      // App footer
-      const ftEl = document.getElementById('app-footer');
-      if(ftEl) ftEl.textContent = `${ME} & ${OTHER}`;
-      success.textContent = 'Profile updated ✓';
-      success.style.display = 'block';
-      btn.textContent = 'Save profile'; btn.disabled = false;
-    }catch(e){
-      console.error('saveProfileSettings failed:', e);
-      err.textContent = 'Failed to save. Please try again.';
-      btn.textContent = 'Save profile'; btn.disabled = false;
-    }
+    // Hide invite partner row when partner already joined
+    const inviteRow = document.getElementById('settings-invite-row');
+    if(inviteRow) inviteRow.style.display = partnerUid ? 'none' : '';
   };
 
   // ── SETTINGS — change password ───────────────────────────
@@ -4112,11 +4464,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   function renderMemoryJarPreview(){
     if(!ME || !OTHER) return;
-    // Avatars
+    // Avatars — use _applyAvatar so photos show if available
     const myAvEl = document.getElementById('mj-preview-my-avatar');
     const otherAvEl = document.getElementById('mj-preview-other-avatar');
-    if(myAvEl) myAvEl.textContent = (ME||'?')[0].toUpperCase();
-    if(otherAvEl) otherAvEl.textContent = (OTHER||'?')[0].toUpperCase();
+    _applyAvatar(myAvEl, myAvatarUrl, (ME||'?')[0].toUpperCase(), true);
+    _applyAvatar(otherAvEl, otherAvatarUrl, (OTHER||'?')[0].toUpperCase(), false);
 
     // My entry
     const myTextEl = document.getElementById('mj-preview-my-text');
@@ -4165,10 +4517,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(!ME || !OTHER) return;
 
     // Avatars
-    const myAvEl = document.getElementById('mj-today-my-avatar');
-    const otherAvEl = document.getElementById('mj-today-other-avatar');
-    if(myAvEl) myAvEl.textContent = (ME||'?')[0].toUpperCase();
-    if(otherAvEl) otherAvEl.textContent = (OTHER||'?')[0].toUpperCase();
+    applyAllAvatars && applyAllAvatars();
 
     // Today date
     const dateEl = document.getElementById('mj-today-date');
@@ -4322,11 +4671,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           const count = (myEntry?.text?1:0)+(otherEntry?.text?1:0);
           const badge = count===2?'both wrote ✓':count===1?'1 of 2':'';
           const badgeClass = count===2?'mj-day-badge both':'mj-day-badge';
+          const _myAvHtml = myAvatarUrl
+            ? `<img src="${_esc(myAvatarUrl)}" class="avatar-img-circle" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"/>`
+            : _esc((ME||'?')[0].toUpperCase());
+          const _otherAvHtml = otherAvatarUrl
+            ? `<img src="${_esc(otherAvatarUrl)}" class="avatar-img-circle" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"/>`
+            : _esc((OTHER||'?')[0].toUpperCase());
           const meRow = myEntry?.text
-            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-me">${(ME||'?')[0].toUpperCase()}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(myEntry.text)}</div><div class="mj-entry-meta">${ME} · ${_mjFmtTime(myEntry.createdAt)}</div></div></div>`
+            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-me">${_myAvHtml}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(myEntry.text)}</div><div class="mj-entry-meta">${_esc(ME)} · ${_mjFmtTime(myEntry.createdAt)}</div></div></div>`
             : '';
           const otherRow = otherEntry?.text
-            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-other">${(OTHER||'?')[0].toUpperCase()}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(otherEntry.text)}</div><div class="mj-entry-meta">${OTHER} · ${_mjFmtTime(otherEntry.createdAt)}</div></div></div>`
+            ? `<div class="mj-entry-row"><div class="mj-avatar mj-avatar-other">${_otherAvHtml}</div><div style="flex:1;"><div class="mj-entry-text">${_mjEscape(otherEntry.text)}</div><div class="mj-entry-meta">${_esc(OTHER)} · ${_mjFmtTime(otherEntry.createdAt)}</div></div></div>`
             : '';
           return `<div class="mj-day-card"><div class="mj-day-header"><span class="mj-day-date">${_mjFmtDate(dateKey)}</span><span class="${badgeClass}">${badge}</span></div>${meRow}${otherRow}</div>`;
         }).join('');
@@ -4408,8 +4763,26 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       const dateStr = _localDateStr(meetupDate);
       const newDate = new Date(`${dateStr}T${val}:00`);
       meetupDate = newDate;
-      if(db && coupleId) dbSet(dbRef(db,`couples/${coupleId}/meetupDate`), `${dateStr}T${val}:00`);
+      if(db && coupleId){
+        dbSet(dbRef(db,`couples/${coupleId}/meetupDate`), `${dateStr}T${val}:00`);
+        // Also update unlock date on unread letter rounds in Together mode
+        if(coupleType==='together' && letterRounds.length){
+          letterRounds.forEach(round=>{
+            if(!round._key || !round.unlockDate) return;
+            const meData = round[myUid]||{};
+            const otherData = round[partnerUid]||{};
+            if(!meData.readAt && !otherData.readAt){
+              dbSet(dbRef(db,`couples/${coupleId}/letters/${round._key}/unlockDate`), `${dateStr}T${val}:00`);
+            }
+          });
+        }
+      }
       startCountdown();
+      // Refresh letter timeline if letter page is visible
+      const letterPage = document.getElementById('page-letter');
+      if(letterPage && letterPage.classList.contains('active')){
+        initLetterPage && initLetterPage();
+      }
     }catch(e){ console.error('updateMeetupTime failed:',e); }
   };
 
@@ -4420,7 +4793,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   // ── Date night planner ────────────────────────────────────────
   let _dnUnsub = null;
-  let _dnSaveTimer = null;
 
   function _dnDateKey(){
     if(!meetupDate) return null;
@@ -4453,25 +4825,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     });
   }
 
-  window.saveDnPlan = function(){
-    clearTimeout(_dnSaveTimer);
-    _dnSaveTimer = setTimeout(async ()=>{
-      const dateKey = _dnDateKey();
-      if(!db||!coupleId||!dateKey) return;
-      const plan = {
-        where: document.getElementById('dn-where')?.value||'',
-        what: document.getElementById('dn-what')?.value||'',
-        who: document.getElementById('dn-who')?.value||'',
-        updatedAt: Date.now()
-      };
-      try{ await dbSet(dbRef(db,`couples/${coupleId}/datePlan/${dateKey}`), plan); }
-      catch(e){ console.error('saveDnPlan failed:',e); }
-    }, 800);
-  };
-
   // ── Today's plan ─────────────────────────────────────────────
   let _tpUnsub = null;
-  let _tpSaveTimer = null;
 
   function _tpTodayKey(){
     const d = new Date();
@@ -4483,11 +4838,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(!db||!coupleId||!myUid||!partnerUid) return;
     const today = _tpTodayKey();
 
-    // Set avatars
-    const myAv = document.getElementById('tp-my-avatar');
-    const otherAv = document.getElementById('tp-other-avatar');
-    if(myAv) myAv.textContent = (ME||'?')[0].toUpperCase();
-    if(otherAv) otherAv.textContent = (OTHER||'?')[0].toUpperCase();
+    // Apply avatars (photos if available, initials as fallback)
+    applyAllAvatars && applyAllAvatars();
 
     _tpUnsub = fbOnValue(dbRef(db,`couples/${coupleId}/todaysPlan/${today}`), snap=>{
       const d = snap.val()||{};
@@ -4506,20 +4858,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       }
     });
   }
-
-  window.saveTodaysPlan = function(){
-    clearTimeout(_tpSaveTimer);
-    _tpSaveTimer = setTimeout(async ()=>{
-      if(!db||!coupleId||!myUid) return;
-      const today = _tpTodayKey();
-      const val = document.getElementById('tp-my-input')?.value||'';
-      try{ await dbSet(dbRef(db,`couples/${coupleId}/todaysPlan/${today}/${myUid}`), val); }
-      catch(e){ console.error('saveTodaysPlan failed:',e); }
-    }, 800);
-  };
-
-  // Show/hide Together mode features in applyMode is handled below
-  // Called when mode changes or on startup
 
   // ── BOTTOM SHEET SWIPE DISMISS ────────────────────────────────
   function _initSheetSwipe(sheetId, overlayId, closeFn){
@@ -4859,6 +5197,612 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     statusRefreshInterval = setInterval(()=>{ renderStatusCard(); }, 60000);
   }
 
+  // ── AVATAR ─────────────────────────────────────────────────────
+  // All element IDs that show MY avatar
+  const MY_AVATAR_IDS = [
+    'tp-my-avatar','mj-preview-my-avatar','mj-today-my-avatar',
+    'settings-avatar-wrap'
+  ];
+  // All element IDs that show PARTNER avatar
+  const OTHER_AVATAR_IDS = [
+    'tp-other-avatar','mj-preview-other-avatar','mj-today-other-avatar'
+  ];
+
+  function _applyAvatar(el, url, initial, isMe){
+    if(!el) return;
+    // Check if it's the settings wrap (special structure)
+    if(el.id === 'settings-avatar-wrap'){
+      const img = document.getElementById('settings-avatar-img');
+      const ini = document.getElementById('settings-avatar-initial');
+      const hint = document.getElementById('settings-avatar-hint');
+      if(url){
+        if(img){ img.src = url; img.style.display = 'block'; }
+        if(ini) ini.style.display = 'none';
+        if(hint) hint.textContent = 'Tap to change photo';
+      } else {
+        if(img) img.style.display = 'none';
+        if(ini){ ini.style.display = ''; ini.textContent = initial; }
+        if(hint) hint.textContent = 'Tap to upload a photo';
+      }
+      return;
+    }
+    // Standard avatar circle
+    if(url){
+      el.innerHTML = `<img src="${url}" class="avatar-img-circle" alt=""/>`;
+    } else {
+      el.textContent = initial;
+    }
+  }
+
+  function applyAllAvatars(){
+    const myInitial = (ME||'?')[0].toUpperCase();
+    const otherInitial = (OTHER||'?')[0].toUpperCase();
+    MY_AVATAR_IDS.forEach(id => _applyAvatar(document.getElementById(id), myAvatarUrl, myInitial, true));
+    OTHER_AVATAR_IDS.forEach(id => _applyAvatar(document.getElementById(id), otherAvatarUrl, otherInitial, false));
+    // Re-render MJ history so old entries also show updated avatar
+    if(document.getElementById('mj-history-list')?.children.length > 0){
+      _mjRenderHistory && _mjRenderHistory();
+    }
+  }
+
+  async function loadAvatars(){
+    if(!myUid || !partnerUid || !db) return;
+    // Cancel any existing avatar listeners
+    if(_myAvatarUnsub){ try{_myAvatarUnsub();}catch(e){} _myAvatarUnsub=null; }
+    if(_otherAvatarUnsub){ try{_otherAvatarUnsub();}catch(e){} _otherAvatarUnsub=null; }
+    try{
+      // Persistent listeners — avatars update in real-time if partner uploads
+      _myAvatarUnsub = fbOnValue(dbRef(db,`users/${myUid}/avatarUrl`), snap=>{
+        myAvatarUrl = snap.val()||null;
+        applyAllAvatars();
+      });
+      _otherAvatarUnsub = fbOnValue(dbRef(db,`users/${partnerUid}/avatarUrl`), snap=>{
+        otherAvatarUrl = snap.val()||null;
+        applyAllAvatars();
+      });
+    }catch(e){ console.error('loadAvatars failed:',e); }
+  }
+
+  // ── Onboarding avatar (before couple exists) ─────────────────────────
+  window.triggerOnboardAvatarUpload = function(){
+    document.getElementById('onboard-avatar-input')?.click();
+  };
+
+  window.handleOnboardAvatarUpload = async function(input){
+    const file = input.files?.[0];
+    if(!file) return;
+    if(file.size > 5*1024*1024){ alert('Photo must be under 5MB.'); return; }
+    const hint = document.getElementById('onboard-avatar-hint');
+    const preview = document.getElementById('onboard-avatar-preview');
+    const icon = document.getElementById('onboard-avatar-icon');
+    if(hint) hint.textContent = 'Resizing…';
+    try{
+      const blob = await _resizeImage(file, 400);
+      _onboardAvatarBlob = blob;
+      // Show preview immediately — no upload yet (uid might not be set)
+      const previewUrl = URL.createObjectURL(blob);
+      if(preview){ preview.src = previewUrl; preview.style.display = 'block'; }
+      if(icon) icon.style.display = 'none';
+      if(hint){ hint.innerHTML = 'Looking good! <span style="opacity:.6;">(tap to change)</span>'; }
+    }catch(e){
+      console.error('handleOnboardAvatarUpload failed:',e);
+      if(hint) hint.textContent = 'Could not process photo — try again';
+    }
+    input.value = '';
+  };
+
+  // Called from doOnboarding after uid is confirmed — uploads stored blob
+  async function _uploadOnboardAvatar(uid){
+    if(!_onboardAvatarBlob || !uid) return;
+    try{
+      const {getStorage, ref: sRef, uploadBytes, getDownloadURL} =
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
+      const storage = getStorage();
+      const storageReference = sRef(storage, `avatars/${uid}.jpg`);
+      await uploadBytes(storageReference, _onboardAvatarBlob, {contentType:'image/jpeg'});
+      const url = await getDownloadURL(storageReference);
+      await dbSet(dbRef(db,`users/${uid}/avatarUrl`), url);
+      myAvatarUrl = url;
+      _onboardAvatarBlob = null;
+      // Apply avatar everywhere now that upload succeeded
+      applyAllAvatars();
+    }catch(e){
+      console.error('_uploadOnboardAvatar failed:',e);
+      // Show subtle hint on linking screen that photo upload failed
+      const hint = document.getElementById('onboard-avatar-hint');
+      if(hint) hint.textContent = 'Photo upload failed — add it later in settings';
+    }
+  }
+
+  window.triggerAvatarUpload = function(){
+    document.getElementById('avatar-file-input')?.click();
+  };
+
+  window.handleAvatarUpload = async function(input){
+    const file = input.files?.[0];
+    if(!file || !myUid || !db) return;
+    if(file.size > 5*1024*1024){
+      alert('Photo must be under 5MB.'); return;
+    }
+    const hint = document.getElementById('settings-avatar-hint');
+    if(hint) hint.textContent = 'Uploading…';
+    // 15s timeout guard
+    const _uploadTimeout = setTimeout(()=>{
+      if(hint && hint.textContent === 'Uploading…') hint.textContent = 'Taking too long — check connection and try again';
+    }, 15000);
+    try{
+      // Resize to 400x400 via canvas before upload
+      const resized = await _resizeImage(file, 400);
+      // Upload to Firebase Storage
+      const {getStorage, ref: sRef, uploadBytes, getDownloadURL} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js');
+      const storage = getStorage();
+      const path = `avatars/${myUid}.jpg`;
+      const storageReference = sRef(storage, path);
+      await uploadBytes(storageReference, resized, {contentType:'image/jpeg'});
+      const url = await getDownloadURL(storageReference);
+      clearTimeout(_uploadTimeout);
+      // Save URL to Firebase
+      await dbSet(dbRef(db,`users/${myUid}/avatarUrl`), url);
+      myAvatarUrl = url;
+      applyAllAvatars();
+      if(hint) hint.textContent = 'Tap to change photo';
+    }catch(e){
+      clearTimeout(_uploadTimeout);
+      console.error('handleAvatarUpload failed:',e);
+      if(hint) hint.textContent = 'Upload failed — try again';
+    }
+    input.value = '';
+  };
+
+  async function _resizeImage(file, maxSize){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = ()=>{
+        // Centre-crop to square first, then resize — prevents distortion in circles
+        const size = Math.min(img.width, img.height);
+        const sx = Math.round((img.width - size) / 2);
+        const sy = Math.round((img.height - size) / 2);
+        const canvas = document.createElement('canvas');
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        // Draw centre-cropped square at target size
+        canvas.getContext('2d').drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')), 'image/jpeg', 0.85);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  window.autoSaveName = async function(val){
+    const name = (val||'').trim();
+    const err = document.getElementById('settings-profile-error');
+    const success = document.getElementById('settings-profile-success');
+    if(err) err.textContent = '';
+    if(!name){
+      if(err) err.textContent = 'Name cannot be empty.';
+      // Restore previous value
+      const el = document.getElementById('settings-name');
+      if(el) el.value = ME||'';
+      return;
+    }
+    if(name === ME) return; // no change
+    try{
+      await dbSet(dbRef(db, `users/${myUid}/name`), name);
+      if(myCity) await dbSet(dbRef(db, `users/${myUid}/city`), myCity);
+      await dbSet(dbRef(db, `couples/${coupleId}/members/${myUid}`), {
+        name, city: myCity||'', role: myRole||'owner'
+      });
+      ME = name;
+      myName = name;
+      // Update greeting + couple name
+      const greet = document.getElementById('home-greeting');
+      if(greet) greet.textContent = name;
+      const sbEl = document.getElementById('sidebar-couple-name');
+      if(sbEl) sbEl.innerHTML = `${_esc(ME)} <em>&</em> ${_esc(OTHER)}`;
+      const mhEl = document.getElementById('mobile-header-couple-name');
+      if(mhEl) mhEl.innerHTML = `${_esc(ME)} <em>&</em> ${_esc(OTHER)}`;
+      if(success){ success.style.display='block'; success.textContent='Name saved.';
+        setTimeout(()=>{ success.style.display='none'; },2000); }
+    }catch(e){
+      console.error('autoSaveName failed:',e);
+      if(err) err.textContent = 'Could not save — try again.';
+      // Restore
+      const el = document.getElementById('settings-name');
+      if(el) el.value = ME||'';
+    }
+  };
+
+  window.autoSaveStartDate = async function(val){
+    if(!val || !db || !coupleId) return;
+    const parsed = new Date(val+'T12:00:00');
+    if(parsed > new Date()){
+      // Future date — flash the input red
+      const el = document.getElementById('settings-start-date');
+      if(el){ el.style.color='var(--danger,#c0392b)'; setTimeout(()=>el.style.color='',2000); }
+      return;
+    }
+    if(val === coupleStartDate) return; // no change
+    try{
+      await dbSet(dbRef(db,`couples/${coupleId}/startDate`), val);
+      coupleStartDate = val;
+      // Brief success indicator
+      const el = document.getElementById('settings-start-date');
+      if(el){ el.style.color='var(--green,#2a9d5c)'; setTimeout(()=>el.style.color='',1500); }
+    }catch(e){ console.error('autoSaveStartDate failed:',e); }
+  };
+
+  window.toggleLinkingDeleteConfirm = function(){
+    const box = document.getElementById('linking-delete-confirm');
+    const inp = document.getElementById('linking-delete-input');
+    const err = document.getElementById('linking-delete-error');
+    if(!box) return;
+    const isVisible = box.style.display !== 'none';
+    box.style.display = isVisible ? 'none' : 'block';
+    if(!isVisible){
+      if(inp){ inp.value = ''; inp.focus(); }
+      const pw = document.getElementById('linking-delete-pw');
+      if(pw) pw.value = '';
+      if(err) err.textContent = '';
+    }
+  };
+
+  window.doLinkingDeleteAccount = async function(){
+    const inp = document.getElementById('linking-delete-input');
+    const err = document.getElementById('linking-delete-error');
+    const btn = document.getElementById('linking-delete-btn');
+    if(!inp || !err || !btn) return;
+    err.textContent = '';
+
+    if(inp.value.trim() !== 'DELETE'){
+      err.textContent = 'Please type DELETE exactly to confirm.';
+      return;
+    }
+    if(!fbAuth?.currentUser || !db || !myUid){
+      err.textContent = 'Something went wrong. Please try again.';
+      return;
+    }
+
+    // Validate password field
+    const pw = document.getElementById('linking-delete-pw')?.value;
+    if(!pw){ err.textContent = 'Please enter your password to confirm.'; return; }
+
+    // Reauthenticate BEFORE any state changes
+    btn.textContent = 'Verifying…'; btn.disabled = true;
+    try{
+      const credential = fbAuth.EmailAuthProvider.credential(fbAuth.currentUser.email, pw);
+      await fbAuth.reauthenticateWithCredential(fbAuth.currentUser, credential);
+    }catch(reAuthErr){
+      btn.textContent = 'Delete my account'; btn.disabled = false;
+      if(reAuthErr.code === 'auth/wrong-password' || reAuthErr.code === 'auth/invalid-credential'){
+        err.textContent = 'Incorrect password. Please try again.';
+      } else {
+        err.textContent = 'Could not verify your identity. Please try again.';
+      }
+      return;
+    }
+
+    btn.textContent = 'Deleting…';
+    _selfDeleting = true;
+
+    // Helper: silently delete a Storage file
+    const _del = async (path) => {
+      if(!path || !storage || !fbStorageRef || !fbDeleteObject) return;
+      try{ await fbDeleteObject(fbStorageRef(storage, path)); }
+      catch(e){ console.warn('Storage delete skipped:', path, e.code); }
+    };
+
+    // Capture auth user reference before any async ops that might invalidate it
+    const _authUser = fbAuth.currentUser;
+
+    try{
+      if(coupleId){
+        // ── 1. Read all milestone photoPath values before deleting RTDB ──
+        let milestonePaths = [];
+        try{
+          await new Promise((res) => fbOnValue(dbRef(db,`couples/${coupleId}/milestones`), snap=>{
+            const data = snap.val();
+            if(data){ Object.values(data).forEach(m=>{ if(m.photoPath) milestonePaths.push(m.photoPath); }); }
+            res();
+          }, ()=>res(), {onlyOnce:true}));
+        }catch(e){ console.warn('Could not read milestones for cleanup:', e); }
+
+        // ── 2. Read invite code from couple doc ──
+        let storedCode = null;
+        try{
+          await new Promise((res) => fbOnValue(dbRef(db,`couples/${coupleId}/inviteCode`), snap=>{
+            storedCode = snap.val()||null; res();
+          }, ()=>res(), {onlyOnce:true}));
+          if(!storedCode){
+            await new Promise((res) => fbOnValue(dbRef(db,`users/${myUid}/inviteCode`), snap=>{
+              storedCode = snap.val()||null; res();
+            }, ()=>res(), {onlyOnce:true}));
+          }
+        }catch(e){}
+
+        // ── 3. Delete Storage files ──
+        await _del(`avatars/${myUid}.jpg`);
+        await Promise.all(milestonePaths.map(p => _del(p)));
+
+        // ── 4. Delete invite document BEFORE wiping couple node ──
+        if(storedCode){
+          try{ await dbRemove(dbRef(db, `invites/${storedCode}`)); }
+          catch(e){ console.warn('Could not delete invite — may already be gone:', e.code); }
+        }
+
+        // ── 5. Wipe couple node via multi-path update ──
+        // Equivalent to dbRemove("couples/X"). Parent .write rule (member check)
+        // grants access — shallower rules override deeper ones in RTDB.
+        const coupleWipe = {};
+        coupleWipe[`couples/${coupleId}`] = null;
+        await dbUpdate(dbRef(db), coupleWipe);
+
+        // ── 6. Clear own user record ──
+        await dbSet(dbRef(db, `users/${myUid}/coupleId`), null);
+        await dbSet(dbRef(db, `users/${myUid}/inviteCode`), null);
+      } else {
+        // Solo account — just delete avatar
+        await _del(`avatars/${myUid}.jpg`);
+      }
+
+      // ── 7. Delete own user RTDB record ──
+      await dbRemove(dbRef(db, `users/${myUid}`));
+
+      // ── 8. Delete Firebase Auth account ──
+      const currentUser = fbAuth.currentUser || _authUser;
+      if(currentUser) await fbAuth.deleteUser(currentUser);
+
+    }catch(e){
+      console.error('doLinkingDeleteAccount failed:', e);
+      // Try auth deletion even if RTDB failed
+      try{
+        const currentUser = fbAuth.currentUser || _authUser;
+        if(currentUser) await fbAuth.deleteUser(currentUser);
+        return;
+      }catch(authErr){
+        console.error('Auth deletion failed:', authErr);
+        _selfDeleting = false;
+        btn.textContent = 'Delete my account'; btn.disabled = false;
+        err.textContent = 'Something went wrong — please try again.';
+      }
+    }
+  };
+
+  window.showDeleteConfirm = function(){
+    const box = document.getElementById('settings-delete-confirm');
+    const inp = document.getElementById('settings-delete-input');
+    const err = document.getElementById('settings-delete-error');
+    if(!box) return;
+    box.style.display = 'block';
+    if(inp){ inp.value = ''; inp.focus(); }
+    if(err) err.textContent = '';
+    // Scroll to it
+    setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'center'}), 100);
+  };
+
+  window.hideDeleteConfirm = function(){
+    const box = document.getElementById('settings-delete-confirm');
+    const inp = document.getElementById('settings-delete-input');
+    const pw  = document.getElementById('settings-delete-pw');
+    const err = document.getElementById('settings-delete-error');
+    if(box) box.style.display = 'none';
+    if(inp) inp.value = '';
+    if(pw)  pw.value = '';
+    if(err) err.textContent = '';
+  };
+
+  window.doDeleteAccount = async function(){
+    const inp = document.getElementById('settings-delete-input');
+    const err = document.getElementById('settings-delete-error');
+    const btn = document.getElementById('btn-delete-account');
+    if(!inp || !err || !btn) return;
+    err.textContent = '';
+
+    if(inp.value.trim() !== 'DELETE'){
+      err.textContent = 'Please type DELETE exactly to confirm.';
+      return;
+    }
+    if(!fbAuth?.currentUser || !db || !myUid){
+      err.textContent = 'Something went wrong. Please try again.';
+      return;
+    }
+
+    // Validate password field
+    const pw = document.getElementById('settings-delete-pw')?.value;
+    if(!pw){ err.textContent = 'Please enter your password to confirm.'; return; }
+
+    // Reauthenticate BEFORE any state changes — clean failure if wrong password
+    btn.textContent = 'Verifying…'; btn.disabled = true;
+    try{
+      const credential = fbAuth.EmailAuthProvider.credential(fbAuth.currentUser.email, pw);
+      await fbAuth.reauthenticateWithCredential(fbAuth.currentUser, credential);
+    }catch(reAuthErr){
+      btn.textContent = 'Delete everything'; btn.disabled = false;
+      if(reAuthErr.code === 'auth/wrong-password' || reAuthErr.code === 'auth/invalid-credential'){
+        err.textContent = 'Incorrect password. Please try again.';
+      } else {
+        err.textContent = 'Could not verify your identity. Please try again.';
+      }
+      return;
+    }
+
+    btn.textContent = 'Deleting…';
+    _selfDeleting = true; // prevent partner-deleted message from showing for self
+
+    // Helper: silently delete a Storage file — never throws
+    const _delStorage = async (path) => {
+      if(!path || !storage || !fbStorageRef || !fbDeleteObject) return;
+      try{ await fbDeleteObject(fbStorageRef(storage, path)); }
+      catch(e){ console.warn('Storage delete skipped:', path, e.code); }
+    };
+
+    // Capture auth user reference before any async ops that might invalidate it
+    const _authUser = fbAuth.currentUser;
+
+    try{
+      const user = _authUser;
+
+      if(coupleId){
+        // ── 1. Read all milestone photoPath values before deleting RTDB ──
+        let milestonePaths = [];
+        try{
+          await new Promise((res) => fbOnValue(dbRef(db,`couples/${coupleId}/milestones`), snap=>{
+            const data = snap.val();
+            if(data){
+              Object.values(data).forEach(m=>{
+                if(m.photoPath) milestonePaths.push(m.photoPath);
+              });
+            }
+            res();
+          }, ()=>res(), {onlyOnce:true}));
+        }catch(e){ console.warn('Could not read milestones for cleanup:', e); }
+
+        // ── 2. Read invite code — from couple doc (accessible to both owner and joiner) ──
+        let storedCode = null;
+        try{
+          await new Promise((res) => fbOnValue(dbRef(db,`couples/${coupleId}/inviteCode`), snap=>{
+            storedCode = snap.val()||null; res();
+          }, ()=>res(), {onlyOnce:true}));
+          // Fallback to own user record (backward compat with older couples)
+          if(!storedCode){
+            await new Promise((res) => fbOnValue(dbRef(db,`users/${myUid}/inviteCode`), snap=>{
+              storedCode = snap.val()||null; res();
+            }, ()=>res(), {onlyOnce:true}));
+          }
+        }catch(e){}
+
+        // ── 3. Delete all Storage files ───────────────────────────────
+        // My avatar
+        await _delStorage(`avatars/${myUid}.jpg`);
+        // All milestone photos
+        await Promise.all(milestonePaths.map(p => _delStorage(p)));
+
+        // ── 4. Delete invite document BEFORE wiping couple node ───────
+        // Must happen while user is still a couple member.
+        if(storedCode){
+          try{ await dbRemove(dbRef(db, `invites/${storedCode}`)); }
+          catch(e){ console.warn('Could not delete invite — may already be gone:', e.code); }
+        }
+
+        // ── 5. Wipe couple node via multi-path update ─────────────────
+        // dbUpdate(root, {"couples/X": null}) is equivalent to dbRemove("couples/X")
+        // Firebase evaluates the write rule at couples/$coupleId (member check).
+        // Since shallower .write rules override deeper ones in RTDB, the parent
+        // member check grants write access to all children including presence/*.
+        const coupleWipe = {};
+        coupleWipe[`couples/${coupleId}`] = null;
+        await dbUpdate(dbRef(db), coupleWipe);
+
+        // ── 6. Clear coupleId + inviteCode from own user record ────────
+        await dbSet(dbRef(db, `users/${myUid}/coupleId`), null);
+        await dbSet(dbRef(db, `users/${myUid}/inviteCode`), null);
+      } else {
+        // Solo account (no couple) — just delete own avatar
+        await _delStorage(`avatars/${myUid}.jpg`);
+      }
+
+      // ── 7. Delete own user RTDB record ────────────────────────────
+      await dbRemove(dbRef(db, `users/${myUid}`));
+
+      // ── 8. Delete Firebase Auth account ──────────────────────────
+      // Use a separate try/catch so RTDB errors above never block auth deletion
+      // onAuthStateChanged fires → clears all state → shows login screen
+      const currentUser = fbAuth.currentUser || user;
+      if(currentUser){
+        await fbAuth.deleteUser(currentUser);
+      }
+
+    }catch(e){
+      console.error('doDeleteAccount failed:',e);
+      // Still attempt auth deletion even if RTDB steps failed
+      try{
+        const currentUser = fbAuth.currentUser || _authUser;
+        if(currentUser) await fbAuth.deleteUser(currentUser);
+        return; // Auth deleted — onAuthStateChanged handles redirect
+      }catch(authErr){
+        console.error('Auth deletion failed:',authErr);
+        _selfDeleting = false;
+        btn.textContent = 'Delete everything'; btn.disabled = false;
+        err.textContent = 'Something went wrong — please try again.';
+      }
+    }
+  };
+
+  let _inviteInFlight = false;
+  window.showInviteFromSettings = async function(){
+    if(!db || !myUid || !coupleId) return; // guard: must have a couple
+    if(_inviteInFlight) return; // prevent spam
+    _inviteInFlight = true;
+    const sub = document.getElementById('settings-invite-sub');
+    if(sub) sub.textContent = 'Loading…';
+    try{
+      // Get the stored invite code and check expiry
+      let code = '';
+      let expiresAt = 0;
+      await new Promise(res => fbOnValue(dbRef(db,`users/${myUid}/inviteCode`), snap=>{
+        code = snap.val()||''; res();
+      },{onlyOnce:true}));
+      // Check if stored code is expired
+      if(code){
+        await new Promise(res => fbOnValue(dbRef(db,`invites/${code}/expiresAt`), snap=>{
+          expiresAt = snap.val()||0; res();
+        },{onlyOnce:true}));
+        if(expiresAt < Date.now()) code = ''; // expired — regenerate
+      }
+
+      if(!code){
+        // Delete old expired code from DB before generating new one
+        const oldCode = await new Promise(res => fbOnValue(dbRef(db,`users/${myUid}/inviteCode`), snap=>{ res(snap.val()||null); },{onlyOnce:true}));
+        if(oldCode && oldCode !== code) await dbRemove(dbRef(db,`invites/${oldCode}`)).catch(()=>{});
+
+        // Generate a new unique code
+        for(let i=0;i<10;i++){
+          const c = Math.random().toString(36).substring(2,8).toUpperCase();
+          let exists=false;
+          await new Promise(res=>fbOnValue(dbRef(db,`invites/${c}`),snap=>{exists=!!snap.val();res();},{onlyOnce:true}));
+          if(!exists){code=c;break;}
+        }
+        const newExpiresAt = Date.now()+(48*60*60*1000);
+        await dbSet(dbRef(db,`invites/${code}`),{coupleId,createdBy:myUid,createdAt:Date.now(),expiresAt:newExpiresAt,used:false});
+        await dbSet(dbRef(db,`users/${myUid}/inviteCode`),code);
+        await dbSet(dbRef(db,`couples/${coupleId}/inviteCode`),code);
+      }
+
+      const inviteUrl = `${location.origin}/?join=${code}`;
+      _inviteInFlight = false;
+      if(sub) sub.textContent = 'Share a new invite link';
+
+      // Share or copy
+      if(navigator.share){
+        navigator.share({title:'Join my Snug',text:'Join our Snug →',url:inviteUrl}).catch(()=>{});
+      } else {
+        navigator.clipboard.writeText(inviteUrl).then(()=>{
+          if(sub){ sub.textContent = '✓ Link copied!';
+            setTimeout(()=>{ if(sub) sub.textContent='Share a new invite link'; },2500);
+          }
+        }).catch(()=>{
+          if(sub) sub.textContent = inviteUrl;
+        });
+      }
+    }catch(e){
+      _inviteInFlight = false;
+      console.error('showInviteFromSettings failed:',e);
+      if(sub) sub.textContent = 'Something went wrong';
+    }
+  };
+
+  window.toggleSettingsExpand = function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    // Close others
+    document.querySelectorAll('.settings-expandable').forEach(e => {
+      if(e.id !== id) e.classList.remove('open');
+    });
+    el.classList.toggle('open');
+  };
+
   // ── LDR / TOGETHER MODE ────────────────────────────────────
   let _coupleTypeUnsub = null;
 
@@ -4918,6 +5862,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     // Letter page eyebrow
     const eyebrow = document.getElementById('letter-page-eyebrow');
     if(eyebrow) eyebrow.textContent = isLDR ? 'For the day we meet' : 'For our date night';
+
+    // Sidebar mode pill
+    const modePill = document.getElementById('sidebar-mode-pill');
+    if(modePill) modePill.textContent = isLDR ? '📍 Long distance' : '🏠 Living together';
 
     // Time picker — Together mode only
     _showTimeInput && _showTimeInput(isTogether);
@@ -4995,7 +5943,7 @@ Your letters will be kept but your current date will be cleared. You can set a n
       await dbSet(dbRef(db,`couples/${coupleId}/coupleType`), mode);
       // Listener fires on both devices automatically
     }catch(e){ console.error('selectSettingsMode failed:',e); }
-  };;
+  };
 
   window.doSignOut = async function(){
     if(fbAuth && fbAuth.signOut){
@@ -5007,13 +5955,21 @@ Your letters will be kept but your current date will be cleared. You can set a n
       if(statusRefreshInterval){clearInterval(statusRefreshInterval);statusRefreshInterval=null;}
       if(_mjUnsub){try{_mjUnsub();}catch(e){}_mjUnsub=null;}
       if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
+      myAvatarUrl=null;otherAvatarUrl=null;
+      if(_myAvatarUnsub){try{_myAvatarUnsub();}catch(e){}_myAvatarUnsub=null;}
+      if(_otherAvatarUnsub){try{_otherAvatarUnsub();}catch(e){}_otherAvatarUnsub=null;}
+      if(_onboardAvatarBlob){ _onboardAvatarBlob=null; } _inviteInFlight=false;_selfDeleting=false;
+      const _obp = document.getElementById('onboard-avatar-preview');
+      if(_obp && _obp.src && _obp.src.startsWith('blob:')){ URL.revokeObjectURL(_obp.src); _obp.src=''; _obp.style.display='none'; }
+      const _obi = document.getElementById('onboard-avatar-icon');
+      if(_obi) _obi.style.display='';
       if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
       if(_tpUnsub){try{_tpUnsub();}catch(e){}_tpUnsub=null;}
       _mjMyEntry=null;_mjOtherEntry=null;_mjStreakCount=0;
       coupleType='ldr';
       myCity=null;otherCity=null;myCoords=null;otherCoords=null;
       myTz=null;otherTz=null;
-      coupleStartDate=null;coupleMeetupDate=null;meetupDate=null;
+      coupleStartDate=null;coupleMeetupDate=null;meetupDate=null;_stopLetterCountdown&&_stopLetterCountdown();
       localNotes=[];localMilestones=[];localBucket=[];
       blFilter="all";blEditKey=null;
       currentLetterRoundId=null;letterRounds=[];
@@ -5024,14 +5980,19 @@ Your letters will be kept but your current date will be cleared. You can set a n
       if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
       if(pulseTimeInterval){clearInterval(pulseTimeInterval);pulseTimeInterval=null;}
       if(mapInstance){try{mapInstance.remove();}catch(e){}mapInstance=null;myMarker=null;otherMarker=null;connectLine=null;}
+      if(placesMapInstance){try{placesMapInstance.remove();}catch(e){}placesMapInstance=null;}
+      _msRegistry.clear();
       if(unsubNotes){try{unsubNotes();}catch(e){}unsubNotes=null;}
       if(unsubMilestones){try{unsubMilestones();}catch(e){}unsubMilestones=null;}
       if(unsubBucket){try{unsubBucket();}catch(e){}unsubBucket=null;}
       if(unsubPulse){try{unsubPulse();}catch(e){}unsubPulse=null;}
       if(_watchPartnerUnsub){try{_watchPartnerUnsub();}catch(e){}_watchPartnerUnsub=null;}
-      if(typeof _unsubWatchOther!=="undefined"&&_unsubWatchOther){try{_unsubWatchOther();}catch(e){}; _unsubWatchOther=null;}
-      if(_watchPartnerUnsub){try{_watchPartnerUnsub();}catch(e){}; _watchPartnerUnsub=null;}
-      if(mapInstance){try{mapInstance.remove();}catch(e){}mapInstance=null;}
+      if(typeof _unsubWatchOther!=="undefined"&&_unsubWatchOther){try{_unsubWatchOther();}catch(e){}_unsubWatchOther=null;}
+      _lastPulseSent=0;
+      _dnCurrentPlan={};_tpMyCurrentVal='';
+      _dnTimeVal='19:00';
+      _selectedActivity=null;_selectedMood=null;
+      repositionKey=null;repositionDragging=false;pendingPhotoForKey=null;
       // Hide main, show auth
       document.getElementById('main').style.display='none';
       showAuthWrap();
@@ -5045,11 +6006,12 @@ Your letters will be kept but your current date will be cleared. You can set a n
     document.getElementById(`page-${name}`).classList.add("active");
     document.getElementById(`nav-${name}`).classList.add("active");
     closeSidebar();
+    _stopLetterCountdown();
     if(name==="settings"){
       window.openSettingsPage();
     }
     if(name==="letter"){
-      setTimeout(()=>initLetterPage(),50);
+      initLetterPage(_startLetterCountdown);
     }
     if(name==="memory"){
       renderMemoryJarPage&&renderMemoryJarPage();
@@ -5080,11 +6042,11 @@ Your letters will be kept but your current date will be cleared. You can set a n
     const myL=`${ME} · ${myCity}`,oL=`${OTHER} · ${otherCity}`;
     const mhEl=document.getElementById('mobile-header-couple-name');
     const sbEl=document.getElementById('sidebar-couple-name');
-    if(mhEl) mhEl.innerHTML=`${ME} <em>&</em> ${OTHER}`;
-    if(sbEl) sbEl.innerHTML=`${ME} <em>&</em> ${OTHER}`;
+    if(mhEl) mhEl.innerHTML=`${_esc(ME)} <em>&</em> ${_esc(OTHER)}`;
+    if(sbEl) sbEl.innerHTML=`${_esc(ME)} <em>&</em> ${_esc(OTHER)}`;
     const ftEl=document.getElementById('app-footer');
     if(ftEl) ftEl.textContent=`${ME} & ${OTHER}`;
-    document.getElementById("sidebar-user").textContent=ME||"";
+    // sidebar-user replaced by mode pill
     document.getElementById("my-city").textContent=myL;
     document.getElementById("other-city").textContent=oL;
     document.getElementById("my-weather-city").textContent=myL;
@@ -5126,9 +6088,11 @@ Your letters will be kept but your current date will be cleared. You can set a n
         updateMomentsSubtitles();
         renderStatusCard&&renderStatusCard();
         startStatusRefresh&&startStatusRefresh();
-        _mjLoadAndRender&&_mjLoadAndRender();
-        applyMode&&applyMode(coupleType);
       });
+      // One-time startup calls — not repeated on every note change
+      _mjLoadAndRender&&_mjLoadAndRender();
+      applyMode&&applyMode(coupleType);
+      loadAvatars&&loadAvatars();
       // Milestones
       if(unsubMilestones)unsubMilestones();
       unsubMilestones=fbOnValue(dbRef(db,`couples/${coupleId}/milestones`),snap=>{
