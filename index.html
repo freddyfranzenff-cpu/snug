@@ -1929,6 +1929,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       // Prevent future dates in the "Together since" picker
       const sdInput=document.getElementById('couple-startdate');
       if(sdInput) sdInput.max=new Date().toLocaleDateString('en-CA');
+      // Reset create button in case it was mid-execution when redirect happened
+      const createBtn=document.getElementById('create-couple-btn');
+      if(createBtn){ createBtn.textContent='Create our Snug'; createBtn.disabled=false; }
+      const linkingErr=document.getElementById('linking-error');
+      if(linkingErr) linkingErr.textContent='';
     }
     const target = document.getElementById(id);
     if(target) target.style.display='block';
@@ -2116,6 +2121,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   };
 
   let _watchPartnerUnsub = null; // prevent duplicate watchForPartner listeners
+  let _membersUnsub = null;      // unsub for the persistent couple members listener
   function watchForPartner(cId, myUid){
     // Cancel any existing watcher before registering a new one
     if(_watchPartnerUnsub){ try{_watchPartnerUnsub();}catch(e){} _watchPartnerUnsub=null; }
@@ -2338,6 +2344,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           if(unsubBucket){try{unsubBucket();}catch(e){}unsubBucket=null;}
           if(unsubPulse){try{unsubPulse();}catch(e){}unsubPulse=null;}
           if(_watchPartnerUnsub){try{_watchPartnerUnsub();}catch(e){}_watchPartnerUnsub=null;}
+          if(_membersUnsub){try{_membersUnsub();}catch(e){}_membersUnsub=null;}
           if(_unsubWatchOther){try{_unsubWatchOther();}catch(e){}_unsubWatchOther=null;}
           if(mapInstance){try{mapInstance.remove();}catch(e){}mapInstance=null;}
           if(placesMapInstance){try{placesMapInstance.remove();}catch(e){}placesMapInstance=null;}
@@ -2380,10 +2387,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           // Has couple — derive partner uid from members (no partnerId stored on user)
           const cId = userData.coupleId;
           let _coupleInitFired = false;
-          fbOnValue(dbRef(db,`couples/${cId}/members`), snap2=>{
+          if(_membersUnsub){ try{_membersUnsub();}catch(e){} _membersUnsub=null; }
+          _membersUnsub = fbOnValue(dbRef(db,`couples/${cId}/members`), snap2=>{
             const members = snap2.val();
             if(_coupleInitFired && !members){
               if(_selfDeleting) return; // we triggered it — onAuthStateChanged handles redirect
+              if(!fbAuth.currentUser) return; // user signed out — not a partner deletion
               // Partner deleted the couple — clean up all listeners first
               if(_coupleTypeUnsub){try{_coupleTypeUnsub();}catch(e){}_coupleTypeUnsub=null;}
               if(_dnUnsub){try{_dnUnsub();}catch(e){}_dnUnsub=null;}
@@ -2445,6 +2454,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
             // Permission denied — couple was deleted, this user is no longer a member
             console.warn('Could not read couple members — couple likely deleted:', error.code);
             if(_selfDeleting) return; // we triggered it ourselves
+            if(!fbAuth.currentUser) return; // user signed out — not a partner deletion
             // Works for both login-time and live-in-app cases
             myUid = myUid || user.uid; // may already be set if live in app
             coupleId = null;
@@ -5947,6 +5957,9 @@ Your letters will be kept but your current date will be cleared. You can set a n
 
   window.doSignOut = async function(){
     if(fbAuth && fbAuth.signOut){
+      // Unsubscribe the members listener BEFORE signing out
+      // to prevent it from firing PERMISSION_DENIED and showing the wrong screen
+      if(_membersUnsub){ try{_membersUnsub();}catch(e){} _membersUnsub=null; }
       await fbAuth.signOut();
       // Reset all couple/session state so a re-login starts clean
       ME=null;OTHER=null;coupleId=null;myUid=null;partnerUid=null;myRole=null;
