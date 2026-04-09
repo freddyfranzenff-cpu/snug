@@ -2829,6 +2829,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     if(btn.disabled) return; // prevent double-tap
     btn.textContent="Saving…";
     btn.disabled=true;
+    try{
     const m={title,note,date,tag,addedBy:editingKey?(editingOriginalAuthor||ME):ME,time:Date.now()};
     if(endDate&&endDate!==date)m.endDate=endDate;
     if(locationStr){
@@ -2864,7 +2865,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         try{
           const file = pendingPhotoFile;
           const pos = pendingPhotoPosition;
-          const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
+          const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
           const path = `milestones/${currentEditKey}/${Date.now()}_${baseName}.jpg`;
           btn.textContent = "Uploading…";
           const compressed = await compressImage(file, 1200);
@@ -2901,65 +2902,83 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       else{const idx=localMilestones.findIndex(x=>x._key===currentEditKey);if(idx>-1)localMilestones[idx]={...mToSave,_key:currentEditKey};renderMilestones([...localMilestones]);}
       editingKey=null;
     } else {
+      // Push the milestone FIRST — it appears immediately for both users.
+      // Then upload the photo and patch it in with a single dbUpdate.
+      // This avoids any hang blocking the milestone from appearing.
       let finalKey = null;
-      // If a photo is selected, upload it FIRST so photoURL is included in the push.
-      // This avoids the two-step race where the card renders without a photo
-      // and then has to re-render after the upload completes.
-      let uploadedPhotoURL = null;
-      let uploadedPhotoPath = null;
-      if(pendingPhotoFile && storage){
-        try{
-          const file = pendingPhotoFile;
-          const pos = pendingPhotoPosition;
-          const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
-          const safeName = `${baseName}.jpg`;
-          // We need a key for the path but don't have it yet — use a temp ID
-          // We'll use the Firebase push key pattern: generate a temp path key now
-          const tempKey = Date.now().toString(36) + Math.random().toString(36).substring(2,7);
-          const path = `milestones/${tempKey}/${Date.now()}_${safeName}`;
-          btn.textContent = "Uploading…";
-          const compressed = await compressImage(file, 1200);
-          const uploadData = (compressed instanceof Blob) ? compressed : new Blob([compressed], {type:"image/jpeg"});
-          const storageRef2 = fbStorageRef(storage, path);
-          await Promise.race([
-            fbUploadBytes(storageRef2, uploadData, {contentType:"image/jpeg"}),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error("Upload timeout")),30000))
-          ]);
-          uploadedPhotoURL = await fbGetDownloadURL(storageRef2);
-          uploadedPhotoPath = path;
-          m.photoURL = uploadedPhotoURL;
-          m.photoPath = uploadedPhotoPath;
-          if(pos && pos !== "50% 50%") m.photoPosition = pos;
-        }catch(uploadErr){
-          console.error("Photo upload failed before push:", uploadErr);
-          // Continue saving WITHOUT photo — user can add it later from the card
-          uploadedPhotoURL = null;
-          uploadedPhotoPath = null;
-          delete m.photoURL; delete m.photoPath; delete m.photoPosition;
-        }
-        btn.textContent = "Saving…";
-      }
       if(db&&dbPush){const newRef=await dbPush(dbRef(db,`couples/${coupleId}/milestones`),m);finalKey=newRef.key;}
       else{finalKey=Date.now().toString();localMilestones.push({...m,_key:finalKey});renderMilestones([...localMilestones]);}
-      // Update registry if photo was uploaded
-      if(finalKey && uploadedPhotoURL){
-        const regItem = _msRegistry.get(finalKey)||{};
-        _msRegistry.set(finalKey, {...regItem, _key:finalKey, photoURL:uploadedPhotoURL, photoPath:uploadedPhotoPath, photoPosition:m.photoPosition||'center center'});
+
+      if(pendingPhotoFile && finalKey && storage){
+        const file = pendingPhotoFile;
+        const pos = pendingPhotoPosition;
+        pendingPhotoFile = null;
+        pendingPhotoPosition = "50% 50%";
+        const pbtn=document.getElementById("m-photo-btn");
+        const plbl=document.getElementById("m-photo-btn-label");
+        if(pbtn)pbtn.classList.remove("has-photo");
+        if(plbl)plbl.textContent="Add photo";
+
+        // Compress image NOW, in the active foreground context of saveMilestone.
+        // Android Chrome throttles FileReader/canvas in background tasks after
+        // a layout change (form collapse). Doing compression here guarantees
+        // the FileReader fires while the execution context is still active.
+        let compressedData = null;
+        try{
+          const raw = await compressImage(file, 1200);
+          compressedData = (raw instanceof Blob) ? raw : new Blob([raw], {type:"image/jpeg"});
+        }catch(compErr){
+          compressedData = (file instanceof Blob) ? file : new Blob([file], {type:"image/jpeg"});
+        }
+
+        // Now launch the background IIFE — only network I/O remains, never throttled
+        const capturedKey = finalKey;
+        const capturedPos = pos;
+        const capturedBlob = compressedData;
+        ;(async()=>{
+          try{
+            const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
+            const path = `milestones/${capturedKey}/${Date.now()}_${baseName}.jpg`;
+            const photoRef = fbStorageRef(storage, path);
+            await Promise.race([
+              fbUploadBytes(photoRef, capturedBlob, {contentType:"image/jpeg"}),
+              new Promise((_,rej)=>setTimeout(()=>rej(new Error("Upload timeout")),60000))
+            ]);
+            const url = await fbGetDownloadURL(photoRef);
+            // Single dbUpdate — one listener fire, photo appears atomically
+            const photoUpdate = {};
+            photoUpdate[`couples/${coupleId}/milestones/${capturedKey}/photoURL`] = url;
+            photoUpdate[`couples/${coupleId}/milestones/${capturedKey}/photoPath`] = path;
+            if(capturedPos && capturedPos !== "50% 50%") photoUpdate[`couples/${coupleId}/milestones/${capturedKey}/photoPosition`] = capturedPos;
+            await dbUpdate(dbRef(db), photoUpdate);
+            // Update registry so view/reposition works immediately
+            const regItem = _msRegistry.get(capturedKey)||{};
+            _msRegistry.set(capturedKey, {...regItem, _key:capturedKey, photoURL:url, photoPath:path, photoPosition:capturedPos||'center center'});
+          }catch(photoErr){
+            console.error("Background photo upload failed:", photoErr);
+            // Milestone already saved — user can add photo later via the card
+          }
+        })();
+      } else {
+        pendingPhotoFile=null;
+        pendingPhotoPosition="50% 50%";
+        const pbtn=document.getElementById("m-photo-btn");
+        const plbl=document.getElementById("m-photo-btn-label");
+        if(pbtn)pbtn.classList.remove("has-photo");
+        if(plbl)plbl.textContent="Add photo";
       }
-      pendingPhotoFile=null;
-      pendingPhotoPosition="50% 50%";
-      const pbtn=document.getElementById("m-photo-btn");
-      const plbl=document.getElementById("m-photo-btn-label");
-      if(pbtn)pbtn.classList.remove("has-photo");
-      if(plbl)plbl.textContent="Add photo";
     }
     document.getElementById("m-title-input").value="";
     document.getElementById("m-note-input").value="";
     document.getElementById("m-enddate-input").value="";
     document.getElementById("m-location-input").value="";
     document.getElementById("add-milestone-form").classList.remove("open");
-    btn.textContent="Save";
-    btn.disabled=false;
+    }catch(saveErr){
+      console.error("saveMilestone failed:", saveErr);
+    }finally{
+      btn.textContent="Save";
+      btn.disabled=false;
+    }
   };
   window.deleteMilestone=async function(key){
     // Read photoPath from local cache — avoids race between async Firebase read and immediate RTDB delete
@@ -3976,12 +3995,32 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       input.value = "";
       return;
     }
-    pendingPhotoFile = file;
-    pendingPhotoPosition = "50% 50%";
-    repositionMode = "new";
-    // Show reposition modal immediately with local blob URL
-    const blobUrl = URL.createObjectURL(file);
-    openRepositionModalForNew(blobUrl);
+    // On iOS PWA, File objects from input[type=file] can become stale if the user
+    // spends time filling in the form before saving. Convert to a Blob immediately
+    // by reading the file into memory — Blobs are not subject to iOS garbage collection.
+    const reader = new FileReader();
+    reader.onload = e => {
+      const arrayBuffer = e.target.result;
+      const mimeType = file.type || "image/jpeg";
+      const stableBlob = new Blob([arrayBuffer], {type: mimeType});
+      // Attach original name for path generation
+      stableBlob._name = file.name;
+      pendingPhotoFile = stableBlob;
+      pendingPhotoPosition = "50% 50%";
+      repositionMode = "new";
+      // Show reposition modal immediately with local blob URL
+      const blobUrl = URL.createObjectURL(stableBlob);
+      openRepositionModalForNew(blobUrl);
+    };
+    reader.onerror = () => {
+      // Fallback: use original File if read fails
+      pendingPhotoFile = file;
+      pendingPhotoPosition = "50% 50%";
+      repositionMode = "new";
+      const blobUrl = URL.createObjectURL(file);
+      openRepositionModalForNew(blobUrl);
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   window.triggerPhotoUploadFor = function(key){
@@ -4033,7 +4072,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     // Compress — always outputs JPEG blob
     const compressed = await compressImage(file, 1200);
     // Force safe .jpg filename regardless of input (handles HEIC, no-extension, etc.)
-    const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
+    const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
     const safeName = `${baseName}.jpg`;
     const path = `milestones/${key}/${Date.now()}_${safeName}`;
     const ref = fbStorageRef(storage, path);
