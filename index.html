@@ -183,7 +183,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   /* ── MAIN ── */
   /* body has definite height (px from --app-height JS). flex:1 + min-height:0 is all main needs. */
   /* overflow:hidden removed — body's overflow:hidden clips everything; main's was blocking child scroll. */
-  .main{flex:1;min-height:0;padding:0;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;}
+  .main{flex:1;min-height:0;padding:0;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;overflow:hidden;}
   .page{display:none;animation:fadeUp .35s ease both;}
   /* height:100% removed — conflicts with flex:1 in column direction, causing double-height */
   .page.active{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
@@ -722,7 +722,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     cursor:pointer;transition:all .18s;font-weight:500;letter-spacing:.01em;}
   .home-tab.active{color:var(--k);font-weight:700;background:var(--kll);}
   .home-tab-panel{display:none;}
-  .home-tab-panel.active{display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding-top:.75rem;padding-bottom:calc(3.5rem + env(safe-area-inset-bottom,0px));}
+  .home-tab-panel.active{display:block;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding-top:.75rem;padding-bottom:calc(3.5rem + env(safe-area-inset-bottom,0px));}
   /* home-greeting-row kept for backward compat but hidden */
   .home-greeting-row{display:none}
   .home-days-badge{display:none}
@@ -977,7 +977,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   /* Tab panels — flex:1 1 0 gives Chrome a definite computed height to scroll against */
   .page-tab-panel{display:none;}
-  .page-tab-panel.active{display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:.75rem .95rem calc(3.5rem + env(safe-area-inset-bottom,0px));}
+  .page-tab-panel.active{display:block;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:.75rem .95rem calc(3.5rem + env(safe-area-inset-bottom,0px));}
 
   .home-map-card { display: none !important; }
   #map { display: none !important; }
