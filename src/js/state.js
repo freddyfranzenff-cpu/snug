@@ -14,7 +14,7 @@
 export const state = {
   // ── Firebase handles (set by tryInitFirebase) ──────────────
   db: null, dbRef: null, dbSet: null, dbPush: null, dbRemove: null,
-  fbOnValue: null, dbUpdate: null,
+  fbOnValue: null, dbUpdate: null, fbRunTransaction: null,
   storage: null, fbStorageRef: null, fbUploadBytes: null,
   fbGetDownloadURL: null, fbDeleteObject: null,
   fbAuth: null,
@@ -99,6 +99,9 @@ export const state = {
 
   // ── Couple type listener ──────────────────────────────────
   _coupleTypeUnsub: null,
+
+  // ── Meetup date live listener ─────────────────────────────
+  _meetupDateUnsub: null,
 
   // ── Invite link flag ──────────────────────────────────────
   _inviteInFlight: false,

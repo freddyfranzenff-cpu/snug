@@ -197,8 +197,8 @@
   <div class="auth-screen-card" id="screen-invite" style="display:none;">
     <p class="login-eyebrow">share with your partner</p>
     <h1 class="login-title">Your invite <em>link</em></h1>
-    <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Share this link with your partner so they can join your Snug.</p>
-    <p style="font-size:.58rem;color:var(--pk);background:rgba(232,98,42,0.07);border-radius:10px;padding:.6rem .8rem;line-height:1.6;margin-bottom:.75rem;">⚠️ Ask your partner to <strong>complete sign up in their browser first</strong> before installing the app to their home screen.</p>
+    <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Share this link with your partner so your partner can join your Snug.</p>
+    <p style="font-size:.58rem;color:var(--pk);background:rgba(232,98,42,0.07);border-radius:10px;padding:.6rem .8rem;line-height:1.6;margin-bottom:.75rem;">⚠️ Ask your partner to <strong>complete sign up in the browser first</strong> before installing the app to the home screen.</p>
     <div class="invite-link-box" id="invite-link-display">—</div>
     <p style="font-size:.58rem;color:var(--muted);margin:.75rem 0 1rem;text-align:center;">Waiting for your partner to join…</p>
     <div class="invite-waiting-dots"><span></span><span></span><span></span></div>
@@ -309,7 +309,7 @@
           </div>
           <div style="flex:1;min-width:0;">
             <p class="pulse-row-title">Send <span id="pulse-other-name">—</span> a pulse</p>
-            <p class="pulse-row-sub">They'll feel a little heartbeat</p>
+            <p class="pulse-row-sub"><span id="pulse-row-sub-name">—</span> will feel a little heartbeat</p>
           </div>
           <span class="pulse-row-last" id="pulse-last-sent" style="display:none;"></span>
         </div>
@@ -409,7 +409,7 @@
           </div>
           <div class="tp-display-row">
             <div class="tp-avatar tp-avatar-other" id="tp-other-avatar">S</div>
-            <div class="tp-display-empty" id="tp-other-text">Waiting for their plan…</div>
+            <div class="tp-display-empty" id="tp-other-text">Waiting for a plan from <span class="partner-name-slot">your partner</span>…</div>
           </div>
           <div class="mj-input-row">
             <button class="mj-add-btn" onclick="openTpSheet()">+ Update plan</button>
@@ -458,9 +458,7 @@
             <div class="cd-row" style="margin-top:0;"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
             <div class="datetime-row">
               <p class="card-label" style="margin:0;display:none;" id="cd-card-label">Next meetup</p>
-              <input type="date" id="meetup-date-input" class="meetup-input" onchange="updateMeetupDate(this.value)"/>
-              <input type="time" id="meetup-time-input" class="time-input meetup-time-hidden" value="19:00" onchange="updateMeetupTime(this.value)" style="display:none;"/>
-              <button type="button" id="dn-picker-btn" class="meetup-input dn-picker-btn" onclick="openDnPickerSheet()" style="display:none;">Set date night</button>
+              <button type="button" id="dn-picker-btn" class="meetup-input dn-picker-btn" onclick="openDnPickerSheet()">Set date</button>
             </div>
           </div>
         </div>
@@ -486,7 +484,7 @@
         <div class="mj-entry-row" id="mj-preview-other-row">
           <div class="mj-avatar mj-avatar-other" id="mj-preview-other-avatar">S</div>
           <div style="flex:1;">
-            <div class="mj-entry-text mj-empty-entry" id="mj-preview-other-text">Waiting for their moment…</div>
+            <div class="mj-entry-text mj-empty-entry" id="mj-preview-other-text">Waiting for a moment from <span class="mj-other-name-slot">—</span>…</div>
           </div>
         </div>
         <div class="mj-input-row" id="mj-preview-input-row">
@@ -783,7 +781,7 @@
       <div class="mj-entry-row" id="mj-today-other-row">
         <div class="mj-avatar mj-avatar-other" id="mj-today-other-avatar">S</div>
         <div style="flex:1;">
-          <div class="mj-entry-text mj-empty-entry" id="mj-today-other-text">Waiting for their moment…</div>
+          <div class="mj-entry-text mj-empty-entry" id="mj-today-other-text">Waiting for a moment from <span class="mj-other-name-slot">—</span>…</div>
           <div class="mj-entry-meta" id="mj-today-other-time"></div>
         </div>
       </div>
@@ -1106,7 +1104,7 @@
           Push notifications aren't available on this device. On iOS, install Snug to your home screen first (Safari → Share → Add to Home Screen) — iOS 16.4 or later.
         </p>
         <p id="notif-blocked-msg" style="display:none;font-size:.65rem;color:var(--muted);line-height:1.6;margin:0 0 .75rem;">
-          Notifications are blocked. Enable them in your browser settings for this site.
+          Notifications are blocked. Enable notifications in your browser settings for this site.
         </p>
         <div id="notif-enable-wrap" style="display:none;margin-bottom:.75rem;">
           <button class="settings-btn" id="notif-enable-btn" onclick="window.enableNotifications()">Enable notifications</button>
@@ -1118,7 +1116,7 @@
           <div class="settings-row-new">
             <div style="flex:1;">
               <div class="settings-row-label">Pulses</div>
-              <div class="settings-row-muted">When they tap the heart</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> taps the heart</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="pulse"/><span></span></label>
           </div>
@@ -1153,7 +1151,7 @@
           <div class="settings-row-new">
             <div style="flex:1;">
               <div class="settings-row-label">Status updates</div>
-              <div class="settings-row-muted">When they share what they're up to</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> shares what's happening</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="status"/><span></span></label>
           </div>
@@ -1170,6 +1168,27 @@
               <div class="settings-row-muted">When the time is set</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="dateNight"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Mystery date hints</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> drops a clue</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="dnHint"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Mystery date guesses</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> takes a guess</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="dnGuess"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Mystery date reveal</div>
+              <div class="settings-row-muted">When the surprise is revealed</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="dnReveal"/><span></span></label>
           </div>
         </div>
         <p id="notif-saved-msg" style="display:none;font-size:.62rem;color:var(--muted);margin:.4rem 0 0;">Saved</p>
@@ -1202,25 +1221,27 @@
   <div class="together-sheet-overlay" id="dn-picker-sheet-overlay" onclick="if(event.target===this)closeDnPickerSheet()">
     <div class="together-sheet" id="dn-picker-sheet">
       <div class="together-sheet-handle" id="dn-picker-sheet-handle"></div>
-      <div class="together-sheet-title">Next date night</div>
+      <div class="together-sheet-title" id="dn-picker-title">Next date night</div>
       <div class="together-sheet-body">
         <label class="together-sheet-label">Date</label>
         <input class="together-sheet-input" id="dn-picker-date" type="date"/>
-        <label class="together-sheet-label">Time <span style="color:var(--muted);font-weight:500;">(optional)</span></label>
-        <div class="dn-picker-time-row">
-          <input class="together-sheet-input" id="dn-picker-time" type="time" placeholder="--:--"/>
-          <button type="button" class="dn-picker-time-clear" id="dn-picker-time-clear" onclick="document.getElementById('dn-picker-time').value='';">Clear</button>
-        </div>
-        <label class="together-sheet-label">Mode</label>
-        <div class="dn-mode-toggle">
-          <button type="button" class="dn-mode-opt active" data-mode="open" onclick="selectDnMode('open')">
-            <div class="dn-mode-opt-title">Open</div>
-            <div class="dn-mode-opt-sub">You both plan it together</div>
-          </button>
-          <button type="button" class="dn-mode-opt" data-mode="mystery" onclick="selectDnMode('mystery')">
-            <div class="dn-mode-opt-title">Mystery ✨</div>
-            <div class="dn-mode-opt-sub">Surprise your partner with hints</div>
-          </button>
+        <div id="dn-picker-together-only">
+          <label class="together-sheet-label">Time <span style="color:var(--muted);font-weight:500;">(optional)</span></label>
+          <div class="dn-picker-time-row">
+            <input class="together-sheet-input" id="dn-picker-time" type="time" placeholder="--:--"/>
+            <button type="button" class="dn-picker-time-clear" id="dn-picker-time-clear" onclick="document.getElementById('dn-picker-time').value='';">Clear</button>
+          </div>
+          <label class="together-sheet-label">Mode</label>
+          <div class="dn-mode-toggle">
+            <button type="button" class="dn-mode-opt active" data-mode="open" onclick="selectDnMode('open')">
+              <div class="dn-mode-opt-title">Open</div>
+              <div class="dn-mode-opt-sub">You both plan it together</div>
+            </button>
+            <button type="button" class="dn-mode-opt" data-mode="mystery" onclick="selectDnMode('mystery')">
+              <div class="dn-mode-opt-title">Mystery ✨</div>
+              <div class="dn-mode-opt-sub">Surprise your partner with hints</div>
+            </button>
+          </div>
         </div>
         <p class="dn-picker-hint" id="dn-picker-hint">Pick a date and we'll both plan it.</p>
       </div>
@@ -1238,7 +1259,7 @@
         <label class="together-sheet-label">Hint <span id="dn-hint-count" style="color:var(--muted);font-weight:500;"></span></label>
         <textarea class="together-sheet-input together-sheet-textarea" id="dn-hint-input" placeholder="A little clue…" maxlength="200" oninput="document.getElementById('dn-hint-counter').textContent=this.value.length+'/200'"></textarea>
         <div class="together-sheet-counter" id="dn-hint-counter">0/200</div>
-        <p class="dn-picker-hint">Hints can't be edited after you post them.</p>
+        <p class="dn-picker-hint">Hints can't be edited once posted.</p>
       </div>
       <button class="together-sheet-save" onclick="submitDnHint()">Post hint</button>
       <button class="together-sheet-cancel" onclick="closeDnHintSheet()">Cancel</button>
@@ -1256,7 +1277,7 @@
         <label class="together-sheet-label">What do you think?</label>
         <textarea class="together-sheet-input together-sheet-textarea" id="dn-guess-input" placeholder="Your best guess…" maxlength="200" oninput="document.getElementById('dn-guess-counter').textContent=this.value.length+'/200'"></textarea>
         <div class="together-sheet-counter" id="dn-guess-counter">0/200</div>
-        <p class="dn-picker-hint">Guesses can't be edited after you post them.</p>
+        <p class="dn-picker-hint">Guesses can't be edited once posted.</p>
       </div>
       <button class="together-sheet-save" onclick="submitDnGuess()">Post guess</button>
       <button class="together-sheet-cancel" onclick="closeDnGuessSheet()">Cancel</button>

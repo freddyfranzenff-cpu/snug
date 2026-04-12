@@ -60,19 +60,14 @@ function applyMode(type){
 
   // sidebar-mode-pill removed
 
-  // Time picker — Together mode only
-  R._showTimeInput && R._showTimeInput(isTogether);
-  // In Together mode, swap native date input for the picker button
-  const pickerBtn = document.getElementById('dn-picker-btn');
-  const nativeDateInput = document.getElementById('meetup-date-input');
-  if(pickerBtn) pickerBtn.style.display = isTogether ? '' : 'none';
-  if(nativeDateInput) nativeDateInput.style.display = isTogether ? 'none' : '';
-  if(isTogether) R._syncDnPickerBtn && R._syncDnPickerBtn();
+  // Picker button is used in both modes — label and sheet contents adapt via coupleType.
+  R._syncDnPickerBtn && R._syncDnPickerBtn();
 
-  // Date night planner — Together mode only, only if meetupDate is set
+  // Date night planner — Together mode, any time meetupDate is set (past or future).
+  // Past dates stay visible so users can tap "Date done → save as milestone".
   const dnPlanner = document.getElementById('dn-planner');
   if(dnPlanner){
-    const show = isTogether && !!state.meetupDate && state.meetupDate > new Date();
+    const show = isTogether && !!state.meetupDate;
     dnPlanner.classList.toggle('visible', show);
     if(show) R.loadDnPlanner && R.loadDnPlanner();
   }
@@ -91,6 +86,46 @@ function startCoupleTypeListener(){
   state._coupleTypeUnsub = state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/coupleType`), snap=>{
     const type = snap.val()||'ldr';
     R.applyMode(type);
+  });
+}
+
+// Live listener on meetupDate. Keeps both partners in sync when either side
+// picks/replaces a date — critical for the mystery flow, where dateKey drives
+// which datePlan node loadDnPlanner subscribes to.
+function startMeetupDateListener(){
+  if(state._meetupDateUnsub){ try{state._meetupDateUnsub();}catch(e){} state._meetupDateUnsub=null; }
+  if(!state.db||!state.coupleId) return;
+  state._meetupDateUnsub = state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), snap=>{
+    const stored = snap.val();
+    const prevKey = state.meetupDate
+      ? `${state.meetupDate.getFullYear()}-${String(state.meetupDate.getMonth()+1).padStart(2,'0')}-${String(state.meetupDate.getDate()).padStart(2,'0')}`
+      : null;
+    if(!stored){
+      state.meetupDate = null;
+      state.coupleMeetupDate = '';
+    } else {
+      state.coupleMeetupDate = stored;
+      state.meetupDate = new Date(stored);
+      if(stored.includes('T') && !stored.endsWith('T00:00:00')){
+        const timePart = stored.split('T')[1]?.substring(0,5)||'19:00';
+        state._dnTimeVal = timePart;
+      }
+    }
+    const newKey = state.meetupDate
+      ? `${state.meetupDate.getFullYear()}-${String(state.meetupDate.getMonth()+1).padStart(2,'0')}-${String(state.meetupDate.getDate()).padStart(2,'0')}`
+      : null;
+    // Refresh UI
+    R.startCountdown && R.startCountdown();
+    R._syncDnPickerBtn && R._syncDnPickerBtn();
+    // Toggle dn-planner visibility + rebind loadDnPlanner to new dateKey
+    const dnPlanner = document.getElementById('dn-planner');
+    if(dnPlanner){
+      const show = state.coupleType==='together' && !!state.meetupDate;
+      dnPlanner.classList.toggle('visible', show);
+    }
+    if(state.coupleType==='together' && newKey !== prevKey){
+      R.loadDnPlanner && R.loadDnPlanner();
+    }
   });
 }
 
@@ -133,8 +168,7 @@ Your letters will be kept but your current date will be cleared. You can set a n
       state.meetupDate = null;
       // Update countdown UI
       if(window.startCountdown) R.startCountdown();
-      const input = document.getElementById('meetup-date-input');
-      if(input) input.value = '';
+      R._syncDnPickerBtn && R._syncDnPickerBtn();
     }catch(e){ console.error('clearMeetupDate failed:',e); }
   }
 
@@ -147,3 +181,4 @@ Your letters will be kept but your current date will be cleared. You can set a n
 // ── Register for cross-module access ─────────────────────
 R.applyMode = applyMode;
 R.startCoupleTypeListener = startCoupleTypeListener;
+R.startMeetupDateListener = startMeetupDateListener;

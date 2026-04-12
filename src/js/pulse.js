@@ -116,6 +116,12 @@ function initPulse(){
   // Set other name in send sub
   const sub=document.getElementById("pulse-other-name");
   if(sub)sub.textContent=state.OTHER;
+  const subName=document.getElementById("pulse-row-sub-name");
+  if(subName)subName.textContent=state.OTHER||'Your partner';
+  // Fill every `.partner-name-slot` / `.mj-other-name-slot` with the partner's display name.
+  document.querySelectorAll('.partner-name-slot, .mj-other-name-slot').forEach(el=>{
+    el.textContent = state.OTHER || 'your partner';
+  });
 
   if(!state.db||!state.fbOnValue)return;
   if(state.unsubPulse)state.unsubPulse();

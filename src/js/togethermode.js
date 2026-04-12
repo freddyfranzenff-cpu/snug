@@ -10,42 +10,8 @@ function _localDateStr(d){
   return `${y}-${m}-${day}`;
 }
 
-window.updateMeetupTime = function(val){
-  if(!val || !state.meetupDate) return;
-  state._dnTimeVal = val;
-  try{
-    // Use LOCAL date parts — never toISOString() which shifts to UTC
-    const dateStr = R._localDateStr(state.meetupDate);
-    const newDate = new Date(`${dateStr}T${val}:00`);
-    state.meetupDate = newDate;
-    if(state.db && state.coupleId){
-      state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), `${dateStr}T${val}:00`);
-      R.notifyPartner && R.notifyPartner('dateNight');
-      // Also update unlock date on unread letter rounds in Together mode
-      if(state.coupleType==='together' && state.letterRounds.length){
-        state.letterRounds.forEach(round=>{
-          if(!round._key || !round.unlockDate) return;
-          const meData = round[state.myUid]||{};
-          const otherData = round[state.partnerUid]||{};
-          if(!meData.readAt && !otherData.readAt){
-            state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/letters/${round._key}/unlockDate`), `${dateStr}T${val}:00`);
-          }
-        });
-      }
-    }
-    R.startCountdown();
-    // Refresh letter timeline if letter page is visible
-    const letterPage = document.getElementById('page-letter');
-    if(letterPage && letterPage.classList.contains('active')){
-      window.initLetterPage && window.initLetterPage();
-    }
-  }catch(e){ console.error('updateMeetupTime failed:',e); }
-};
-
-function _showTimeInput(show){
-  const ti = document.getElementById('meetup-time-input');
-  if(ti) ti.style.display = show ? '' : 'none';
-}
+// Legacy helpers removed — time is now picked via openDnPickerSheet.
+function _showTimeInput(){ /* no-op: native time input removed */ }
 
 // ── Date night planner ────────────────────────────────────────
 
@@ -65,15 +31,18 @@ function _fmtDnDate(d){
 
 function _sortedHints(hintsObj){
   if(!hintsObj || typeof hintsObj !== 'object') return [];
+  // Firebase push IDs are lexicographically sortable by server timestamp,
+  // so key order is authoritative and immune to client clock skew.
   return Object.entries(hintsObj)
     .map(([k,v])=>({_key:k, ...v}))
-    .sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    .sort((a,b)=> a._key < b._key ? -1 : a._key > b._key ? 1 : 0);
 }
 
 function _renderOpenCard(d){
-  const doneBtn = d.revealed || !d.mode || d.mode==='open'
-    ? `<button class="dn-done-btn" onclick="openDnDoneSheet()">Date done · save as milestone</button>`
-    : '';
+  // Always offer Date Done — open mode (any time) and revealed mystery.
+  const doneBtn = `<button class="dn-done-btn" onclick="openDnDoneSheet()">Date done · save as milestone</button>`;
+  // In open mode editing the plan is safe. Warn if there are stale mystery hints
+  // from a previous mystery run on this dateKey.
   return `
     <div class="dn-planner-card">
       <div class="dn-display-row">
@@ -110,22 +79,29 @@ function _renderMysteryPlannerCard(d){
   const lastHint = hints[hints.length-1];
   const awaitingGuess = !!(lastHint && !lastHint.guess);
   const canAddHint = hints.length < maxHints && !awaitingGuess;
+  const otherName = _esc(state.OTHER || 'your partner');
   const hintsHtml = hints.map((h,i)=>{
     const guess = h.guess;
+    const correct = !!h.correct;
+    const correctBtn = (guess && !correct)
+      ? `<button class="dn-correct-btn" onclick="markHintCorrect('${h._key}')">🎯 You got it!</button>`
+      : '';
+    const correctBadge = correct ? `<span class="dn-correct-badge">✓ Correct</span>` : '';
     return `
-      <div class="dn-hint-item">
-        <div class="dn-hint-num">Hint ${i+1}</div>
+      <div class="dn-hint-item${correct?' correct':''}">
+        <div class="dn-hint-num">Hint ${i+1}${correctBadge}</div>
         <div class="dn-hint-text">${_esc(h.text)}</div>
         ${guess
-          ? `<div class="dn-guess-box"><div class="dn-guess-label">Their guess</div><div class="dn-guess-text">${_esc(guess.text)}</div></div>`
-          : `<div class="dn-guess-waiting">Waiting for their guess…</div>`}
+          ? `<div class="dn-guess-box"><div class="dn-guess-label">${otherName}'s guess</div><div class="dn-guess-text">${_esc(guess.text)}</div>${correctBtn}</div>`
+          : `<div class="dn-guess-waiting">Waiting for a guess from ${otherName}…</div>`}
       </div>`;
   }).join('');
+  const usedAll = hints.length >= maxHints;
   const addHintBtn = canAddHint
     ? `<button class="mj-add-btn" onclick="openDnAddHintSheet()">+ Drop a hint (${hints.length}/${maxHints})</button>`
-    : (awaitingGuess
-        ? `<p class="dn-picker-hint" style="margin:.4rem 0 0;">Next hint unlocks after they guess.</p>`
-        : `<p class="dn-picker-hint" style="margin:.4rem 0 0;">You've used all ${maxHints} hints.</p>`);
+    : (usedAll
+        ? `<p class="dn-picker-hint" style="margin:.4rem 0 0;">You've used all ${maxHints} hints.</p>`
+        : `<p class="dn-picker-hint" style="margin:.4rem 0 0;">Next hint unlocks after ${otherName} guesses.</p>`);
   const where = d.where ? _esc(d.where) : '—';
   const what  = d.what  ? _esc(d.what)  : '—';
   const who   = d.who   ? _esc(d.who)   : '—';
@@ -140,7 +116,7 @@ function _renderMysteryPlannerCard(d){
       </div>
       <div class="dn-hints-section">
         <div class="dn-hints-heading">Hints</div>
-        ${hints.length ? `<div class="dn-hints-list">${hintsHtml}</div>` : `<p class="dn-picker-hint" style="margin:.2rem 0 .5rem;">Drop clues to tease them.</p>`}
+        ${hints.length ? `<div class="dn-hints-list">${hintsHtml}</div>` : `<p class="dn-picker-hint" style="margin:.2rem 0 .5rem;">Drop clues to tease ${otherName}.</p>`}
         ${addHintBtn}
       </div>
       <button class="dn-reveal-btn" onclick="openDnRevealSheet()">Reveal the surprise</button>
@@ -168,7 +144,7 @@ function _renderMysteryPartnerCard(d){
     <div class="dn-planner-card dn-mystery-partner">
       <div class="dn-mystery-badge">✨ A mystery date awaits</div>
       <div class="dn-mystery-big">${dateStr}${timeLabel?` · ${_esc(timeLabel)}`:''}</div>
-      <p class="dn-mystery-sub">They're planning something special. All you get are hints.</p>
+      <p class="dn-mystery-sub">${_esc(state.OTHER || 'Your partner')} is planning something special. All you get are hints.</p>
       <div class="dn-hints-section">
         <div class="dn-hints-heading">Current hint</div>
         ${hintBox}
@@ -191,17 +167,34 @@ function loadDnPlanner(){
   state._dnUnsub = state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`), snap=>{
     const d = snap.val()||{};
     state._dnCurrentPlan = d;
+    _syncDnPickerBtn();
     const root = document.getElementById('dn-planner-content');
     const heading = document.getElementById('dn-planner-heading');
     if(!root) return;
 
     const mode = d.mode || 'open';
-    const isPlanner = d.plannerId === state.myUid;
+    const hasPlannerId = !!d.plannerId;
+    const isPlanner = hasPlannerId && d.plannerId === state.myUid;
     const revealed = !!d.revealed;
 
     if(mode === 'mystery' && !revealed){
-      if(heading) heading.textContent = isPlanner ? 'Your mystery date' : 'A mystery awaits';
-      root.innerHTML = isPlanner ? _renderMysteryPlannerCard(d) : _renderMysteryPartnerCard(d);
+      if(!hasPlannerId){
+        // Data integrity issue — mystery flagged but no plannerId. Offer recovery.
+        if(heading) heading.textContent = 'Mystery date';
+        root.innerHTML = `
+          <div class="dn-planner-card">
+            <div class="dn-display-row" style="display:block;padding:.85rem .9rem;">
+              <div class="dn-field-label">Something went wrong</div>
+              <div class="dn-display-value" style="margin-top:.25rem;">This date is missing planner info. Tap to re-save it.</div>
+            </div>
+            <div class="mj-input-row">
+              <button class="mj-add-btn" onclick="openDnPickerSheet()">Resave date</button>
+            </div>
+          </div>`;
+      } else {
+        if(heading) heading.textContent = isPlanner ? 'Your mystery date' : 'A mystery awaits';
+        root.innerHTML = isPlanner ? _renderMysteryPlannerCard(d) : _renderMysteryPartnerCard(d);
+      }
     } else {
       if(heading) heading.textContent = 'Date night plan';
       root.innerHTML = _renderOpenCard(d);
@@ -236,7 +229,7 @@ function loadTodaysPlan(){
     // Other display
     const otherEl = document.getElementById('tp-other-text');
     if(otherEl){
-      otherEl.textContent = d[state.partnerUid]||'Waiting for their plan…';
+      otherEl.textContent = d[state.partnerUid]||`Waiting for a plan from ${state.OTHER || 'your partner'}…`;
       otherEl.className = d[state.partnerUid] ? 'tp-display-value' : 'tp-display-empty';
     }
   });
@@ -316,14 +309,15 @@ window.closeDnSheet = function(){
 window.saveDnSheet = async function(){
   const dateKey = R._dnDateKey();
   if(!state.db||!state.coupleId||!dateKey) return;
-  const plan = {
+  // Patch only plan fields — never touch mode/plannerId/revealed/hints/time.
+  const patch = {
     where: document.getElementById('dn-sheet-where')?.value.trim()||'',
     what: document.getElementById('dn-sheet-what')?.value.trim()||'',
     who: document.getElementById('dn-sheet-who')?.value.trim()||'',
     updatedAt: Date.now()
   };
   try{
-    await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`), plan);
+    await state.dbUpdate(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`), patch);
     window.closeDnSheet();
   }catch(e){ console.error('saveDnSheet failed:',e); }
 };
@@ -414,18 +408,47 @@ window.selectDnMode = function(mode){
 function _syncDnPickerBtn(){
   const btn = document.getElementById('dn-picker-btn');
   if(!btn) return;
+  const isLDR = state.coupleType === 'ldr';
+  // Mystery lock: if this date is a non-revealed mystery and I'm not the planner,
+  // hide the picker button entirely — only the planner can change the date.
+  const plan = state._dnCurrentPlan || {};
+  const mysteryLocked = !isLDR
+    && plan.mode === 'mystery'
+    && !plan.revealed
+    && plan.plannerId
+    && plan.plannerId !== state.myUid;
+  if(mysteryLocked){
+    btn.style.display = 'none';
+    return;
+  }
+  // Restore display in case it was previously hidden
+  btn.style.display = '';
   if(state.meetupDate && state.meetupDate > new Date()){
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const d = state.meetupDate;
-    const timePart = (state._dnTimeVal && state._dnTimeVal !== '23:59') ? ` · ${state._dnTimeVal}` : '';
+    const timePart = (!isLDR && state._dnTimeVal && state._dnTimeVal !== '23:59') ? ` · ${state._dnTimeVal}` : '';
     btn.textContent = `${d.getDate()} ${months[d.getMonth()]}${timePart}`;
   } else {
-    btn.textContent = 'Set date night';
+    btn.textContent = isLDR ? 'Set meetup date' : 'Set date night';
   }
 }
 
 window.openDnPickerSheet = function(){
   document.getElementById('bottom-nav').style.display='none';
+  const isLDR = state.coupleType === 'ldr';
+  // Mystery lock: non-planner cannot change a mystery date before reveal.
+  const plan = state._dnCurrentPlan || {};
+  if(!isLDR && plan.mode==='mystery' && !plan.revealed
+     && plan.plannerId && plan.plannerId !== state.myUid){
+    document.getElementById('bottom-nav').style.display='flex';
+    return;
+  }
+  const titleEl = document.getElementById('dn-picker-title');
+  if(titleEl) titleEl.textContent = isLDR ? 'Next meetup' : 'Next date night';
+  const togetherOnly = document.getElementById('dn-picker-together-only');
+  if(togetherOnly) togetherOnly.style.display = isLDR ? 'none' : '';
+  const pickerHint = document.getElementById('dn-picker-hint');
+  if(pickerHint && isLDR) pickerHint.textContent = 'Pick the day you\'ll see each other.';
   const dateInput = document.getElementById('dn-picker-date');
   const timeInput = document.getElementById('dn-picker-time');
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
@@ -441,12 +464,16 @@ window.openDnPickerSheet = function(){
   }
   if(timeInput){
     // Show the stored time only if it was actually set (not the 23:59 fallback)
-    timeInput.value = (state._dnTimeVal && state._dnTimeVal !== '23:59') ? state._dnTimeVal : '';
+    timeInput.value = (!isLDR && state._dnTimeVal && state._dnTimeVal !== '23:59') ? state._dnTimeVal : '';
   }
-  // Existing mode for this date
-  const d = state._dnCurrentPlan||{};
-  const existingMode = d.mode || 'open';
-  window.selectDnMode(existingMode);
+  // Existing mode for this date (Together only)
+  if(!isLDR){
+    const d = state._dnCurrentPlan||{};
+    const existingMode = d.mode || 'open';
+    window.selectDnMode(existingMode);
+  } else {
+    _dnPickerSelectedMode = 'open';
+  }
   document.getElementById('dn-picker-sheet-overlay').classList.add('open');
   R._initSheetSwipe('dn-picker-sheet','dn-picker-sheet-overlay', window.closeDnPickerSheet);
 };
@@ -456,66 +483,157 @@ window.closeDnPickerSheet = function(){
   document.getElementById('dn-picker-sheet-overlay').classList.remove('open');
 };
 
+// Update unlock dates on unread letter rounds. If state.letterRounds is not yet
+// populated (listener hasn't fired), defer via a one-shot read on /letters.
+function _updateUnreadLetterUnlockDates(newUnlockStr){
+  if(!state.db || !state.coupleId) return;
+  const applyToRound = (round, key) => {
+    if(!key || !round || !round.unlockDate) return;
+    const meData = round[state.myUid]||{};
+    const otherData = round[state.partnerUid]||{};
+    if(!meData.readAt && !otherData.readAt){
+      state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/letters/${key}/unlockDate`), newUnlockStr);
+    }
+  };
+  if(state.letterRounds && state.letterRounds.length){
+    state.letterRounds.forEach(r => applyToRound(r, r._key));
+    return;
+  }
+  // Deferred path — read once, patch whatever's there.
+  try{
+    state.fbOnValue(
+      state.dbRef(state.db,`couples/${state.coupleId}/letters`),
+      snap=>{
+        const data = snap.val();
+        if(!data) return;
+        Object.entries(data).forEach(([key,round])=>applyToRound(round,key));
+      },
+      { onlyOnce:true }
+    );
+  }catch(e){ console.warn('deferred letter unlock update failed:',e); }
+}
+
 window.saveDnPickerSheet = async function(){
+  const isLDR = state.coupleType === 'ldr';
   const dateVal = document.getElementById('dn-picker-date')?.value;
-  const timeVal = (document.getElementById('dn-picker-time')?.value||'').trim();
+  const timeVal = isLDR ? '' : (document.getElementById('dn-picker-time')?.value||'').trim();
   if(!dateVal){
     const inp = document.getElementById('dn-picker-date');
     if(inp){ inp.style.borderColor = '#e8622a'; setTimeout(()=>inp.style.borderColor='',2000); }
     return;
   }
-  const now = new Date();
-  const newDate = new Date(`${dateVal}T00:00:00`);
-  if(newDate <= now){
+  // C3: compare against the effective datetime including chosen time.
+  // If no time is picked, compare against end of day (23:59).
+  const compareTime = timeVal || '23:59';
+  const effectiveDateTime = new Date(`${dateVal}T${compareTime}:00`);
+  if(effectiveDateTime <= new Date()){
     const inp = document.getElementById('dn-picker-date');
     if(inp){ inp.style.borderColor='#e8622a'; setTimeout(()=>inp.style.borderColor='',2000); }
     return;
   }
 
-  const mode = _dnPickerSelectedMode;
-  const effectiveTime = timeVal || '23:59';
+  const mode = isLDR ? 'open' : _dnPickerSelectedMode;
+  const effectiveTime = timeVal || (isLDR ? '00:00' : '23:59');
+
+  // Capture old dateKey for cleanup if it changes (H1).
+  const oldDateKey = state.meetupDate
+    ? _localDateStr(state.meetupDate)
+    : null;
+  const newDateKey = dateVal;
+  const dateKeyChanged = oldDateKey && oldDateKey !== newDateKey;
+
+  // Carry over the existing open-mode plan content (where/what/who) when only
+  // the date changes — users expect the plan to follow the new date, not reset.
+  const carryPlan = (!isLDR && dateKeyChanged && state._dnCurrentPlan && state._dnCurrentPlan.mode !== 'mystery')
+    ? {
+        where: state._dnCurrentPlan.where || '',
+        what:  state._dnCurrentPlan.what  || '',
+        who:   state._dnCurrentPlan.who   || '',
+      }
+    : null;
+
+  // O1: warn if changing the date would destroy existing hints on old dateKey.
+  if(dateKeyChanged && state._dnCurrentPlan && state._dnCurrentPlan.mode === 'mystery'){
+    const hints = _sortedHints(state._dnCurrentPlan.hints);
+    if(hints.length > 0){
+      const ok = window.confirm(`Changing the date will delete ${hints.length} hint${hints.length===1?'':'s'} and any guesses from the current mystery. Continue?`);
+      if(!ok) return;
+    }
+  }
+
+  // O2: warn if switching from mystery to open on the SAME dateKey — it will
+  // reveal the plan to the partner immediately.
+  if(!dateKeyChanged && mode === 'open'
+     && state._dnCurrentPlan && state._dnCurrentPlan.mode === 'mystery'
+     && state._dnCurrentPlan.plannerId === state.myUid
+     && !state._dnCurrentPlan.revealed){
+    const ok = window.confirm('Switching to open mode will reveal your plan to your partner immediately. Are you sure?');
+    if(!ok) return;
+  }
+
   state._dnTimeVal = effectiveTime;
   state.meetupDate = new Date(`${dateVal}T${effectiveTime}:00`);
 
   if(state.db && state.dbSet && state.coupleId){
     try{
-      await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), `${dateVal}T${effectiveTime}:00`);
-      const dateKey = dateVal;
-      // Write datePlan mode + plannerId + time. If existing plan for this date exists and same mode, preserve fields.
-      const planRef = state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`);
-      let existing = {};
-      try{
-        await new Promise(res=>state.fbOnValue(planRef, snap=>{ existing = snap.val()||{}; res(); }, {onlyOnce:true}));
-      }catch(e){}
-      const planObj = {
-        ...existing,
+      const storedMeetup = `${dateVal}T${effectiveTime}:00`;
+      await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), storedMeetup);
+
+      // LDR mode: no datePlan node, just meetup date.
+      if(isLDR){
+        _updateUnreadLetterUnlockDates(storedMeetup);
+        R.notifyPartner && R.notifyPartner('meetup');
+        R.startCountdown && R.startCountdown();
+        _syncDnPickerBtn();
+        window.closeDnPickerSheet();
+        return;
+      }
+
+      // H1: clean up old datePlan node if the dateKey changed.
+      if(dateKeyChanged){
+        try{
+          await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${oldDateKey}`));
+        }catch(e){ console.warn('old datePlan cleanup failed:',e); }
+      }
+
+      // H2 / M1: dbUpdate with ONLY the fields actually changing.
+      // Never touch hints here. Never overwrite the full node.
+      const planRef = state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${newDateKey}`);
+      const patch = {
         mode,
         time: timeVal || '',
         updatedAt: Date.now(),
       };
-      if(mode === 'mystery' && !existing.plannerId){
-        planObj.plannerId = state.myUid;
-        planObj.revealed = false;
+      if(carryPlan){
+        patch.where = carryPlan.where;
+        patch.what  = carryPlan.what;
+        patch.who   = carryPlan.who;
       }
-      if(mode === 'open'){
-        // Clear any mystery-only fields if switching back
-        planObj.plannerId = null;
-        planObj.revealed = null;
-        planObj.hints = existing.hints || null;
+      if(mode === 'mystery'){
+        // Only stamp plannerId if not already set (idempotent re-save keeps planner).
+        // Read once to avoid clobbering.
+        let existingPlanner = null;
+        try{
+          await new Promise(res=>state.fbOnValue(
+            state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${newDateKey}/plannerId`),
+            snap=>{ existingPlanner = snap.val(); res(); },
+            { onlyOnce:true }
+          ));
+        }catch(e){}
+        if(!existingPlanner){
+          patch.plannerId = state.myUid;
+          patch.revealed  = false;
+        }
+      } else {
+        // M1: explicit null on mystery-only fields when switching to open.
+        patch.plannerId = null;
+        patch.revealed  = null;
+        patch.hints     = null;
       }
-      await state.dbSet(planRef, planObj);
+      await state.dbUpdate(planRef, patch);
 
-      // Update unlock date on unread letters
-      if(state.letterRounds && state.letterRounds.length){
-        state.letterRounds.forEach(round=>{
-          if(!round._key || !round.unlockDate) return;
-          const meData = round[state.myUid]||{};
-          const otherData = round[state.partnerUid]||{};
-          if(!meData.readAt && !otherData.readAt){
-            state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/letters/${round._key}/unlockDate`), `${dateVal}T${effectiveTime}:00`);
-          }
-        });
-      }
+      // M5: update unread letter unlock dates (with deferred path).
+      _updateUnreadLetterUnlockDates(storedMeetup);
 
       R.notifyPartner && R.notifyPartner('dateNight');
     }catch(e){ console.error('saveDnPickerSheet failed:',e); }
@@ -567,9 +685,24 @@ window.submitDnHint = async function(){
     await state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/hints`), {
       text, authorUid: state.myUid, createdAt: Date.now()
     });
-    R.notifyPartner && R.notifyPartner('dateNight');
+    R.notifyPartner && R.notifyPartner('dnHint');
     window.closeDnHintSheet();
   }catch(e){ console.error('submitDnHint failed:',e); }
+};
+
+// ── Mark guess correct (planner) ─────────────────────────
+window.markHintCorrect = async function(hintKey){
+  const dateKey = R._dnDateKey();
+  if(!state.db||!state.coupleId||!dateKey||!hintKey) return;
+  const d = state._dnCurrentPlan||{};
+  if(!d.plannerId || d.plannerId !== state.myUid) return;
+  try{
+    await state.dbSet(
+      state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/hints/${hintKey}/correct`),
+      true
+    );
+    R.notifyPartner && R.notifyPartner('dnReveal');
+  }catch(e){ console.error('markHintCorrect failed:',e); }
 };
 
 // ── Guess sheet (partner) ───────────────────────────────
@@ -604,11 +737,20 @@ window.submitDnGuess = async function(){
   const hints = _sortedHints(d.hints);
   const active = hints[hints.length-1];
   if(!active || active.guess) return;
+  // M4: transaction so simultaneous guesses from two devices can't both succeed.
+  // If someone else already wrote a guess at this path, abort and keep theirs.
   try{
-    await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/hints/${active._key}/guess`), {
-      text, authorUid: state.myUid, createdAt: Date.now()
+    const guessRef = state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/hints/${active._key}/guess`);
+    const result = await state.fbRunTransaction(guessRef, current => {
+      if(current !== null && current !== undefined) return; // abort — already guessed
+      return { text, authorUid: state.myUid, createdAt: Date.now() };
     });
-    R.notifyPartner && R.notifyPartner('dateNight');
+    if(!result || !result.committed){
+      // Lost the race — close sheet; listener will surface the winning guess.
+      window.closeDnGuessSheet();
+      return;
+    }
+    R.notifyPartner && R.notifyPartner('dnGuess');
     window.closeDnGuessSheet();
   }catch(e){ console.error('submitDnGuess failed:',e); }
 };
@@ -616,6 +758,8 @@ window.submitDnGuess = async function(){
 // ── Reveal flow ─────────────────────────────────────────
 window.openDnRevealSheet = function(){
   document.getElementById('bottom-nav').style.display='none';
+  const btn = document.querySelector('#dn-reveal-sheet .together-sheet-save');
+  if(btn) btn.disabled = false;
   document.getElementById('dn-reveal-sheet-overlay').classList.add('open');
   R._initSheetSwipe('dn-reveal-sheet','dn-reveal-sheet-overlay', window.closeDnRevealSheet);
 };
@@ -626,11 +770,20 @@ window.closeDnRevealSheet = function(){
 window.confirmDnReveal = async function(){
   const dateKey = R._dnDateKey();
   if(!state.db||!state.coupleId||!dateKey) return;
+  // M3: disable the sheet's save button immediately so double-tap can't fire twice.
+  const btn = document.querySelector('#dn-reveal-sheet .together-sheet-save');
+  if(btn){
+    if(btn.disabled) return;
+    btn.disabled = true;
+  }
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/revealed`), true);
-    R.notifyPartner && R.notifyPartner('dateNight');
+    R.notifyPartner && R.notifyPartner('dnReveal');
     window.closeDnRevealSheet();
-  }catch(e){ console.error('confirmDnReveal failed:',e); }
+  }catch(e){
+    console.error('confirmDnReveal failed:',e);
+    if(btn) btn.disabled = false;
+  }
 };
 
 // ── Date Done → milestone conversion ────────────────────
@@ -667,8 +820,10 @@ window.openDnDoneSheet = function(){
       lines.push('');
       lines.push('✨ Hints & guesses');
       hints.forEach((h,i)=>{
-        lines.push(`${i+1}. ${h.text}`);
-        if(h.guess) lines.push(`   → ${h.guess.text}`);
+        if(i>0) lines.push('');
+        lines.push(`${i+1}. Hint: ${h.text}`);
+        if(h.guess) lines.push(`Guess: ${h.guess.text}`);
+        if(h.correct) lines.push('✓ Correct guess');
       });
     }
     notes.value = lines.join('\n');
@@ -720,6 +875,14 @@ window.saveDnDoneSheet = async function(){
         });
       }catch(e){ console.error('dnDone photo upload failed:',e); }
     }
+
+    // H1: clear the datePlan/{dateKey} node so the same date can't be converted
+    // twice and doesn't accumulate stale hints/guesses. Also clear meetupDate so
+    // the countdown + planner card reset to "set next date night" state.
+    try{
+      await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`));
+      await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
+    }catch(e){ console.warn('datePlan/meetupDate cleanup after Date Done failed:',e); }
 
     _dnDonePhotoFile = null;
     window.closeDnDoneSheet();

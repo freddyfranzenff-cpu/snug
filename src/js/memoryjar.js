@@ -128,7 +128,7 @@ function renderMemoryJarPage(){
       otherTextEl.className = 'mj-entry-text';
       if(otherTimeEl) otherTimeEl.textContent = `${state.OTHER} · ${R._mjFmtTime(state._mjOtherEntry.createdAt)}`;
     } else {
-      otherTextEl.textContent = 'Waiting for their moment…';
+      otherTextEl.textContent = `Waiting for a moment from ${state.OTHER || 'your partner'}…`;
       otherTextEl.className = 'mj-entry-text mj-empty-entry';
       if(otherTimeEl) otherTimeEl.textContent = '';
     }

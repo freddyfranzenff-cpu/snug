@@ -373,6 +373,7 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
     // Init location then start UI
     await R.detectAndStart();
     R.startCoupleTypeListener();
+    R.startMeetupDateListener && R.startMeetupDateListener();
     // Register for push notifications (no-op on unsupported platforms)
     R.registerFcmToken && R.registerFcmToken();
     // If the PWA was cold-started by a notification click, jump to the
@@ -404,11 +405,11 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
 async function tryInitFirebase(){
   try{
     const{initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const{getDatabase,ref,set,push,onValue,remove,serverTimestamp,update}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    const{getDatabase,ref,set,push,onValue,remove,serverTimestamp,update,runTransaction}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
     const{getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
     const{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const app=initializeApp(FIREBASE_CONFIG);
-    state.db=getDatabase(app);state.dbRef=ref;state.dbSet=set;state.dbPush=push;state.dbRemove=remove;state.fbOnValue=onValue;state.dbUpdate=update;
+    state.db=getDatabase(app);state.dbRef=ref;state.dbSet=set;state.dbPush=push;state.dbRemove=remove;state.fbOnValue=onValue;state.dbUpdate=update;state.fbRunTransaction=runTransaction;
     // Auth setup
     const auth=getAuth(app);
     state.fbAuth={

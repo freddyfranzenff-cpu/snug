@@ -114,7 +114,7 @@ function renderLetterTile(letter, isMe, roundKey, unlocked, isActive){
       return `<div class="letter-tile sealed">
         <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${otherEsc}'s letter to you</p>
         <div class="letter-tile-status sealed"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="10" height="7" rx="1"/><path d="M5 8V6a3 3 0 016 0v2"/></svg> ${hasContent ? "Written &amp; sealed" : "Not written yet"}</div>
-        <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? (state.coupleType==='together'?'You can read it on your date night.':`You can read it on the day you meet.`) : otherEsc+" hasn't written their letter yet."}</p>
+        <p class="letter-tile-preview" style="opacity:.45;">${hasContent ? (state.coupleType==='together'?'You can read it on your date night.':`You can read it on the day you meet.`) : otherEsc+" hasn't written a letter yet."}</p>
         ${hasContent ? `<button class="letter-tile-btn" style="opacity:.45;pointer-events:none;">Locked until meetup 🔒</button>` : ""}
       </div>`;
     }
@@ -182,7 +182,7 @@ function renderCurrentRound(rounds){
       <div class="letter-tile sealed">
         <p class="letter-tile-eyebrow"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg>${otherEsc}'s letter to you</p>
         <div class="letter-tile-status empty">Not written yet</div>
-        <p class="letter-tile-preview" style="opacity:.45;">${otherEsc} hasn't written their letter yet.</p>
+        <p class="letter-tile-preview" style="opacity:.45;">${otherEsc} hasn't written a letter yet.</p>
       </div>
     </div>
   `;

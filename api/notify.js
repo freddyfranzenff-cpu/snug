@@ -17,14 +17,17 @@
 import crypto from 'node:crypto';
 
 const TRIGGERS = {
-  pulse:     { title: n => `${n} sent you a pulse`,         body: "They're thinking of you" },
-  note:      { title: n => `${n} wrote a new note`,         body: "Tap to read it" },
-  memoryJar: { title: n => `${n} wrote in the memory jar`,  body: "Tap to see today's entry" },
-  milestone: { title: n => `${n} added a milestone`,        body: "A new memory together" },
-  bucket:    { title: n => `${n} added to the bucket list`, body: "A new dream to share" },
-  status:    { title: n => `${n} updated their status`,     body: "See what they're up to" },
-  meetup:    { title: n => `${n} set your next meetup`,     body: "Tap to see the date" },
-  dateNight: { title: n => `${n} set your next date night`, body: "Tap to see when" },
+  pulse:     { title: n => `${n} sent you a pulse`,         body: n => `${n} is thinking of you` },
+  note:      { title: n => `${n} wrote a new note`,         body: n => `Tap to read what ${n} wrote` },
+  memoryJar: { title: n => `${n} wrote in the memory jar`,  body: n => `Tap to see today's entry from ${n}` },
+  milestone: { title: n => `${n} added a milestone`,        body: () => 'A new memory together' },
+  bucket:    { title: n => `${n} added to the bucket list`, body: () => 'A new dream to share' },
+  status:    { title: n => `${n} updated ${n}'s status`,    body: n => `See what ${n} is up to` },
+  meetup:    { title: n => `${n} set your next meetup`,     body: () => 'Tap to see the date' },
+  dateNight: { title: n => `${n} set your next date night`, body: () => 'Tap to see when' },
+  dnHint:    { title: n => `${n} dropped a hint ✨`,         body: () => 'A clue about your mystery date' },
+  dnGuess:   { title: n => `${n} took a guess`,             body: n => `See what ${n} thinks you're planning` },
+  dnReveal:  { title: n => `${n} revealed the mystery 🎉`,  body: () => 'Tap to see the full plan' },
 };
 
 let _cachedToken = null;
@@ -138,7 +141,7 @@ export default async function handler(req, res){
 
     const name = (senderName || 'Your partner').toString().slice(0, 40);
     const title = tpl.title(name);
-    const bodyText = tpl.body;
+    const bodyText = typeof tpl.body === 'function' ? tpl.body(name) : tpl.body;
 
     const buildMessage = (tokenStr) => ({
       message: {

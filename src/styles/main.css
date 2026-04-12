@@ -896,6 +896,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-guess-label{font-size:.46rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pk);font-weight:700;margin-bottom:.15rem;}
   .dn-guess-text{font-size:.72rem;color:var(--text);line-height:1.4;}
   .dn-guess-waiting{margin-top:.4rem;font-size:.62rem;color:var(--muted);font-style:italic;}
+  .dn-correct-btn{display:inline-block;margin-top:.5rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:8px;padding:.4rem .7rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;box-shadow:0 1px 4px rgba(212,96,122,0.2);}
+  .dn-correct-btn:hover{opacity:.9;}
+  .dn-correct-badge{display:inline-block;margin-left:.4rem;background:rgba(50,170,90,0.12);color:#2d8c4f;font-size:.48rem;padding:.1rem .4rem;border-radius:4px;letter-spacing:.08em;font-weight:700;}
+  .dn-hint-item.correct{border-color:rgba(50,170,90,0.35);background:rgba(50,170,90,0.05);}
   .dn-guess-hint-quote{background:var(--kll);border-left:3px solid var(--k);padding:.55rem .7rem;border-radius:6px;font-size:.72rem;color:var(--text);line-height:1.45;margin-bottom:.65rem;}
 
   /* ── Reveal + done buttons */
@@ -1005,10 +1009,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .home-top-right{flex-shrink:0;text-align:right;}
   .home-days-badge-new{display:flex;flex-direction:column;align-items:flex-end;}
   .home-days-lbl-new{font-size:.4rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-  .home-days-num-new{font-size:2.2rem;font-weight:700;letter-spacing:-.04em;line-height:1;
+  .home-days-num-new{font-size:1.3rem;font-weight:700;letter-spacing:-.03em;line-height:1;
     background:linear-gradient(135deg,var(--k),var(--pk));-webkit-background-clip:text;
     background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-    display:block;overflow:visible;}
+    display:block;overflow:visible;margin:.05rem 0;}
   .home-days-since-new{font-size:.42rem;color:var(--muted);opacity:.7;margin-top:.1rem;}
 
   /* Account panel has no tabs bar — give it equivalent top breathing room */

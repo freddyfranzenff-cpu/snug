@@ -615,6 +615,7 @@ window.doSignOut = async function(){
     if(_obi) _obi.style.display='';
     if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
     if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
+    if(state._meetupDateUnsub){try{state._meetupDateUnsub();}catch(e){}state._meetupDateUnsub=null;}
     state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
     state.coupleType='ldr';
     state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;

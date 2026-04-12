@@ -2,92 +2,10 @@ import { state } from './state.js';
 import { R } from './registry.js';
 
 function updateCdCaption(date){if(!date)return;const s=date.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});const cdCap=document.getElementById("cd-caption");if(cdCap)cdCap.textContent=s;}
-window.updateMeetupDate=function(val){
-  if(!val){state.meetupDate=null;R.startCountdown();return;}
-  const newDate=new Date(val+"T00:00:00");
-  const now=new Date();
-  const maxDate=new Date(now.getFullYear()+2,now.getMonth(),now.getDate());
 
-  // Fix 2: reject past dates
-  if(newDate<=now){
-    const input=document.getElementById("meetup-date-input");
-    if(input){
-      // Reset to previous valid date or clear
-      input.value=state.meetupDate&&state.meetupDate>now?R._localDateStr(state.meetupDate):"";
-      input.style.borderColor="#e8622a";
-      setTimeout(()=>input.style.borderColor="",2000);
-    }
-    return;
-  }
-
-  // Fix 6: reject dates more than 2 years away
-  if(newDate>maxDate){
-    const input=document.getElementById("meetup-date-input");
-    if(input){
-      input.value=state.meetupDate&&state.meetupDate>now?R._localDateStr(state.meetupDate):"";
-      input.style.borderColor="#e8622a";
-      setTimeout(()=>input.style.borderColor="",2000);
-    }
-    return;
-  }
-
-  // Set meetupDate with correct time immediately (not midnight)
-  const timeEl2 = document.getElementById('meetup-time-input');
-  const timeVal2 = (state.coupleType==='together' && timeEl2?.value) ? timeEl2.value : '00:00';
-  state.meetupDate = new Date(`${val}T${timeVal2}:00`);
-  R.startCountdown();
-  if(state.db&&state.dbSet){
-    state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`),`${val}T${timeVal2}:00`);
-    R.notifyPartner && R.notifyPartner(state.coupleType==='together' ? 'dateNight' : 'meetup');
-  }
-  // Update date night planner visibility
-  const dnPlanner = document.getElementById('dn-planner');
-  if(dnPlanner && state.coupleType==='together'){
-    dnPlanner.classList.add('visible');
-    R.loadDnPlanner && R.loadDnPlanner();
-  }
-
-  // Fix 5: update unlockDate on unread letters to match new meetup date
-  if(state.db&&state.fbOnValue&&state.dbSet){
-    state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/letters`),snap=>{
-      const data=snap.val();
-      if(!data)return;
-      Object.entries(data).forEach(([key,round])=>{
-        // Only update if neither letter has been read yet
-        const meKey=state.myUid;
-        const otherKey=state.partnerUid;
-        const meData=round[meKey]||{};
-        const otherData=round[otherKey]||{};
-        const neitherRead=!meData.readAt&&!otherData.readAt;
-        if(neitherRead&&round.unlockDate){
-          const unlockTime2 = (state.coupleType==='together' && state._dnTimeVal) ? state._dnTimeVal : '00:00';
-          state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/letters/${key}/unlockDate`),val+`T${unlockTime2}:00`);
-        }
-      });
-    },{onlyOnce:true});
-  }
-};
-
-function checkMeetupDateInput(){
-  const input=document.getElementById("meetup-date-input");
-  if(!input)return;
-  // Set min to tomorrow, max to 2 years from now
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const maxD=new Date();maxD.setFullYear(maxD.getFullYear()+2);
-  input.min=R._localDateStr(tomorrow);
-  input.max=R._localDateStr(maxD);
-  if(!state.meetupDate||state.meetupDate<=new Date()){
-    input.value="";
-    input.setAttribute("placeholder","Set next meetup");
-    input.style.color="var(--muted)";
-  } else {
-    // Populate input with stored meetup date
-    // Use local date to avoid UTC offset shifting the displayed date
-    const _y=state.meetupDate.getFullYear(),_m=String(state.meetupDate.getMonth()+1).padStart(2,"0"),_d=String(state.meetupDate.getDate()).padStart(2,"0");
-    input.value=`${_y}-${_m}-${_d}`;
-    input.style.color="";
-  }
-}
+// Date input is now handled by openDnPickerSheet (bottom sheet picker) in both
+// LDR and Together modes. No native input to sync.
+function checkMeetupDateInput(){ R._syncDnPickerBtn && R._syncDnPickerBtn(); }
 
 // Countdown
 function startCountdown(){
