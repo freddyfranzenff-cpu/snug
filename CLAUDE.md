@@ -30,24 +30,43 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 
 ---
 
-## File Structure (post Session 1 refactor)
+## File Structure (post Session 1b refactor)
 ```
 snug/
   src/
     index.html              ← HTML shell (1175 lines); inline <head> IIFE kept for --app-height
     styles/
-      main.css              ← All CSS extracted from old index.html (1077 lines)
+      main.css              ← All CSS (1077 lines)
     js/
-      main.js               ← All app JS (4522 lines) — single module, globals not yet split
+      main.js               ← Thin entry point (51 lines) — imports all modules, bootstraps R.tryInitFirebase()
+      state.js              ← Single mutable `state` object holding all former top-level globals
+      registry.js           ← Mutable `R` namespace — modules attach functions at load, call sites use R.X()
       firebase-config.js    ← Firebase init, reads from import.meta.env.VITE_*
       app-height.js         ← --app-height CSS var updater
       sw-register.js        ← Service worker registration
+      auth.js               ← onAuthStateChanged, login, signup, onboarding
+      couple.js             ← couple creation, joining, linking, offboarding
+      ui.js                 ← applyMode, startUI, showPage, switchHomeTab, _pageSubContent
+      notes.js              ← submitNote, deleteNote, reactToNote, renderNotes
+      milestones.js         ← milestone CRUD, places map, initMap, updateOtherMarker
+      bucket.js             ← bucket list CRUD
+      letters.js            ← letter system, unlock logic
+      memoryjar.js          ← memory jar, streak calculation
+      pulse.js              ← sendPulse, initPulse, updateReceivedBanner
+      status.js             ← status card, status sheet (drag-to-dismiss via shared _initSheetSwipe)
+      weather.js            ← fetchWeather, wIcon, wDesc
+      presence.js           ← GPS, timezone, city detection, _pushPresence
+      countdown.js          ← startCountdown, updateMetricChips
+      settings.js           ← name, email, password, avatar, mode, start date
+      togethermode.js       ← Together mode specific UI and sheets
+      places.js             ← Places map page
+      avatar.js             ← Avatar upload and display
   public/
     icons/                  ← Symlink → ../icons/
-    manifest.json           ← Symlink → ../manifest.json
+    manifest.json           ← Symlink → ../manifest.json (401 on Vercel — known issue, deferred)
     sw.js                   ← Symlink → ../sw.js
   api/
-    weather.js              ← Vercel serverless — proxies wttr.in
+    weather.js              ← Vercel serverless — proxies wttr.in (ES module default export)
   sw.js                     ← Service worker (repo root)
   manifest.json             ← PWA manifest (repo root)
   vite.config.js            ← Vite config (root=src, publicDir=public, outDir=dist)
@@ -57,6 +76,12 @@ snug/
   .env.local                ← Firebase env vars (gitignored — never commit)
   CLAUDE.md                 ← This file
 ```
+
+### Module architecture
+- `state.js` exports a single mutable `state` object — sidesteps ES module `let`-binding reassignment limits
+- `registry.js` exports a mutable `R` namespace — modules attach functions at load time, cross-module call sites use `R.X()` to avoid circular import evaluation-order problems
+- `window.*` handlers preserved in their original modules — inline `onclick=` attributes in `index.html` keep working unchanged
+- All 105 R.* registrations verified present; 68 inline onclick handlers audited — all clean
 
 ---
 
@@ -231,7 +256,7 @@ FCM_SERVER_KEY          ← server-side only, never expose to client
 ---
 
 ## Global State Variables
-All declared at module scope in `src/js/main.js`. All reset to null/default on sign-out via `onAuthStateChanged`.
+All held in the `state` object exported from `src/js/state.js`. Access as `state.myUid`, `state.coupleId`, etc. All reset to null/default on sign-out via `onAuthStateChanged`.
 
 ```js
 // Identity
@@ -359,7 +384,7 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
 ### ✅ Session 1 — Infrastructure (complete)
 Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
 
-### Session 1b — JS Module Split (next)
+### ✅ Session 1b — JS Module Split (complete)
 Split `src/js/main.js` (4522 lines, one big file) into feature modules. The globals (`myUid`, `coupleId`, `db`, etc.) need to be moved to a shared state module that other modules import from. Suggested structure:
 
 ```
@@ -387,8 +412,20 @@ src/js/
 
 > Prompt: "Read CLAUDE.md. Split src/js/main.js into feature modules as described in the Session 1b section. Create src/js/state.js to hold all shared globals as exported variables. Other modules import from state.js. Do not change any functionality — pure refactor only. Run vite build to confirm no errors before committing to staging."
 
-### Session 2 — Push Notifications
-FCM via Vercel serverless (`api/notify.js`). Triggers: pulse sent, memory jar entry, status updated. Store FCM token at `users/{uid}/fcmToken`. Handle iOS 16.4+ PWA limitation.
+### Session 2 — Push Notifications (next)
+FCM via Vercel serverless (`api/notify.js`). Store FCM token at `users/{uid}/fcmToken`. Handle iOS 16.4+ PWA limitation (must be installed to home screen).
+
+**Triggers:**
+- Pulse sent
+- Memory jar entry written
+- Status updated
+- Note sent
+- Milestone added
+- Bucket list item added
+- Meetup date set (LDR mode)
+- Date night date set (Together mode)
+
+> Prompt: "Read CLAUDE.md. Add FCM push notifications via a Vercel serverless function at api/notify.js. Client registers for push on login and stores the FCM token at users/{uid}/fcmToken in RTDB. The serverless function reads the partner's FCM token and sends a notification via FCM HTTP v1 API. Triggers: pulse sent, memory jar entry written, status updated, note sent, milestone added, bucket list item added, meetup date set, date night date set. Handle iOS PWA limitations — Web Push only works on iOS 16.4+ with an installed PWA. FCM_SERVER_KEY is a Vercel environment variable — never expose to client."
 
 ### Session 3 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
