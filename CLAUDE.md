@@ -9,23 +9,54 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 
 ## Repo & Deployment
 - **GitHub:** `github.com/freddyfranzenff-cpu/snug`
-- **Production:** `main` branch → auto-deploys to Vercel (snug-seven.vercel.app, custom domain TBD)
+- **Production:** `main` branch → auto-deploys to Vercel (`snug-seven.vercel.app`, custom domain TBD)
 - **Staging:** `staging` branch → auto-deploys to Vercel preview URL
 - **Rule:** Never commit directly to `main`. All work goes to `staging` first, tested, then merged.
 
 ---
 
 ## Tech Stack
-- **Frontend:** Vanilla JS (ES modules after Session 1 refactor), single `index.html` pre-refactor (~6800 lines)
+- **Frontend:** Vanilla JS (ES modules), Vite 5.4 build pipeline
 - **Database:** Firebase Realtime Database (`ldrcounter` project, `europe-west1` region)
 - **Auth:** Firebase Auth (email/password)
 - **Storage:** Firebase Storage (avatars, milestone photos)
 - **Hosting:** Vercel
-- **Serverless:** Vercel API functions (`/api/` folder) — `weather.js` live (proxies open-meteo), FCM notify planned
+- **Serverless:** Vercel API functions (`/api/` folder) — `weather.js` live (proxies wttr.in), FCM notify planned
 - **PWA:** Service worker (`sw.js`), Web App Manifest (`manifest.json`)
-- **Build:** Plain files pre-Session 1. Vite to be added in Session 1.
+- **Build:** Vite 5.4 (`vite.config.js` at repo root, `src/` as root, outputs to `dist/`)
+- **Linting:** ESLint 9 flat config (`eslint.config.js`)
 - **Maps:** Leaflet.js for the LDR distance map and Places map (loaded from unpkg CDN)
 - **Firebase SDK version:** 10.12.0 (loaded via ESM from gstatic CDN)
+
+---
+
+## File Structure (post Session 1 refactor)
+```
+snug/
+  src/
+    index.html              ← HTML shell (1175 lines); inline <head> IIFE kept for --app-height
+    styles/
+      main.css              ← All CSS extracted from old index.html (1077 lines)
+    js/
+      main.js               ← All app JS (4522 lines) — single module, globals not yet split
+      firebase-config.js    ← Firebase init, reads from import.meta.env.VITE_*
+      app-height.js         ← --app-height CSS var updater
+      sw-register.js        ← Service worker registration
+  public/
+    icons/                  ← Symlink → ../icons/
+    manifest.json           ← Symlink → ../manifest.json
+    sw.js                   ← Symlink → ../sw.js
+  api/
+    weather.js              ← Vercel serverless — proxies wttr.in
+  sw.js                     ← Service worker (repo root)
+  manifest.json             ← PWA manifest (repo root)
+  vite.config.js            ← Vite config (root=src, publicDir=public, outDir=dist)
+  vercel.json               ← framework=vite, outputDirectory=dist
+  eslint.config.js          ← ESLint flat config for vanilla JS
+  package.json              ← Vite + ESLint devDependencies
+  .env.local                ← Firebase env vars (gitignored — never commit)
+  CLAUDE.md                 ← This file
+```
 
 ---
 
@@ -131,6 +162,8 @@ body (height: var(--app-height) px, overflow: hidden, flex col)
       panel (display:block, flex:1 1 0, min-height:0, overflow-y:auto) <- scrolls here
 ```
 
+The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it runs synchronously before first CSS paint. Do not move it to a module.
+
 ---
 
 ## Design System
@@ -153,50 +186,28 @@ body (height: var(--app-height) px, overflow: hidden, flex col)
 **Cards:** `border-radius: 12-16px`, `1px solid var(--border)`, no heavy box-shadows
 **Auth cards:** `border-radius: 20px`, warm gradient top-line `::before` pseudo-element
 **Buttons:** Primary = coral-to-pink gradient with subtle shadow. Secondary = white with warm border.
-**Tab bars (home + page sub-tabs):** White surface, `border-radius: 14px`, `1px solid var(--border)`, active tab gets `--kll` background
+**Tab bars:** White surface, `border-radius: 14px`, `1px solid var(--border)`, active tab gets `--kll` background
 **Bottom sheets:** `border-radius: 24px 24px 0 0`, swipe-to-dismiss via handle drag
 
 ---
 
-## App Structure (pre-refactor)
-Everything lives in `index.html` (~6812 lines). Key sections:
+## Weather API
+- File: `api/weather.js` (ES module, default export — required by Vercel)
+- Proxies wttr.in: `https://wttr.in/{lat},{lng}?format=j1`
+- Returns normalised shape matching open-meteo so app code is unchanged
+- Localhost: app calls open-meteo directly (detected via `location.hostname === 'localhost'`)
+- Production: app calls `/api/weather?lat=&lng=` Vercel serverless proxy
+- Uses native `fetch` + `AbortSignal.timeout(8000)` — no `require('https')`
+- **Do NOT revert to CommonJS `require`/`module.exports`** — Vercel requires ES module default export
 
-- **Lines 1-33:** `<head>` — `--app-height` IIFE, PWA meta, font + Leaflet imports
-- **Lines 34-700:** CSS — design system, layout chain, component styles
-- **Lines 700-1100:** CSS continued — home page, cards, auth screens, sheets
-- **Lines 1100-1310:** Auth screens HTML (login, signup, onboarding, linking, invite, forgot)
-- **Lines 1310-1660:** Home page HTML (top strip, tabs, Now/Us/Story panels)
-- **Lines 1660-2200:** Shell pages HTML (Memories, Together, Account + settings)
-- **Lines 2200-2210:** JS — Firebase config (hardcoded, move to env vars in Session 1)
-- **Lines 2210-2250:** Global state variable declarations
-- **Lines 2250-2530:** Auth helpers, onboarding, couple creation/joining, watchForPartner
-- **Lines 2530-2810:** tryInitFirebase, onAuthStateChanged, partner detection, _watchOther
-- **Lines 2810-3000:** detectAndStart, weather, map, notes
-- **Lines 3000-3500:** Milestones, meetup date, countdown, greeting, distance/sleep, bucket list
-- **Lines 3500-3950:** Places, notes render, pulse system
-- **Lines 3950-4300:** Letters system
-- **Lines 4300-5100:** Memory jar system
-- **Lines 5100-5700:** Status card, status sheet, today's plan sheet, date night sheet, MJ sheet
-- **Lines 5700-5925:** Settings (name, email, password, avatar, mode, start date, invite)
-- **Lines 5925-6070:** doLinkingDeleteAccount
-- **Lines 6070-6200:** doDeleteAccount
-- **Lines 6200-6600:** applyMode, startCoupleTypeListener, updateMetricChips, startUI
-- **Lines 6600-6720:** App bootstrap, SW registration, --app-height listener, offline handler
-- **Lines 6720-6812:** Bottom sheet HTML (DN, TP, MJ sheets)
-
----
-
-## Service Worker
-- File: `sw.js` in repo root
-- **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v103`)
-- `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
-- Client-side `updatefound` listener sends `SKIP_WAITING` message to reinforce immediate activation
+### Known issue
+- `manifest.json` returns 401 from service worker fetch — caused by symlink in `public/` not being followed correctly by Vercel. Deferred to Session 1b. No functional impact on the app.
 
 ---
 
 ## Environment Variables
-Currently hardcoded in `index.html` (to be moved to env vars in Session 1).
+All Firebase config now reads from `import.meta.env.VITE_*` via `src/js/firebase-config.js`.
+Values live in `.env.local` (gitignored) and in Vercel dashboard (Settings → Environment Variables).
 
 ```
 VITE_FIREBASE_API_KEY
@@ -206,47 +217,28 @@ VITE_FIREBASE_PROJECT_ID
 VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
-FCM_SERVER_KEY          <- server-side only, never expose to client
+FCM_SERVER_KEY          ← server-side only, never expose to client
 ```
 
 ---
 
-## Session Roadmap
-
-### Session 1 — Infrastructure (next)
-Split `index.html` into Vite project. CSS into `src/styles/`. JS modules into `src/js/` by feature. Move Firebase config to env vars. Add ESLint.
-> Prompt: "Read CLAUDE.md. Split index.html into a Vite project structure. CSS into src/styles/, JS modules into src/js/ organised by feature. Firebase config from environment variables. ESLint for vanilla JS. Pure refactor — zero functionality changes."
-
-### Session 2 — Push Notifications
-FCM via Vercel serverless (`api/notify.js`). Triggers: pulse sent, memory jar entry, status updated. Store FCM token at `users/{uid}/fcmToken`. Handle iOS 16.4+ PWA limitation.
-> Prompt: "Read CLAUDE.md. Add FCM push notifications via Vercel serverless at api/notify.js. Client registers on login, stores FCM token at users/{uid}/fcmToken. Serverless reads partner token and sends via FCM HTTP v1 API."
-
-### Session 3 — Domain + Branding
-Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
-
----
-
-## Known Bugs Fixed — Do Not Revert
-- **Android scroll:** `.main` must have `overflow:hidden` — without it `page-home` grows unbounded and panels never scroll
-- **Android/iOS panel scroll:** panels must be `display:block` not `display:flex` — flex containers with `overflow-y:auto` don't scroll correctly on Android Chrome when they are also flex children
-- **iOS viewport:** `--app-height` set from `window.innerHeight` in `<head>` IIFE before CSS paint. Also updated on `resize` and `orientationchange` (100ms delay for iOS layout settle)
-- **Tap highlight:** `-webkit-tap-highlight-color:transparent` on `*` selector kills blue flash on Android
-- **Africa bug:** GPS coords `[0,0]` were pushed to presence — fixed with `if(myCoords && window._pushPresence)` null check
-- **iOS PWA login:** Must complete signup in Safari browser first. Home screen install creates isolated localStorage — invite code lost
-- **Letter save guard:** Letters only saveable when a future `meetupDate` is set — enforced in `saveLetterContent()`
-- **Meetup date guards:** Rejects past dates and dates more than 2 years in future
+## Service Worker
+- File: `sw.js` in repo root (symlinked into `public/` for Vite)
+- **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v103`)
+- `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
 
 ## Global State Variables
-All declared at module scope. All reset to null/default on sign-out via `onAuthStateChanged`.
+All declared at module scope in `src/js/main.js`. All reset to null/default on sign-out via `onAuthStateChanged`.
 
 ```js
 // Identity
 ME, OTHER                     // display names (strings)
 myUid, partnerUid             // Firebase Auth UIDs
 coupleId                      // RTDB couple key (pushId)
-myRole                        // 'owner' | 'joiner' (from members record)
+myRole                        // 'owner' | 'joiner'
 coupleType                    // 'ldr' | 'together' — default 'ldr'
 
 // Dates
@@ -256,7 +248,7 @@ _dnTimeVal                    // '19:00' default — Together mode date night ti
 
 // Location
 myTz, otherTz                 // IANA timezone strings | null
-myCity, otherCity             // city strings (GPS-derived, not user input)
+myCity, otherCity             // city strings (GPS-derived)
 myCoords, otherCoords         // [lat, lng] arrays | null
 
 // Avatars
@@ -274,20 +266,13 @@ _mjUnsub                      // Firebase unsub function
 // Deletion guard
 _selfDeleting                 // boolean — true while this user is deleting
 
-// Local caches (live-synced from Firebase listeners)
-localNotes                    // array
-localMilestones               // array
-localBucket                   // array
+// Local caches
+localNotes, localMilestones, localBucket  // arrays, live-synced from Firebase
 
 // Intervals and listeners
-clockInterval                 // 1s tick — LDR clocks
-distanceInterval              // 60s tick — distance + sleep recalc
-countdownInterval             // 1s tick — meetup countdown
-pulseTimeInterval             // 60s tick — pulse "X ago" display
+clockInterval, distanceInterval, countdownInterval, pulseTimeInterval
 unsubNotes, unsubMilestones, unsubBucket, unsubPulse
-_membersUnsub                 // watches couple members — detects partner deletion
-_watchPartnerUnsub            // watches for joiner during onboarding invite screen
-_coupleTypeUnsub              // live-syncs coupleType changes between partners
+_membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 ```
 
 ---
@@ -299,155 +284,111 @@ _coupleTypeUnsub              // live-syncs coupleType changes between partners
 | `tryInitFirebase()` | Dynamic ESM import of Firebase SDK 10.12.0, sets up `fbAuth` wrapper, starts `onAuthStateChanged` |
 | `onAuthStateChanged` callback | Central auth router — shows login/onboarding/linking/app based on user + couple state |
 | `loadCoupleAndStart(cId, myUid, partnerUid, members)` | Sets all global state from members snapshot, calls `detectAndStart()` |
-| `detectAndStart()` | GPS -> `tzFromCoords` + `cityFromCoords` -> sets myTz/myCity/myCoords -> `_pushPresence` -> `startUI()` |
+| `detectAndStart()` | GPS → `tzFromCoords` + `cityFromCoords` → sets myTz/myCity/myCoords → `_pushPresence` → `startUI()` |
 | `startUI()` | Shows main, populates all static UI, starts all real-time listeners and intervals |
 | `startCoupleTypeListener()` | Real-time listener on `couples/{id}/coupleType` — calls `applyMode()` on change |
 | `applyMode(type)` | Switches ALL UI between LDR and Together — visibility, labels, mode pill, settings toggle |
 | `watchForPartner(cId, uid)` | Polls `couples/{id}/members` — redirects to app when partner joins |
 | `showPage(page)` | Navigates to full standalone page (milestones, notes, bucket, places, letter) |
 | `switchHomeTab(tab)` | Switches Now/Us/Story panels, resets scroll to top |
-| `switchPageTab(page, tab)` | Switches sub-tabs on Memories/Together shell pages |
 | `updateDistanceAndSleep()` | Haversine distance from coords + sleep status from timezone hour |
-| `updateMetricChips()` | Updates 3 bottom chips: meetup countdown (days), milestone count, streak |
+| `updateMetricChips()` | Updates 3 bottom chips: meetup countdown, milestone count, streak |
 | `startCountdown()` | Starts 1s interval for countdown card + metric chip |
 | `initPulse()` | Firebase listener on `pulses` node, renders received banner + history |
 | `sendPulse()` | Rate-limited (60s cooldown) — pushes `{from, to, fromName, time}` to pulses |
-| `openStatusSheet()` | Hides nav, pre-selects current activity/mood, shows sheet |
-| `openDnSheet()` | Hides nav, pre-fills current date night plan, shows sheet |
-| `saveDnSheet()` | Saves where/what/who to `datePlan/{dateKey}` |
-| `openTpSheet()` | Hides nav, pre-fills today's plan, shows sheet |
-| `saveTpSheet()` | Saves text to `todayPlan/{myUid}` |
-| `openMjSheet()` | Hides nav, guards double-write (`_mjMyEntry?.text`), shows memory jar sheet |
-| `saveMjSheet()` | Saves text to `memoryJar/{dateKey}/{myUid}` |
-| `_mjLoadAndRender()` | Real-time listener on today's memoryJar + one-time streak calculation (365 day lookback) |
-| `renderMemoryJarPage()` | Renders full memory jar tab — today card + disables input row if already written |
-| `renderMemoryJarPreview()` | Renders memory jar preview card on Us tab |
-| `renderStatusCard()` | Renders status card — checks STATUS_EXPIRY_MS, called on load and every 60s |
-| `initLetterPage()` | Loads letters from Firebase, calls renderLetterTimeline + renderCurrentRound |
-| `saveLetterContent()` | Guards future date, creates round if new, saves `{content, writtenAt, unlockDate}` |
-| `openLetterRead(roundKey)` | Reads partner letter (only if unlocked), marks `readAt`, shows read view |
-| `submitNote()` | Pushes `{text, author: ME, time}` to notes |
-| `deleteNote(key)` | Removes note — only shown for notes where `author === ME` |
-| `reactToNote(key)` | Toggles `reactions/{myUid}: true` on note |
-| `renderNotes(notes)` | Renders notes wall using `_esc()` for XSS safety |
-| `autoSaveName(val)` | Saves name to `users/{uid}/name` AND `couples/{id}/members/{uid}` |
-| `autoSaveStartDate(val)` | Saves start date to `couples/{id}/startDate`, rejects future dates |
-| `doSignOut()` | Calls `fbAuth.signOut()` — `onAuthStateChanged` handles full state reset |
-| `doDeleteAccount()` | Path 1 deletion — see Offboarding section |
-| `doLinkingDeleteAccount()` | Path 2 deletion — see Offboarding section |
+| `doDeleteAccount()` | Path 1 deletion — reauthenticates, wipes couple node, deletes auth account |
+| `doLinkingDeleteAccount()` | Path 2 deletion — same steps as Path 1, accessible from linking screen |
 
 ---
 
-## Onboarding Flow (owner)
-1. `screen-login` — sign in with existing account
-2. `screen-signup` — create account (email + password + confirm password)
-3. `screen-onboarding` — display name + optional avatar (cropped to square JPEG, uploaded to `avatars/{uid}.jpg`)
-4. `screen-linking` — two options:
-   - **Join:** enter partner's 6-char invite code -> `doJoinCouple()` -> app loads
-   - **Create:** set start date + relationship type -> `doCreateCouple()` -> generates collision-checked code -> `screen-invite`
-5. `screen-invite` — share URL (`origin/?join=CODE`), animated waiting dots, `watchForPartner()` polls until partner joins
+## Onboarding Flow
+**Owner:** login → signup → onboarding (name + avatar) → linking → create couple → invite screen → wait for partner
 
-## Onboarding Flow (joiner)
-1. Partner shares `snug-seven.vercel.app/?join=CODE`
-2. URL param parsed on load -> stored in `sessionStorage` + `localStorage` as `pendingJoinCode`, param stripped from URL
-3. Joiner signs up -> onboarding -> linking screen
-4. `onInviteCodeInput()` reads stored code, pre-fills input, hides "Create" section
-5. `doJoinCouple()` validates code (checks expiry, `used` flag), joins couple, app loads
+**Joiner:** receives `/?join=CODE` URL → signup → onboarding → linking (code pre-filled) → joins couple → app loads
 
 **iOS PWA warning:** Must complete full signup in Safari browser BEFORE installing to home screen. Home screen install creates isolated localStorage — `pendingJoinCode` is lost.
 
 ---
 
-## Offboarding Flow — Handle With Care
+## Offboarding Flow
+Two paths — both run identical 12-step deletion sequence:
+1. Validate input === 'DELETE', reauthenticate
+2. Set `_selfDeleting = true`
+3. Read milestone photo paths + invite code
+4. Delete own avatar from Storage
+5. Delete all milestone photos (parallel)
+6. Delete invite document
+7. **Wipe entire couple node** (sets `couples/{coupleId}` to null)
+8. Clear coupleId + inviteCode on own user record
+9. Delete own RTDB user record
+10. Delete Firebase Auth account
 
-### Path 1: Delete from Account Settings (`doDeleteAccount`)
-Triggered from Account -> Settings -> "Delete account". Element IDs: `settings-delete-input`, `settings-delete-pw`, `settings-delete-error`, `btn-delete-account`.
-
-Exact verified steps:
-1. Validates input === 'DELETE'
-2. Reauthenticates via `reauthenticateWithCredential` — returns error if wrong password, stops here
-3. Sets `_selfDeleting = true`
-4. Reads all milestone `photoPath` values (one-time Firebase read)
-5. Reads invite code from `couples/{id}/inviteCode`, fallback `users/{uid}/inviteCode`
-6. Deletes own avatar from Storage: `avatars/{myUid}.jpg`
-7. Deletes all milestone photos from Storage (parallel Promise.all)
-8. Deletes invite document: `invites/{code}`
-9. **Wipes entire couple node:** multi-path update sets `couples/{coupleId}` to null — deletes ALL shared data for both partners
-10. Clears `coupleId` and `inviteCode` on own user record
-11. Deletes own user RTDB record: `users/{myUid}`
-12. Deletes Firebase Auth account
-13. On error in steps 4-11: still attempts Auth deletion as fallback
-
-**No role distinction** — both owner and joiner run identical steps. Whoever runs this first wipes everything.
-
-### Path 2: Delete from Linking Screen (`doLinkingDeleteAccount`)
-Triggered from `screen-linking` -> "Want to delete your account instead?". Element IDs: `linking-delete-input`, `linking-delete-pw`, `linking-delete-error`, `linking-delete-btn`.
-
-Runs the **exact same 12 steps** as Path 1. It is NOT a simplified path. Only differences are the HTML element IDs and that it's accessible without being in the main app (no coupleId required, but will still delete couple data if coupleId exists).
-
-### How the remaining partner finds out
-The `_membersUnsub` listener on `couples/{coupleId}/members` handles three scenarios:
-
-1. **Live in app:** `_coupleInitFired` is true, members fires null -> tears down all listeners -> clears stale coupleId -> clears pendingJoinCode from storage -> shows `screen-linking` with `linking-deleted-msg` banner
-2. **Firebase permission denied:** Couple node deleted, read fails with permission error -> same cleanup and redirect. Covers both live and login-time.
-3. **Was offline, logs back in:** `_coupleInitFired` is false, members is null on first read -> clears stale coupleId -> shows `screen-linking` with banner
-
-`_selfDeleting = true` prevents this flow from triggering on the deleting user's own device.
-
-### Critical rules
-- Never mix `linking-delete-*` and `settings-delete-*` element IDs
-- Reauthentication is mandatory — Firebase requires fresh credentials to delete an Auth account
-- `_selfDeleting` must be set before any async deletion begins
-- The "Your Snug has ended" banner is shown by `_membersUnsub`, not by the deletion functions themselves
+Remaining partner is notified via `_membersUnsub` listener which detects null members or permission denied.
 
 ---
 
-## Feature Details
+## Known Bugs Fixed — Do Not Revert
+- **Android scroll:** `.main` must have `overflow:hidden`
+- **Android/iOS panel scroll:** panels must be `display:block` not `display:flex`
+- **iOS viewport:** `--app-height` set from `window.innerHeight` in `<head>` IIFE — never use `100vh`
+- **Tap highlight:** `-webkit-tap-highlight-color:transparent` on `*` kills blue flash on Android
+- **Africa bug:** GPS coords `[0,0]` check prevents bad presence push
+- **iOS PWA login:** Complete signup in browser before installing to home screen
+- **AppId:** Old hardcoded appId in index.html was stale — env var version (`db66ccb1ddcc0278d9fb84`) is correct
 
-### Weather
-- Localhost: calls open-meteo directly (`api.open-meteo.com`) — avoids CORS issues in dev
-- Production: calls Vercel proxy `/api/weather?lat=&lng=` — hides origin, avoids CORS
-- Detected in `fetchWeather()` by `location.hostname === 'localhost'`
-- Updates when `myCoords`/`otherCoords` change via presence listener
-- WMO weather codes + wttr.in codes both handled in `wIcon()` and `wDesc()`
+---
 
-### XSS Protection
+## XSS Protection
 - All user content rendered via `_esc(str)` — escapes `& < > " '`
-- Partner letter content set via `el.textContent` (not innerHTML) — fully safe
-- Milestone photo URLs stored in `_msRegistry` Map keyed by Firebase pushId — never embedded in onclick attributes
-
-### Memory Jar
-- `_mjTodayKey()` uses local device date (not UTC): `YYYY-MM-DD`
-- Streak: iterates 365 days back; today skipped if only one person wrote (lenient — incomplete today doesn't break streak)
-- Both `mj-preview-input-row` (Us tab) and `mj-today-input-row` (Memory jar tab) call same `openMjSheet()` / `saveMjSheet()`
-- After saving: `_mjSetInputDisabled(true, context)` replaces button row with green "You've written today" confirmation
-
-### Letters
-- Each round tied to a meetup/date-night date as `unlockDate`
-- `saveLetterContent()` blocks save if no future meetupDate
-- Together mode: unlock at `_dnTimeVal` time (e.g. `19:00`). LDR mode: unlock at `00:00`
-- Partner's letter only readable if `isUnlocked(otherLetter.unlockDate)` — client-side check
-- Reading sets `readAt` timestamp on partner's letter node
-
-### Pulse
-- 60s cooldown via `_lastPulseSent` timestamp (client-side only)
-- Stored as `{from: uid, to: uid, fromName, time: ms}`
-- History shows last 6 pulses only
-- `updateReceivedBanner()` finds latest pulse where `p.from === partnerUid || p.from === OTHER`
-
-### Places
-- Milestones with `lat` + `lng` appear on Places map
-- Grouped by ~2km proximity into location pins
-- Leaflet.js with custom SVG heart markers
-- `_placesGroups` on `window` for popup click handlers
+- Partner letter content set via `el.textContent` (not innerHTML)
+- Milestone photo URLs stored in `_msRegistry` Map keyed by Firebase pushId
 
 ---
 
 ## Firebase Security Rules Summary
-Do not change without understanding implications.
-
-- `users/$uid`: read/write own data only. `avatarUrl` any-auth readable (needed for partner avatar display).
-- `couples/$coupleId`: members-only read/write. **Bootstrap escape:** `!data.exists()` allows owner to create couple node before being listed as member.
-- `invites/$code`: any-auth read (needed for joining). Write only by creator or couple member.
-- Storage `avatars/{uid}.jpg`: any-auth read, own write/delete only, max 2MB, image type only.
+- `users/$uid`: read/write own data only. `avatarUrl` any-auth readable (partner avatar display).
+- `couples/$coupleId`: members-only read/write. Bootstrap escape: `!data.exists()` allows owner to create couple node.
+- `invites/$code`: any-auth read. Write only by creator or couple member.
+- Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
 - Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
+
+---
+
+## Session Roadmap
+
+### ✅ Session 1 — Infrastructure (complete)
+Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
+
+### Session 1b — JS Module Split (next)
+Split `src/js/main.js` (4522 lines, one big file) into feature modules. The globals (`myUid`, `coupleId`, `db`, etc.) need to be moved to a shared state module that other modules import from. Suggested structure:
+
+```
+src/js/
+  main.js           ← entry point + bootstrap only
+  state.js          ← all shared global variables (exported)
+  auth.js           ← onAuthStateChanged, login, signup, onboarding
+  couple.js         ← couple creation, joining, linking, offboarding
+  ui.js             ← applyMode, startUI, showPage, switchHomeTab
+  notes.js          ← submitNote, deleteNote, reactToNote, renderNotes
+  milestones.js     ← milestone CRUD, places map
+  bucket.js         ← bucket list CRUD
+  letters.js        ← letter system, unlock logic
+  memoryjar.js      ← memory jar, streak calculation
+  pulse.js          ← sendPulse, initPulse, updateReceivedBanner
+  status.js         ← status card, status sheet
+  weather.js        ← fetchWeather, wIcon, wDesc
+  presence.js       ← GPS, timezone, city detection, _pushPresence
+  countdown.js      ← startCountdown, updateMetricChips
+  settings.js       ← name, email, password, avatar, mode, start date
+  firebase-config.js ← already exists
+  app-height.js      ← already exists
+  sw-register.js     ← already exists
+```
+
+> Prompt: "Read CLAUDE.md. Split src/js/main.js into feature modules as described in the Session 1b section. Create src/js/state.js to hold all shared globals as exported variables. Other modules import from state.js. Do not change any functionality — pure refactor only. Run vite build to confirm no errors before committing to staging."
+
+### Session 2 — Push Notifications
+FCM via Vercel serverless (`api/notify.js`). Triggers: pulse sent, memory jar entry, status updated. Store FCM token at `users/{uid}/fcmToken`. Handle iOS 16.4+ PWA limitation.
+
+### Session 3 — Domain + Branding
+Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
