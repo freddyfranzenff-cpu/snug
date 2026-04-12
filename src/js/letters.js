@@ -271,8 +271,8 @@ window.saveLetterContent = async function(){
       return;
     }
   }
-  closeLetterModal();
-  initLetterPage();
+  window.closeLetterModal();
+  window.initLetterPage();
 };
 
 window.openLetterRead = function(roundKey){

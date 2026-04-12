@@ -648,16 +648,9 @@ window.doSignOut = async function(){
     document.getElementById('bottom-nav').style.display='none';
     if(window._metricInterval){clearInterval(window._metricInterval);window._metricInterval=null;}
     // Reset home to Now tab on next login
-    if(typeof switchHomeTab==='function') switchHomeTab('now');
+    if(typeof window.switchHomeTab==='function') window.switchHomeTab('now');
     R.showAuthWrap();
-    showAuthScreen('screen-login');
+    window.showAuthScreen('screen-login');
   }
 };
 
-// ── Page routing ──────────────────────────────────────────────
-// Maps bottom-nav tab names to the sub-tab that should be activated
-const _pageSubContent = {
-  memories: { default:'milestones', init: R._initMemoriesPage },
-  together: { default:'bucket',     init: R._initTogetherPage },
-  account:  { default:'profile',    init: R._initAccountPage  },
-};

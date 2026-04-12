@@ -55,6 +55,19 @@ async function fetchWeather(lat,lng,prefix){try{// Use Vercel proxy in productio
   const r=await fetch(weatherUrl,{cache:'no-store'});const j=await r.json();const temp=Math.round(j.current.temperature_2m),code=j.current.weathercode,wind=Math.round(j.current.windspeed_10m),high=Math.round(j.daily.temperature_2m_max[0]),low=Math.round(j.daily.temperature_2m_min[0]);const _wi=document.getElementById(`${prefix}-weather-icon`);const _wt=document.getElementById(`${prefix}-weather-temp`);const _wd=document.getElementById(`${prefix}-weather-desc`);const _wdt=document.getElementById(`${prefix}-weather-details`);if(_wi)_wi.textContent=R.wIcon(code);if(_wt)_wt.textContent=`${temp}°`;if(_wd)_wd.textContent=R.wDesc(code);if(_wdt)_wdt.textContent=`H ${high}°  L ${low}°  Wind ${wind} km/h`;}catch(e){const _wt2=document.getElementById(`${prefix}-weather-temp`);if(_wt2)_wt2.textContent='—';}}
 
 // Map
+function initMap(myCo,oCo,myL,oL){
+  // Guard against null/zero coords — use sensible fallback
+  if(!myCo||(!myCo[0]&&!myCo[1]))myCo=oCo||[20,0];
+  if(!oCo||(!oCo[0]&&!oCo[1]))oCo=myCo||[20,0];
+  if(state.mapInstance){state.mapInstance.remove();state.mapInstance=null;}
+  const isMobile=window.innerWidth<680;state.mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:1,worldCopyJump:false}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],isMobile?1:2);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap",subdomains:"abcd",maxZoom:18}).addTo(state.mapInstance);
+  const mkI=color=>L.divIcon({className:"",html:`<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
+  state.myMarker=L.marker(myCo,{icon:mkI("#e8622a")}).addTo(state.mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+  state.otherMarker=L.marker(oCo,{icon:mkI("#d4607a")}).addTo(state.mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+  state.connectLine=L.polyline([myCo,oCo],{color:"#e8622a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(state.mapInstance);
+}
+function updateOtherMarker(coords,label){if(!state.mapInstance||!state.otherMarker||!coords)return;state.otherMarker.setLatLng(coords);state.otherMarker.setTooltipContent(label);if(state.connectLine&&state.myCoords)state.connectLine.setLatLngs([state.myCoords,coords]);}
 
 // ── Register for cross-module access ─────────────────────
 R.wIcon = wIcon;

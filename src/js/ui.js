@@ -23,7 +23,7 @@ function _initMemoriesPage(tab){
 }
 
 function _initTogetherPage(tab){
-  if(tab==='letter') initLetterPage(R._startLetterCountdown);
+  if(tab==='letter') window.initLetterPage(R._startLetterCountdown);
 }
 
 function _initAccountPage(tab){
@@ -81,11 +81,11 @@ window.showPage=function(name){
 
   // If legacy name, switch to right sub-tab
   if(legacyMap[name]){
-    switchPageTab(navName, legacyTab[name]);
+    window.switchPageTab(navName, legacyTab[name]);
   } else if(R._pageSubContent[name]){
     // First visit to a new nav tab — init default sub-tab
     const def = R._pageSubContent[name].default;
-    switchPageTab(name, def);
+    window.switchPageTab(name, def);
   }
 
   R._stopLetterCountdown();
@@ -96,7 +96,6 @@ window.showPage=function(name){
 
 window.toggleSidebar=function(){};
 window.closeSidebar=function(){};
-window.registerThisDevice=async function(){const btn=document.getElementById("register-bio-btn");if(btn){btn.textContent="⬡ Registering…";const ok=await registerBiometric(state.ME);btn.textContent=ok?"✓ Registered!":"⬡ Registration failed";setTimeout(()=>{if(ok)btn.style.display="none";else btn.textContent="⬡ Try again";},2000);}};
 
 
 // ── Metric chips ─────────────────────────────────────────────
@@ -230,6 +229,14 @@ function startUI(){
   R.updateMetricChips();
 }
 
+
+// ── Page routing ──────────────────────────────────────────
+// Maps bottom-nav tab names to the sub-tab that should be activated
+const _pageSubContent = {
+  memories: { default:'milestones', init: _initMemoriesPage },
+  together: { default:'bucket',     init: _initTogetherPage },
+  account:  { default:'profile',    init: _initAccountPage  },
+};
 
 // ── Register for cross-module access ─────────────────────
 R._pageSubContent = _pageSubContent;

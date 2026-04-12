@@ -8,7 +8,7 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 // Couple info
 
 // ── Auth UI helpers ──────────────────────────────────────
-window.showAuthScreen = function(id){
+function showAuthScreen(id){
   ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot']
     .forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
   // Reset linking screen sections to visible when navigating to it
@@ -32,7 +32,8 @@ window.showAuthScreen = function(id){
   }
   const target = document.getElementById(id);
   if(target) target.style.display='block';
-};
+}
+window.showAuthScreen = showAuthScreen;
 
 function showAuthWrap(){ document.getElementById('auth-wrap').style.display='flex'; }
 function hideAuthWrap(){ document.getElementById('auth-wrap').style.display='none'; }

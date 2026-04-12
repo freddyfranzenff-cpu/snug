@@ -42,11 +42,11 @@ function renderMilestones(items){
 // Registry-based photo helpers — safe, no URL-in-attr corruption
 window._msViewPhoto = function(key){
   const item = state._msRegistry.get(key);
-  if(item?.photoURL) viewMilestonePhoto(item.photoURL);
+  if(item?.photoURL) window.viewMilestonePhoto(item.photoURL);
 };
 window._msReposition = function(key){
   const item = state._msRegistry.get(key);
-  if(item) openRepositionModal(key, item.photoURL, item.title||'', item.photoPosition||'center center');
+  if(item) window.openRepositionModal(key, item.photoURL, item.title||'', item.photoPosition||'center center');
 };
 window.cancelMilestoneEdit=function(){
   state.editingKey=null;
@@ -621,17 +621,17 @@ window.saveReposition = async function(){
     // Revoke blob URL to free memory
     const img = document.getElementById("m-reposition-img");
     if(img && img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
-    closeRepositionModal();
+    window.closeRepositionModal();
     return;
   }
 
   if(state.repositionMode === "card"){
     // From card placeholder — upload now with chosen position
-    if(!state.repositionKey || !state.pendingPhotoFile) { closeRepositionModal(); return; }
+    if(!state.repositionKey || !state.pendingPhotoFile) { window.closeRepositionModal(); return; }
     const key = state.repositionKey;
     const fileToUpload = state.pendingPhotoFile;
     state.pendingPhotoFile = null; // clear before async so it can't be double-used
-    closeRepositionModal();
+    window.closeRepositionModal();
     // Show uploading state on the save button
     const sb = document.getElementById("m-save-btn");
     if(sb) sb.textContent = "Uploading…";
@@ -648,7 +648,7 @@ window.saveReposition = async function(){
   if(regItem) state._msRegistry.set(state.repositionKey, {...regItem, photoPosition: posStr});
   const cardImg = document.querySelector(`.m-photo-wrap[onclick*="${state.repositionKey}"] img`);
   if(cardImg) cardImg.style.objectPosition = posStr;
-  closeRepositionModal();
+  window.closeRepositionModal();
 };
 
 function applyRepositionPos(){

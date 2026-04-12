@@ -124,33 +124,7 @@ window.openStatusSheet = function(){
   state._selectedActivity = state.myStatus?.activity||null;
   state._selectedMood = state.myStatus?.mood||null;
   document.getElementById('status-sheet-overlay').classList.add('open');
-  // Wire swipe-to-dismiss on the status sheet handle
-  const sheet = document.getElementById('status-sheet-overlay')?.querySelector('.status-sheet');
-  const handle = sheet?.querySelector('.status-sheet-handle');
-  if(sheet && handle){
-    // Clean up previous listeners before adding new ones
-    if(handle._swipeCleanup) handle._swipeCleanup();
-    let startY=0, currentY=0, dragging=false;
-    const onStart=(e)=>{ startY=(e.touches?e.touches[0].clientY:e.clientY); dragging=true; sheet.style.transition='none'; };
-    const onMove=(e)=>{ if(!dragging)return; currentY=(e.touches?e.touches[0].clientY:e.clientY); const dy=Math.max(0,currentY-startY); sheet.style.transform=`translateY(${dy}px)`; if(e.cancelable)e.preventDefault(); };
-    const onEnd=()=>{ if(!dragging)return; dragging=false; sheet.style.transition='transform .25s ease'; const dy=Math.max(0,currentY-startY); if(dy>80){ sheet.style.transform='translateY(100%)'; setTimeout(()=>{ window.closeStatusSheet(); sheet.style.transform=''; sheet.style.transition=''; },250); } else { sheet.style.transform=''; setTimeout(()=>{ sheet.style.transition=''; },250); } };
-    handle.addEventListener('touchstart', onStart, {passive:true});
-    handle.addEventListener('touchmove', onMove, {passive:false});
-    handle.addEventListener('touchend', onEnd);
-    handle.addEventListener('mousedown', onStart);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onEnd);
-    // Remove previous listeners on next open
-    if(handle._swipeCleanup) handle._swipeCleanup();
-    handle._swipeCleanup = () => {
-      handle.removeEventListener('touchstart', onStart);
-      handle.removeEventListener('touchmove', onMove);
-      handle.removeEventListener('touchend', onEnd);
-      handle.removeEventListener('mousedown', onStart);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onEnd);
-    };
-  }
+  R._initSheetSwipe('status-sheet','status-sheet-overlay', window.closeStatusSheet, '.status-sheet-handle');
 };
 
 window.closeStatusSheet = function(){
@@ -182,7 +156,7 @@ window.saveStatus = async function(){
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/presence/${state.myUid}/status`), status);
     state.myStatus = status;
     R.renderStatusCard();
-    closeStatusSheet();
+    window.closeStatusSheet();
   }catch(e){
     console.error('saveStatus failed:', e);
   }

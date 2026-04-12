@@ -36,7 +36,7 @@ window.updateMeetupTime = function(val){
     // Refresh letter timeline if letter page is visible
     const letterPage = document.getElementById('page-letter');
     if(letterPage && letterPage.classList.contains('active')){
-      initLetterPage && initLetterPage();
+      window.initLetterPage && window.initLetterPage();
     }
   }catch(e){ console.error('updateMeetupTime failed:',e); }
 };
@@ -113,9 +113,9 @@ function loadTodaysPlan(){
 }
 
 // ── BOTTOM SHEET SWIPE DISMISS ────────────────────────────────
-function _initSheetSwipe(sheetId, overlayId, closeFn){
+function _initSheetSwipe(sheetId, overlayId, closeFn, handleSelector){
   const sheet = document.getElementById(sheetId);
-  const handle = sheet?.querySelector('.together-sheet-handle');
+  const handle = sheet?.querySelector(handleSelector || '.together-sheet-handle');
   if(!sheet || !handle) return;
   // Remove previous listeners to prevent accumulation on repeat opens
   if(handle._swipeCleanup) handle._swipeCleanup();
@@ -175,7 +175,7 @@ window.openDnSheet = function(){
   if(who) who.value = d.who||'';
   document.getElementById('dn-sheet-overlay').classList.add('open');
   setTimeout(()=>w?.focus(),100);
-  R._initSheetSwipe('dn-sheet','dn-sheet-overlay', closeDnSheet);
+  R._initSheetSwipe('dn-sheet','dn-sheet-overlay', window.closeDnSheet);
 };
 
 window.closeDnSheet = function(){
@@ -194,7 +194,7 @@ window.saveDnSheet = async function(){
   };
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`), plan);
-    closeDnSheet();
+    window.closeDnSheet();
   }catch(e){ console.error('saveDnSheet failed:',e); }
 };
 
@@ -208,7 +208,7 @@ window.openTpSheet = function(){
   if(ctr && inp) ctr.textContent = (inp.value.length)+'/150';
   document.getElementById('tp-sheet-overlay').classList.add('open');
   setTimeout(()=>inp?.focus(),100);
-  R._initSheetSwipe('tp-sheet','tp-sheet-overlay', closeTpSheet);
+  R._initSheetSwipe('tp-sheet','tp-sheet-overlay', window.closeTpSheet);
 };
 
 window.closeTpSheet = function(){
@@ -222,7 +222,7 @@ window.saveTpSheet = async function(){
   const val = document.getElementById('tp-sheet-input')?.value.trim()||'';
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/todaysPlan/${today}/${state.myUid}`), val);
-    closeTpSheet();
+    window.closeTpSheet();
   }catch(e){ console.error('saveTpSheet failed:',e); }
 };
 
@@ -237,7 +237,7 @@ window.openMjSheet = function(){
   if(ctr) ctr.textContent = '0/200';
   document.getElementById('mj-sheet-overlay').classList.add('open');
   setTimeout(()=>inp?.focus(),100);
-  R._initSheetSwipe('mj-sheet','mj-sheet-overlay', closeMjSheet);
+  R._initSheetSwipe('mj-sheet','mj-sheet-overlay', window.closeMjSheet);
 };
 
 window.closeMjSheet = function(){
@@ -256,7 +256,7 @@ window.saveMjSheet = async function(){
   const entry = { text, createdAt: Date.now() };
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/memoryJar/${today}/${state.myUid}`), entry);
-    closeMjSheet();
+    window.closeMjSheet();
   }catch(e){
     console.error('saveMjSheet failed:',e);
     if(saveBtn) saveBtn.disabled = false;
