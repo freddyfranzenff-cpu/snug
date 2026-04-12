@@ -130,7 +130,15 @@ couples/{coupleId}/
     text, createdAt
 
   datePlan/{dateKey}/
-    where, what, who
+    mode             'open' | 'mystery'
+    plannerId        uid of mystery date creator
+    where, what, who plan details (open dates, or after mystery reveal)
+    revealed         boolean (mystery dates only) — false until planner reveals
+    time             optional HH:MM string — if absent, letters unlock at 23:59
+    hints/{pushId}/
+      text, authorUid, createdAt
+      guess/
+        text, authorUid, createdAt
 
   todayPlan/{uid}/
     text, updatedAt
@@ -443,5 +451,37 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 
 **Known limitation:** notification icon shows as white square on Android status bar — needs proper monochrome icon asset (Session 3 / branding task). Chrome may flag staging URL as possible spam — resolves with custom domain.
 
-### Session 3 — Domain + Branding (next)
+### Phase 1 — Together Mode Polish (current)
+Three features shipping before test rollout to 10 couples.
+
+**1. Mystery Date Picker (Session 3a)**
+Enhancement to date night planner. Planner chooses Open or Mystery mode when setting a date.
+- Open date: both partners see full plan (where/what/who), both can edit — existing behaviour
+- Mystery date: only planner sees full plan. Partner sees mystery card with date + time (if set).
+- Hint system: max 3 hints, one active at a time, next hint only after partner guesses current one
+- Hints and guesses: text only, immutable after submission, stored as Firebase push entries
+- Reveal: planner taps Reveal → confirmation sheet → sets revealed:true → partner card updates
+- Date Done: after reveal, button opens sheet to convert to milestone with hints/guesses as notes + photo
+- Letter unlock rule: if time set → unlock at that time. If time not set → unlock at 23:59 (fallback)
+- Picker redesign: modern bottom sheet (inspired by status update sheet) with Date, Time (optional), Mode fields
+- Meetup date picker (LDR): Date only — do not change its logic
+
+**2. Tonight's Mood (Session 3b)**
+Daily Together mode ritual. Both partners independently pick a mood each evening.
+Moods: playful, cosy, romantic, adventurous, just Netflix.
+App only reveals what the other picked after both have chosen.
+If match → celebration moment. If different → gentle compromise suggestion.
+Stored at couples/{coupleId}/tonightsMood/{dateKey}/{uid}/: { mood, chosenAt }
+
+**3. Contextual Tooltips + Empty State Copy (Session 3c)**
+Small info icon on each feature — tapping shows 2-sentence explanation.
+Empty state copy: meaningful placeholder text when sections have no content.
+First-use walkthrough: one-time guided tour on first login.
+Applies to both LDR and Together mode.
+
+### Phase 2 — Test Rollout
+Roll out to ~10 couples after Phase 1 is stable. Mix of LDR and Together couples.
+Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion, mystery date creation rate.
+
+### Session 3 — Domain + Branding (after Phase 2)
 Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
