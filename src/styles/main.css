@@ -859,6 +859,58 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-display-row:last-of-type{border-bottom:none;}
   .dn-display-value{font-size:.75rem;color:var(--text);}
   .dn-display-empty{font-size:.72rem;color:var(--muted);font-style:italic;}
+
+  /* ── Date Night Picker button (replaces native date input in Together mode) */
+  .dn-picker-btn{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;background:var(--kll);color:var(--k);border:1px solid var(--border);border-radius:10px;padding:.45rem .75rem;font-size:.72rem;font-weight:600;text-align:center;transition:opacity .2s;}
+  .dn-picker-btn:hover{opacity:.85;}
+
+  /* ── Date Night Picker sheet fields */
+  .dn-picker-time-row{display:flex;gap:.5rem;align-items:center;}
+  .dn-picker-time-row .together-sheet-input{margin-bottom:0;flex:1;}
+  .dn-picker-time-clear{background:none;border:1px solid var(--border);border-radius:10px;padding:.55rem .75rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;color:var(--muted);cursor:pointer;transition:opacity .2s;}
+  .dn-picker-time-clear:hover{opacity:.7;}
+  .dn-picker-hint{font-size:.65rem;color:var(--muted);margin:.5rem 0 0;line-height:1.45;}
+  .dn-mode-toggle{display:flex;gap:.55rem;margin-bottom:.4rem;}
+  .dn-mode-opt{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.7rem .65rem;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-align:left;transition:all .2s;}
+  .dn-mode-opt.active{border-color:var(--k);background:var(--kll);box-shadow:0 1px 6px rgba(200,85,58,0.08);}
+  .dn-mode-opt-title{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.15rem;}
+  .dn-mode-opt-sub{font-size:.6rem;color:var(--muted);line-height:1.3;}
+
+  /* ── Mystery date cards */
+  .dn-mystery-badge{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--k);font-weight:700;padding:.65rem .9rem .25rem;}
+  .dn-planner-card.dn-mystery-planner{border-color:rgba(200,85,58,0.22);}
+  .dn-planner-card.dn-mystery-partner{background:linear-gradient(160deg,#fff 0%,var(--kll) 70%,var(--pll) 100%);border-color:rgba(200,85,58,0.22);text-align:center;padding:1rem 1rem 1.1rem;}
+  .dn-mystery-partner .dn-mystery-badge{padding:0 0 .35rem;}
+  .dn-mystery-big{font-size:1.4rem;font-weight:700;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em;margin:.25rem 0 .3rem;}
+  .dn-mystery-sub{font-size:.68rem;color:var(--muted);margin:0 0 .8rem;line-height:1.45;}
+
+  /* ── Hints list */
+  .dn-hints-section{padding:.55rem .9rem .8rem;border-top:1px solid var(--border);}
+  .dn-mystery-partner .dn-hints-section{border-top:1px solid rgba(200,85,58,0.15);text-align:left;margin-top:.25rem;}
+  .dn-hints-heading{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:.1rem 0 .45rem;}
+  .dn-hints-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:.5rem;}
+  .dn-hint-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.55rem .7rem;}
+  .dn-hint-num{font-size:.48rem;letter-spacing:.12em;text-transform:uppercase;color:var(--k);font-weight:700;margin-bottom:.2rem;}
+  .dn-hint-text{font-size:.75rem;color:var(--text);line-height:1.45;}
+  .dn-guess-box{margin-top:.45rem;padding:.45rem .6rem;background:var(--pll);border-radius:8px;}
+  .dn-guess-label{font-size:.46rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pk);font-weight:700;margin-bottom:.15rem;}
+  .dn-guess-text{font-size:.72rem;color:var(--text);line-height:1.4;}
+  .dn-guess-waiting{margin-top:.4rem;font-size:.62rem;color:var(--muted);font-style:italic;}
+  .dn-guess-hint-quote{background:var(--kll);border-left:3px solid var(--k);padding:.55rem .7rem;border-radius:6px;font-size:.72rem;color:var(--text);line-height:1.45;margin-bottom:.65rem;}
+
+  /* ── Reveal + done buttons */
+  .dn-reveal-btn{display:block;width:calc(100% - 1.8rem);margin:.25rem .9rem .85rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:12px;padding:.75rem 1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(212,96,122,0.18);transition:opacity .2s;}
+  .dn-reveal-btn:hover{opacity:.9;}
+  .dn-done-btn{display:block;width:calc(100% - 1.8rem);margin:.2rem .9rem .85rem;background:var(--surface);color:var(--k);border:1px solid var(--k);border-radius:12px;padding:.65rem 1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .2s;}
+  .dn-done-btn:hover{background:var(--kll);}
+  .dn-reveal-body{font-size:.74rem;color:var(--text);line-height:1.5;margin:0 0 .35rem;}
+
+  /* ── Date done photo button */
+  .dn-done-photo-row{margin-bottom:.5rem;}
+  .dn-done-photo-btn{background:var(--kll);border:1px dashed var(--k);border-radius:10px;padding:.55rem .85rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;color:var(--k);font-weight:600;cursor:pointer;width:100%;transition:opacity .2s;}
+  .dn-done-photo-btn:hover{opacity:.85;}
+  .dn-done-notes{min-height:6rem;}
+
   /* tp card — read-only display */
   .tp-display-row{display:flex;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);align-items:center;}
   .tp-display-row:last-of-type{border-bottom:none;}

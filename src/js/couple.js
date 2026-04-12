@@ -62,6 +62,12 @@ function applyMode(type){
 
   // Time picker — Together mode only
   R._showTimeInput && R._showTimeInput(isTogether);
+  // In Together mode, swap native date input for the picker button
+  const pickerBtn = document.getElementById('dn-picker-btn');
+  const nativeDateInput = document.getElementById('meetup-date-input');
+  if(pickerBtn) pickerBtn.style.display = isTogether ? '' : 'none';
+  if(nativeDateInput) nativeDateInput.style.display = isTogether ? 'none' : '';
+  if(isTogether) R._syncDnPickerBtn && R._syncDnPickerBtn();
 
   // Date night planner — Together mode only, only if meetupDate is set
   const dnPlanner = document.getElementById('dn-planner');

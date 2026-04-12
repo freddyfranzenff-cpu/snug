@@ -420,35 +420,10 @@
       <!-- Date night planner (Together mode only) -->
       <div class="dn-planner" id="dn-planner">
         <div class="section-heading" style="margin-top:0;">
-          <span>Date night plan</span>
+          <span id="dn-planner-heading">Date night plan</span>
           <span class="dn-planner-date" id="dn-planner-date" style="font-size:.58rem;color:var(--k);font-weight:500;"></span>
         </div>
-        <div class="dn-planner-card">
-          <div class="dn-display-row">
-            <div class="dn-field-icon">📍</div>
-            <div style="flex:1;">
-              <div class="dn-field-label">Where</div>
-              <div class="dn-display-empty" id="dn-where-display">Not set yet</div>
-            </div>
-          </div>
-          <div class="dn-display-row">
-            <div class="dn-field-icon">✨</div>
-            <div style="flex:1;">
-              <div class="dn-field-label">What</div>
-              <div class="dn-display-empty" id="dn-what-display">Not set yet</div>
-            </div>
-          </div>
-          <div class="dn-display-row">
-            <div class="dn-field-icon">🎫</div>
-            <div style="flex:1;">
-              <div class="dn-field-label">Who's booking</div>
-              <div class="dn-display-empty" id="dn-who-display">Not set yet</div>
-            </div>
-          </div>
-          <div class="mj-input-row">
-            <button class="mj-add-btn" onclick="openDnSheet()">+ Update plan</button>
-          </div>
-        </div>
+        <div id="dn-planner-content"></div>
       </div>
 
 
@@ -485,6 +460,7 @@
               <p class="card-label" style="margin:0;display:none;" id="cd-card-label">Next meetup</p>
               <input type="date" id="meetup-date-input" class="meetup-input" onchange="updateMeetupDate(this.value)"/>
               <input type="time" id="meetup-time-input" class="time-input meetup-time-hidden" value="19:00" onchange="updateMeetupTime(this.value)" style="display:none;"/>
+              <button type="button" id="dn-picker-btn" class="meetup-input dn-picker-btn" onclick="openDnPickerSheet()" style="display:none;">Set date night</button>
             </div>
           </div>
         </div>
@@ -1204,7 +1180,7 @@
 
 </main>
 
-  <!-- ── Date Night Sheet ──────────────────────────────── -->
+  <!-- ── Date Night Sheet (edit where/what/who) ─────────── -->
   <div class="together-sheet-overlay" id="dn-sheet-overlay" onclick="if(event.target===this)closeDnSheet()">
     <div class="together-sheet" id="dn-sheet">
       <div class="together-sheet-handle" id="dn-sheet-handle"></div>
@@ -1219,6 +1195,105 @@
       </div>
       <button class="together-sheet-save" onclick="saveDnSheet()">Save plan</button>
       <button class="together-sheet-cancel" onclick="closeDnSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Date Night Picker Sheet (Date/Time/Mode) ─────────── -->
+  <div class="together-sheet-overlay" id="dn-picker-sheet-overlay" onclick="if(event.target===this)closeDnPickerSheet()">
+    <div class="together-sheet" id="dn-picker-sheet">
+      <div class="together-sheet-handle" id="dn-picker-sheet-handle"></div>
+      <div class="together-sheet-title">Next date night</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Date</label>
+        <input class="together-sheet-input" id="dn-picker-date" type="date"/>
+        <label class="together-sheet-label">Time <span style="color:var(--muted);font-weight:500;">(optional)</span></label>
+        <div class="dn-picker-time-row">
+          <input class="together-sheet-input" id="dn-picker-time" type="time" placeholder="--:--"/>
+          <button type="button" class="dn-picker-time-clear" id="dn-picker-time-clear" onclick="document.getElementById('dn-picker-time').value='';">Clear</button>
+        </div>
+        <label class="together-sheet-label">Mode</label>
+        <div class="dn-mode-toggle">
+          <button type="button" class="dn-mode-opt active" data-mode="open" onclick="selectDnMode('open')">
+            <div class="dn-mode-opt-title">Open</div>
+            <div class="dn-mode-opt-sub">You both plan it together</div>
+          </button>
+          <button type="button" class="dn-mode-opt" data-mode="mystery" onclick="selectDnMode('mystery')">
+            <div class="dn-mode-opt-title">Mystery ✨</div>
+            <div class="dn-mode-opt-sub">Surprise your partner with hints</div>
+          </button>
+        </div>
+        <p class="dn-picker-hint" id="dn-picker-hint">Pick a date and we'll both plan it.</p>
+      </div>
+      <button class="together-sheet-save" onclick="saveDnPickerSheet()">Save</button>
+      <button class="together-sheet-cancel" onclick="closeDnPickerSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Add Hint Sheet ─────────────────────────────────── -->
+  <div class="together-sheet-overlay" id="dn-hint-sheet-overlay" onclick="if(event.target===this)closeDnHintSheet()">
+    <div class="together-sheet" id="dn-hint-sheet">
+      <div class="together-sheet-handle" id="dn-hint-sheet-handle"></div>
+      <div class="together-sheet-title">Drop a hint</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Hint <span id="dn-hint-count" style="color:var(--muted);font-weight:500;"></span></label>
+        <textarea class="together-sheet-input together-sheet-textarea" id="dn-hint-input" placeholder="A little clue…" maxlength="200" oninput="document.getElementById('dn-hint-counter').textContent=this.value.length+'/200'"></textarea>
+        <div class="together-sheet-counter" id="dn-hint-counter">0/200</div>
+        <p class="dn-picker-hint">Hints can't be edited after you post them.</p>
+      </div>
+      <button class="together-sheet-save" onclick="submitDnHint()">Post hint</button>
+      <button class="together-sheet-cancel" onclick="closeDnHintSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Guess Sheet ─────────────────────────────────────── -->
+  <div class="together-sheet-overlay" id="dn-guess-sheet-overlay" onclick="if(event.target===this)closeDnGuessSheet()">
+    <div class="together-sheet" id="dn-guess-sheet">
+      <div class="together-sheet-handle" id="dn-guess-sheet-handle"></div>
+      <div class="together-sheet-title">Your guess</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Hint</label>
+        <div class="dn-guess-hint-quote" id="dn-guess-hint-quote"></div>
+        <label class="together-sheet-label">What do you think?</label>
+        <textarea class="together-sheet-input together-sheet-textarea" id="dn-guess-input" placeholder="Your best guess…" maxlength="200" oninput="document.getElementById('dn-guess-counter').textContent=this.value.length+'/200'"></textarea>
+        <div class="together-sheet-counter" id="dn-guess-counter">0/200</div>
+        <p class="dn-picker-hint">Guesses can't be edited after you post them.</p>
+      </div>
+      <button class="together-sheet-save" onclick="submitDnGuess()">Post guess</button>
+      <button class="together-sheet-cancel" onclick="closeDnGuessSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Reveal Confirm Sheet ────────────────────────────── -->
+  <div class="together-sheet-overlay" id="dn-reveal-sheet-overlay" onclick="if(event.target===this)closeDnRevealSheet()">
+    <div class="together-sheet" id="dn-reveal-sheet">
+      <div class="together-sheet-handle" id="dn-reveal-sheet-handle"></div>
+      <div class="together-sheet-title">Reveal the mystery?</div>
+      <div class="together-sheet-body">
+        <p class="dn-reveal-body">Your partner will see the full plan right away. You can't undo this.</p>
+      </div>
+      <button class="together-sheet-save" onclick="confirmDnReveal()">Yes, reveal</button>
+      <button class="together-sheet-cancel" onclick="closeDnRevealSheet()">Not yet</button>
+    </div>
+  </div>
+
+  <!-- ── Date Done Sheet (convert to milestone) ──────────── -->
+  <div class="together-sheet-overlay" id="dn-done-sheet-overlay" onclick="if(event.target===this)closeDnDoneSheet()">
+    <div class="together-sheet" id="dn-done-sheet">
+      <div class="together-sheet-handle" id="dn-done-sheet-handle"></div>
+      <div class="together-sheet-title">Save this date</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Title</label>
+        <input class="together-sheet-input" id="dn-done-title" maxlength="80" type="text"/>
+        <label class="together-sheet-label">Notes</label>
+        <textarea class="together-sheet-input together-sheet-textarea dn-done-notes" id="dn-done-notes" maxlength="1200"></textarea>
+        <label class="together-sheet-label">Photo <span style="color:var(--muted);font-weight:500;">(optional)</span></label>
+        <div class="dn-done-photo-row">
+          <input type="file" id="dn-done-photo-input" accept="image/*" style="display:none;" onchange="handleDnDonePhoto(this)"/>
+          <button type="button" class="dn-done-photo-btn" id="dn-done-photo-btn" onclick="document.getElementById('dn-done-photo-input').click()">+ Add photo</button>
+        </div>
+      </div>
+      <button class="together-sheet-save" id="dn-done-save-btn" onclick="saveDnDoneSheet()">Save as milestone</button>
+      <button class="together-sheet-cancel" onclick="closeDnDoneSheet()">Cancel</button>
     </div>
   </div>
 
