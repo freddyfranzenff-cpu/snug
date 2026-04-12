@@ -35,14 +35,37 @@ messaging.onBackgroundMessage(payload => {
   self.registration.showNotification(title, opts);
 });
 
+// Map a trigger to a deep link the app can route on.
+// The app's URL handler reads ?page=… on load to jump to the right section.
+const TRIGGER_ROUTES = {
+  pulse:     { page: 'home',      tab: 'now'     },
+  status:    { page: 'home',      tab: 'now'     },
+  note:      { page: 'notes'                     },
+  milestone: { page: 'milestones'                },
+  bucket:    { page: 'bucket'                    },
+  // 'memory' routes via legacyMap → memories page, jar sub-tab
+  memoryJar: { page: 'memory'                    },
+  meetup:    { page: 'home',      tab: 'moments' },
+  dateNight: { page: 'home',      tab: 'moments' },
+};
+
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for(const c of list){
-        if('focus' in c) return c.focus();
+  const trigger = event.notification.data?.trigger;
+  const route = TRIGGER_ROUTES[trigger];
+  const qs = route
+    ? '?' + new URLSearchParams({ page: route.page, ...(route.tab ? { tab: route.tab } : {}) }).toString()
+    : '';
+  const target = `/${qs}`;
+  event.waitUntil((async () => {
+    const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for(const c of list){
+      if('focus' in c){
+        // Tell the live page where to jump without a full reload
+        try{ c.postMessage({ type: 'snug-notification-click', trigger, route }); }catch(e){}
+        return c.focus();
       }
-      if(self.clients.openWindow) return self.clients.openWindow('/');
-    })
-  );
+    }
+    if(self.clients.openWindow) return self.clients.openWindow(target);
+  })());
 });

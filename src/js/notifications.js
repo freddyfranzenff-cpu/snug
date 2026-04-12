@@ -4,8 +4,12 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 
 // Client-side FCM registration + outgoing trigger helper.
 //
-// Registers for web push, stores the resulting token at users/{uid}/fcmToken,
-// and exposes R.notifyPartner(trigger) which POSTs to /api/notify.
+// Registers for web push and stores the resulting token as a leaf in a
+// per-user map at users/{uid}/fcmTokens/{tokenHash} — one entry per device
+// so a user can receive notifications on phone + laptop simultaneously.
+// The tokenHash is a 16-hex-char SHA-256 prefix, used as a stable short key.
+//
+// Exposes R.notifyPartner(trigger) which POSTs to /api/notify.
 //
 // iOS caveat: Web Push is only available on iOS 16.4+ AND only when the PWA
 // is installed to the home screen. We detect + bail silently in that case.
@@ -14,6 +18,23 @@ const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
 let _messaging = null;
 let _registerInFlight = false;
+// Tracked so sign-out can remove just this device's entry from the map.
+// Persisted to localStorage so a reload → immediate sign-out still knows
+// which leaf to delete, even if registerFcmToken hasn't run yet this load.
+const HASH_STORAGE_KEY = 'snug_fcm_token_hash';
+let _currentTokenHash = (() => {
+  try{ return localStorage.getItem(HASH_STORAGE_KEY) || null; }catch(e){ return null; }
+})();
+let _currentToken = null;
+
+async function hashToken(token){
+  const buf = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .slice(0, 8)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 function pushSupported(){
   if(!('serviceWorker' in navigator)) return false;
@@ -73,7 +94,23 @@ async function registerFcmToken(){
     });
     if(!token) return;
 
-    await state.dbSet(state.dbRef(state.db, `users/${state.myUid}/fcmToken`), token);
+    _currentToken = token;
+    _currentTokenHash = await hashToken(token);
+    try{ localStorage.setItem(HASH_STORAGE_KEY, _currentTokenHash); }catch(e){}
+    await state.dbSet(
+      state.dbRef(state.db, `users/${state.myUid}/fcmTokens/${_currentTokenHash}`),
+      token
+    );
+    // Clear the legacy single-string path. Migrated users had both their
+    // old fcmToken string and the new fcmTokens/{hash} entry, causing the
+    // server to fan out twice to the same device. Best-effort — any error
+    // is harmless (the node may already be null for new installs).
+    try{
+      await state.dbSet(
+        state.dbRef(state.db, `users/${state.myUid}/fcmToken`),
+        null
+      );
+    }catch(e){}
 
     // Foreground messages — show a system notification manually since the
     // page is visible and FCM suppresses them by default.
@@ -92,6 +129,72 @@ async function registerFcmToken(){
     console.warn('[notify] register failed:', e);
   }finally{
     _registerInFlight = false;
+  }
+}
+
+// Apply a { page, tab } route via the same window.showPage / window.switchHomeTab
+// the app already uses. Shared between the live-window SW message handler and
+// the cold-start query-param consumer below.
+function _applyDeepLinkRoute(route){
+  if(!route || !route.page) return;
+  try{
+    if(route.page === 'home'){
+      window.showPage && window.showPage('home');
+      if(route.tab && window.switchHomeTab) window.switchHomeTab(route.tab);
+    } else if(window.showPage){
+      window.showPage(route.page);
+    }
+  }catch(e){ console.warn('[notify] deep-link route failed:', e); }
+}
+
+// Consume a deep-link stashed by main.js when the PWA was cold-started via a
+// notification click (?page=…&tab=…). Called from loadCoupleAndStart after
+// the app has fully initialised so showPage / switchHomeTab are live.
+function consumePendingDeepLink(){
+  try{
+    const raw = sessionStorage.getItem('pendingDeepLink');
+    if(!raw) return;
+    sessionStorage.removeItem('pendingDeepLink');
+    const route = JSON.parse(raw);
+    _applyDeepLinkRoute(route);
+  }catch(e){ console.warn('[notify] consumePendingDeepLink failed:', e); }
+}
+
+// Listen for deep-link messages from the FCM SW (notificationclick handler).
+// Routes via the same window.showPage / window.switchHomeTab the app already uses.
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', ev => {
+    if(ev.data?.type !== 'snug-notification-click') return;
+    _applyDeepLinkRoute(ev.data.route);
+  });
+}
+
+async function unregisterFcmToken(uid){
+  // Called from onAuthStateChanged(null). Runs BEFORE state is reset, so
+  // `uid` is passed in explicitly — don't read from state here.
+  // Only removes THIS device's entry from users/{uid}/fcmTokens/{hash} —
+  // never wipes the whole map (other devices keep their subscriptions).
+  try{
+    if(uid && _currentTokenHash && state.db && state.dbSet && state.dbRef){
+      try{
+        await state.dbSet(
+          state.dbRef(state.db, `users/${uid}/fcmTokens/${_currentTokenHash}`),
+          null
+        );
+      }catch(e){ console.warn('[notify] clear fcmToken failed:', e); }
+    }
+    if(_messaging){
+      try{
+        const { deleteToken } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
+        await deleteToken(_messaging);
+      }catch(e){ console.warn('[notify] deleteToken failed:', e); }
+      _messaging = null;
+    }
+    _currentToken = null;
+    _currentTokenHash = null;
+    try{ localStorage.removeItem(HASH_STORAGE_KEY); }catch(e){}
+  }catch(e){
+    console.warn('[notify] unregister failed:', e);
   }
 }
 
@@ -150,10 +253,13 @@ async function initNotificationPrefs(){
     ));
   }catch(e){}
 
+  const canReceive = supported && perm === 'granted';
+  togglesGroup.style.opacity = canReceive ? '' : '.55';
   const inputs = togglesGroup.querySelectorAll('input[data-notif]');
   inputs.forEach(inp => {
     const k = inp.dataset.notif;
     inp.checked = prefs[k] !== false; // default on
+    inp.disabled = !canReceive;
     inp.onchange = async () => {
       try{
         await state.dbSet(
@@ -187,7 +293,9 @@ window.enableNotifications = async function(){
 
 // ── Register for cross-module access ─────────────────────
 R.registerFcmToken = registerFcmToken;
+R.unregisterFcmToken = unregisterFcmToken;
 R.notifyPartner = notifyPartner;
 R.pushSupported = pushSupported;
 R.initNotificationPrefs = initNotificationPrefs;
+R.consumePendingDeepLink = consumePendingDeepLink;
 R.TRIGGER_KEYS = TRIGGER_KEYS;

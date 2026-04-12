@@ -30,13 +30,22 @@ import './notifications.js';
 import './auth.js';
 
 // Read ?join=CODE from invite link URL on page load
+// and ?page=/?tab= from a cold-start notification click.
 (()=>{
   try{
-    const _j = new URLSearchParams(window.location.search).get('join');
+    const params = new URLSearchParams(window.location.search);
+    const _j = params.get('join');
     if(_j){
       const _code = _j.toUpperCase();
       sessionStorage.setItem('pendingJoinCode', _code);
       localStorage.setItem('pendingJoinCode', _code);
+    }
+    const _page = params.get('page');
+    const _tab = params.get('tab');
+    if(_page){
+      sessionStorage.setItem('pendingDeepLink', JSON.stringify({ page: _page, tab: _tab || null }));
+    }
+    if(_j || _page){
       window.history.replaceState({}, '', window.location.pathname);
     }
   }catch(e){}

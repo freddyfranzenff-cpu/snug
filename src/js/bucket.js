@@ -76,7 +76,7 @@ window.toggleBucketForm=function(){
   }
 };
 
-window.saveBucketItem=function(){
+window.saveBucketItem=async function(){
   const title=document.getElementById("bl-title-input").value.trim();
   const category=document.getElementById("bl-cat-input").value;
   if(!title)return;
@@ -89,8 +89,15 @@ window.saveBucketItem=function(){
     state.blEditKey=null;
   } else {
     const item={title,category,addedBy:state.ME,done:false,time:Date.now()};
-    if(state.db&&state.dbPush){state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/bucket`),item);R.notifyPartner&&R.notifyPartner('bucket');}
-    else{state.localBucket.push({...item,_key:Date.now().toString()});R.renderBucket([...state.localBucket]);}
+    if(state.db&&state.dbPush){
+      try{
+        await state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/bucket`),item);
+        R.notifyPartner&&R.notifyPartner('bucket');
+      }catch(e){ console.error('saveBucketItem failed:',e); return; }
+    } else {
+      state.localBucket.push({...item,_key:Date.now().toString()});
+      R.renderBucket([...state.localBucket]);
+    }
   }
   document.getElementById("bl-title-input").value="";
   document.getElementById("bl-add-form").classList.remove("open");

@@ -152,9 +152,12 @@ window.saveStatus = async function(){
     mood: state._selectedMood||null,
     updatedAt: Date.now()
   };
+  const prev = state.myStatus || {};
+  const changed = (prev.activity||null) !== status.activity
+               || (prev.mood||null)     !== status.mood;
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/presence/${state.myUid}/status`), status);
-    R.notifyPartner && R.notifyPartner('status');
+    if(changed) R.notifyPartner && R.notifyPartner('status');
     state.myStatus = status;
     R.renderStatusCard();
     window.closeStatusSheet();

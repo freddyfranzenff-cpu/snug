@@ -1,8 +1,14 @@
 // FCM HTTP v1 notifier — reads partner FCM token + notificationPrefs from
 // Firebase RTDB using the service account, then sends a push.
 //
-// Env vars required:
+// Env vars required in Vercel:
 //   FIREBASE_SERVICE_ACCOUNT  — full service account JSON (stringified)
+//   FIREBASE_DATABASE_URL     — RTDB URL, e.g.
+//                               https://ldrcounter-default-rtdb.europe-west1.firebasedatabase.app
+//                               (Service account JSONs from Firebase Console do NOT
+//                                include databaseURL, so this MUST be set explicitly.
+//                                The project_id-based fallback below is a best guess
+//                                for new europe-west1 projects only.)
 //
 // Request body: { coupleId, recipientUid, trigger, senderName }
 //
@@ -98,16 +104,31 @@ export default async function handler(req, res){
 
   try{
     const token = await getAccessToken(sa);
-    const dbUrl = sa.databaseURL
-      || process.env.FIREBASE_DATABASE_URL
+    const dbUrl = process.env.FIREBASE_DATABASE_URL
+      || sa.databaseURL
       || `https://${sa.project_id}-default-rtdb.europe-west1.firebasedatabase.app`;
 
-    const [fcmToken, prefs] = await Promise.all([
-      rtdbGet(dbUrl, `users/${recipientUid}/fcmToken`, token),
+    // fcmTokens is a map of tokenHash -> token string (multi-device).
+    // Legacy single-string at fcmToken is read as a fallback for users who
+    // registered before the map migration — treat it as one unnamed entry.
+    const [tokensMap, legacyToken, prefs] = await Promise.all([
+      rtdbGet(dbUrl, `users/${recipientUid}/fcmTokens`, token),
+      rtdbGet(dbUrl, `users/${recipientUid}/fcmToken`,  token),
       rtdbGet(dbUrl, `users/${recipientUid}/notificationPrefs`, token),
     ]);
 
-    if(!fcmToken){
+    // Build [ { hash, token, legacy }, … ]
+    const entries = [];
+    if(tokensMap && typeof tokensMap === 'object'){
+      for(const [h, t] of Object.entries(tokensMap)){
+        if(typeof t === 'string' && t) entries.push({ hash: h, token: t, legacy: false });
+      }
+    }
+    if(typeof legacyToken === 'string' && legacyToken){
+      entries.push({ hash: null, token: legacyToken, legacy: true });
+    }
+
+    if(!entries.length){
       return res.status(200).json({ skipped: 'no token' });
     }
     // Default: enabled unless explicitly false
@@ -119,9 +140,9 @@ export default async function handler(req, res){
     const title = tpl.title(name);
     const bodyText = tpl.body;
 
-    const message = {
+    const buildMessage = (tokenStr) => ({
       message: {
-        token: fcmToken,
+        token: tokenStr,
         notification: { title, body: bodyText },
         data: { trigger, coupleId: String(coupleId) },
         webpush: {
@@ -135,34 +156,66 @@ export default async function handler(req, res){
           fcm_options: { link: '/' },
         },
       },
-    };
+    });
 
-    const fcmRes = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
+    const sendEndpoint =
+      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`;
+
+    // Fan out to every device. A stale token on one device must not stop
+    // delivery to other devices — collect per-entry results.
+    const results = await Promise.all(entries.map(async (e) => {
+      try{
+        const fcmRes = await fetch(sendEndpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(buildMessage(e.token)),
+        });
+        if(fcmRes.ok) return { entry: e, ok: true };
+        const errText = await fcmRes.text();
+        let parsed = null;
+        try{ parsed = JSON.parse(errText); }catch(_){}
+        const errStatus = parsed?.error?.status;
+        const errCode = parsed?.error?.details?.find(d => d.errorCode)?.errorCode;
+        const stale = (errStatus === 'NOT_FOUND' || errCode === 'UNREGISTERED');
+        return { entry: e, ok: false, stale, errText };
+      }catch(err){
+        return { entry: e, ok: false, stale: false, errText: err.message };
       }
+    }));
+
+    // Only delete the specific leaf(s) that FCM reported as invalid.
+    // Never wipe the whole map.
+    await Promise.all(results
+      .filter(r => r.stale)
+      .map(async (r) => {
+        try{
+          if(r.entry.legacy){
+            await fetch(
+              `${dbUrl}/users/${recipientUid}/fcmToken.json?access_token=${token}`,
+              { method: 'DELETE' }
+            );
+          } else {
+            await fetch(
+              `${dbUrl}/users/${recipientUid}/fcmTokens/${r.entry.hash}.json?access_token=${token}`,
+              { method: 'DELETE' }
+            );
+          }
+        }catch(_){}
+      })
     );
 
-    if(!fcmRes.ok){
-      const errText = await fcmRes.text();
-      // Stale token — clear it so the client can re-register
-      if(fcmRes.status === 404 || fcmRes.status === 400){
-        try{
-          await fetch(`${dbUrl}/users/${recipientUid}/fcmToken.json?access_token=${token}`, {
-            method: 'DELETE',
-          });
-        }catch(e){}
-      }
-      return res.status(502).json({ error: 'fcm send failed', detail: errText });
+    const sent   = results.filter(r => r.ok).length;
+    const failed = results.length - sent;
+    if(sent === 0){
+      return res.status(502).json({
+        error: 'fcm send failed',
+        detail: results.map(r => r.errText).filter(Boolean),
+      });
     }
-
-    return res.status(200).json({ sent: true });
+    return res.status(200).json({ sent, failed });
   }catch(e){
     console.error('notify failed:', e);
     return res.status(500).json({ error: e.message });

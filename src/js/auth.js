@@ -375,6 +375,9 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
     R.startCoupleTypeListener();
     // Register for push notifications (no-op on unsupported platforms)
     R.registerFcmToken && R.registerFcmToken();
+    // If the PWA was cold-started by a notification click, jump to the
+    // right page/tab now that showPage / switchHomeTab are live.
+    R.consumePendingDeepLink && R.consumePendingDeepLink();
   }catch(e){
     console.error('loadCoupleAndStart failed:',e);
     // Reset nav to home so next login starts fresh
@@ -424,7 +427,18 @@ async function tryInitFirebase(){
     onAuthStateChanged(auth, async user=>{
       state.fbAuth.currentUser = user;
       if(!user){
-        // Not logged in — clear all state and show login screen
+        // Not logged in — clear all state and show login screen.
+        // Capture uid BEFORE reset so we can clear the stored FCM token.
+        // We await unregisterFcmToken so the RTDB write completes before we
+        // hand control back to the UI reset. The Firebase handles on `state`
+        // (state.db / state.dbSet / state.dbRef) are intentionally NOT nulled
+        // in the sign-out block below — unregisterFcmToken depends on them
+        // surviving past the reset. If you ever start nulling those handles
+        // on sign-out, you must move this call or re-capture the handles.
+        const _prevUid = state.myUid;
+        if(R.unregisterFcmToken){
+          try{ await R.unregisterFcmToken(_prevUid); }catch(e){}
+        }
         state.ME=null;state.OTHER=null;state.myUid=null;state.partnerUid=null;state.coupleId=null;state.myRole=null;
         state.myStatus=null;state.otherStatus=null;
         if(state.statusRefreshInterval){clearInterval(state.statusRefreshInterval);state.statusRefreshInterval=null;}
