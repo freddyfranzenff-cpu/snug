@@ -373,6 +373,8 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
     // Init location then start UI
     await R.detectAndStart();
     R.startCoupleTypeListener();
+    // Register for push notifications (no-op on unsupported platforms)
+    R.registerFcmToken && R.registerFcmToken();
   }catch(e){
     console.error('loadCoupleAndStart failed:',e);
     // Reset nav to home so next login starts fresh

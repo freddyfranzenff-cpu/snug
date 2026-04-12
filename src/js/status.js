@@ -154,6 +154,7 @@ window.saveStatus = async function(){
   };
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/presence/${state.myUid}/status`), status);
+    R.notifyPartner && R.notifyPartner('status');
     state.myStatus = status;
     R.renderStatusCard();
     window.closeStatusSheet();

@@ -89,7 +89,7 @@ window.saveBucketItem=function(){
     state.blEditKey=null;
   } else {
     const item={title,category,addedBy:state.ME,done:false,time:Date.now()};
-    if(state.db&&state.dbPush)state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/bucket`),item);
+    if(state.db&&state.dbPush){state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/bucket`),item);R.notifyPartner&&R.notifyPartner('bucket');}
     else{state.localBucket.push({...item,_key:Date.now().toString()});R.renderBucket([...state.localBucket]);}
   }
   document.getElementById("bl-title-input").value="";

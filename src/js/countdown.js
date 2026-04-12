@@ -38,6 +38,7 @@ window.updateMeetupDate=function(val){
   R.startCountdown();
   if(state.db&&state.dbSet){
     state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`),`${val}T${timeVal2}:00`);
+    R.notifyPartner && R.notifyPartner(state.coupleType==='together' ? 'dateNight' : 'meetup');
   }
   // Update date night planner visibility
   const dnPlanner = document.getElementById('dn-planner');

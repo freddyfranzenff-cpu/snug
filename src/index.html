@@ -932,10 +932,14 @@
     </div>
   </div>
 
-  <!-- ACCOUNT page (sub-tabs: Profile, Couple, Settings) -->
+  <!-- ACCOUNT page (sub-tabs: Profile, Notifications) -->
   <div class="page" id="page-account">
     <div class="shell-page-header">
       <h2 class="shell-page-title">Account</h2>
+    </div>
+    <div class="page-tabs">
+      <button class="page-tab active" id="account-tab-profile" onclick="switchPageTab('account','profile')">Profile</button>
+      <button class="page-tab" id="account-tab-notifications" onclick="switchPageTab('account','notifications')">Notifications</button>
     </div>
     <div class="page-tab-panel active" id="account-panel-profile">
   <div class="page" id="page-settings">
@@ -1118,6 +1122,83 @@
     <footer class="app-footer-inner">Snug</footer>
 
   </div>
+    </div>
+    <div class="page-tab-panel" id="account-panel-notifications">
+      <div class="page" id="page-notifications-prefs">
+        <p class="settings-section-heading">Push notifications</p>
+        <p id="notif-unsupported-msg" style="display:none;font-size:.65rem;color:var(--muted);line-height:1.6;margin:0 0 .75rem;">
+          Push notifications aren't available on this device. On iOS, install Snug to your home screen first (Safari → Share → Add to Home Screen) — iOS 16.4 or later.
+        </p>
+        <p id="notif-blocked-msg" style="display:none;font-size:.65rem;color:var(--muted);line-height:1.6;margin:0 0 .75rem;">
+          Notifications are blocked. Enable them in your browser settings for this site.
+        </p>
+        <div id="notif-enable-wrap" style="display:none;margin-bottom:.75rem;">
+          <button class="settings-btn" id="notif-enable-btn" onclick="window.enableNotifications()">Enable notifications</button>
+        </div>
+        <p style="font-size:.65rem;color:var(--muted);line-height:1.6;margin:0 0 .75rem;">
+          Choose which moments send your partner a notification.
+        </p>
+        <div class="settings-group" id="notif-toggles-group">
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Pulses</div>
+              <div class="settings-row-muted">When they tap the heart</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="pulse"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Notes</div>
+              <div class="settings-row-muted">New note on the wall</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="note"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Memory jar</div>
+              <div class="settings-row-muted">Today's entry written</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="memoryJar"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Milestones</div>
+              <div class="settings-row-muted">A new memory added</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="milestone"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Bucket list</div>
+              <div class="settings-row-muted">A new dream to share</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="bucket"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Status updates</div>
+              <div class="settings-row-muted">When they share what they're up to</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="status"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Next meetup</div>
+              <div class="settings-row-muted">When the date is set</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="meetup"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Date night</div>
+              <div class="settings-row-muted">When the time is set</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="dateNight"/><span></span></label>
+          </div>
+        </div>
+        <p id="notif-saved-msg" style="display:none;font-size:.62rem;color:var(--muted);margin:.4rem 0 0;">Saved</p>
+        <footer class="app-footer-inner">Snug</footer>
+      </div>
     </div>
   </div>
 

@@ -313,6 +313,7 @@ window.submitMemoryJar = async function(context){
   if(sendBtn) sendBtn.disabled = true;
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/memoryJar/${today}/${state.myUid}`), entry);
+    R.notifyPartner && R.notifyPartner('memoryJar');
     input.value = '';
     // Brief confirmation flash
     const rowId = context==='today'?'mj-today-input-row':'mj-preview-input-row';

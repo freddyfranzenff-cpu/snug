@@ -44,7 +44,7 @@ window.reactToNote=function(key){
   }
 };
 
-window.submitNote=function(){const text=document.getElementById("note-input").value.trim();if(!text||!state.ME)return;const note={text,author:state.ME,time:Date.now()};if(state.db&&state.dbPush){state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/notes`),note);}else{state.localNotes.unshift(note);R.renderNotes(state.localNotes);R.renderNotesPreview(state.localNotes);}document.getElementById("note-input").value="";};
+window.submitNote=function(){const text=document.getElementById("note-input").value.trim();if(!text||!state.ME)return;const note={text,author:state.ME,time:Date.now()};if(state.db&&state.dbPush){state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/notes`),note);R.notifyPartner&&R.notifyPartner('note');}else{state.localNotes.unshift(note);R.renderNotes(state.localNotes);R.renderNotesPreview(state.localNotes);}document.getElementById("note-input").value="";};
 
 // Milestones
 

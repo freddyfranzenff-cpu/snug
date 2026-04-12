@@ -20,6 +20,7 @@ window.updateMeetupTime = function(val){
     state.meetupDate = newDate;
     if(state.db && state.coupleId){
       state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), `${dateStr}T${val}:00`);
+      R.notifyPartner && R.notifyPartner('dateNight');
       // Also update unlock date on unread letter rounds in Together mode
       if(state.coupleType==='together' && state.letterRounds.length){
         state.letterRounds.forEach(round=>{
@@ -256,6 +257,7 @@ window.saveMjSheet = async function(){
   const entry = { text, createdAt: Date.now() };
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/memoryJar/${today}/${state.myUid}`), entry);
+    R.notifyPartner && R.notifyPartner('memoryJar');
     window.closeMjSheet();
   }catch(e){
     console.error('saveMjSheet failed:',e);

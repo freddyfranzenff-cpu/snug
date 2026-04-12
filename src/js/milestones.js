@@ -245,7 +245,7 @@ window.saveMilestone=async function(){
     // Then upload the photo and patch it in with a single dbUpdate.
     // This avoids any hang blocking the milestone from appearing.
     let finalKey = null;
-    if(state.db&&state.dbPush){const newRef=await state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/milestones`),m);finalKey=newRef.key;}
+    if(state.db&&state.dbPush){const newRef=await state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/milestones`),m);finalKey=newRef.key;R.notifyPartner&&R.notifyPartner('milestone');}
     else{finalKey=Date.now().toString();state.localMilestones.push({...m,_key:finalKey});R.renderMilestones([...state.localMilestones]);}
 
     if(state.pendingPhotoFile && finalKey && state.storage){

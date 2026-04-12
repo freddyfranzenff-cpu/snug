@@ -94,6 +94,7 @@ window.sendPulse=async function(){
   if(state.db&&state.dbPush){
     try{
       await state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/pulses`),pulse);
+      R.notifyPartner && R.notifyPartner('pulse');
     }catch(e){
       console.error('sendPulse failed:',e);
     }

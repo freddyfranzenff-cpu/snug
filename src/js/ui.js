@@ -27,6 +27,10 @@ function _initTogetherPage(tab){
 }
 
 function _initAccountPage(tab){
+  if(tab === 'notifications'){
+    R.initNotificationPrefs && R.initNotificationPrefs();
+    return;
+  }
   window.openSettingsPage&&window.openSettingsPage();
 }
 
