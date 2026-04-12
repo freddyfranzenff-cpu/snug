@@ -21,7 +21,7 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 - **Auth:** Firebase Auth (email/password)
 - **Storage:** Firebase Storage (avatars, milestone photos)
 - **Hosting:** Vercel
-- **Serverless:** Vercel API functions (`/api/` folder) — `weather.js` live (proxies wttr.in), FCM notify planned
+- **Serverless:** Vercel API functions (`/api/` folder) — `weather.js` (proxies wttr.in), `notify.js` (FCM push notifications)
 - **PWA:** Service worker (`sw.js`), Web App Manifest (`manifest.json`)
 - **Build:** Vite 5.4 (`vite.config.js` at repo root, `src/` as root, outputs to `dist/`)
 - **Linting:** ESLint 9 flat config (`eslint.config.js`)
@@ -61,12 +61,15 @@ snug/
       togethermode.js       ← Together mode specific UI and sheets
       places.js             ← Places map page
       avatar.js             ← Avatar upload and display
+      notifications.js      ← FCM token registration, notifyPartner(), deep-link routing, notification prefs UI
+  firebase-messaging-sw.js  ← FCM background message handler (repo root, symlinked into public/)
   public/
     icons/                  ← Symlink → ../icons/
     manifest.json           ← Symlink → ../manifest.json (401 on Vercel — known issue, deferred)
     sw.js                   ← Symlink → ../sw.js
   api/
     weather.js              ← Vercel serverless — proxies wttr.in (ES module default export)
+    notify.js               ← Vercel serverless — FCM HTTP v1 push sender, JWT service account auth
   sw.js                     ← Service worker (repo root)
   manifest.json             ← PWA manifest (repo root)
   vite.config.js            ← Vite config (root=src, publicDir=public, outDir=dist)
@@ -88,7 +91,9 @@ snug/
 ## Firebase Data Structure
 ```
 users/{uid}/
-  name, email, city, avatarUrl, coupleId, role, inviteCode, fcmToken, createdAt
+  name, email, city, avatarUrl, coupleId, role, inviteCode, createdAt
+  fcmTokens/{tokenHash}   token string (map — supports multiple devices)
+  notificationPrefs/      per-trigger booleans (default: all true if absent)
 
 couples/{coupleId}/
   owner            UID of creator
@@ -242,7 +247,9 @@ VITE_FIREBASE_PROJECT_ID
 VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
-FCM_SERVER_KEY          ← server-side only, never expose to client
+VITE_FIREBASE_VAPID_KEY       ← web push VAPID public key (client-safe)
+FIREBASE_SERVICE_ACCOUNT      ← full service account JSON stringified (server only, never expose)
+FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads this)
 ```
 
 ---
@@ -250,7 +257,8 @@ FCM_SERVER_KEY          ← server-side only, never expose to client
 ## Service Worker
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v103`)
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v104`)
+- Current version: `ylc-v104` (bumped in Session 2)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -412,20 +420,28 @@ src/js/
 
 > Prompt: "Read CLAUDE.md. Split src/js/main.js into feature modules as described in the Session 1b section. Create src/js/state.js to hold all shared globals as exported variables. Other modules import from state.js. Do not change any functionality — pure refactor only. Run vite build to confirm no errors before committing to staging."
 
-### Session 2 — Push Notifications (next)
-FCM via Vercel serverless (`api/notify.js`). Store FCM token at `users/{uid}/fcmToken`. Handle iOS 16.4+ PWA limitation (must be installed to home screen).
+### ✅ Session 2 — Push Notifications (complete)
+FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account auth. Tokens stored as map at `users/{uid}/fcmTokens/{tokenHash}` — supports multiple devices per user. Legacy single `fcmToken` string also read for backwards compatibility and cleared on next register.
 
-**Triggers:**
+**Triggers (all implemented):**
 - Pulse sent
 - Memory jar entry written
-- Status updated
-- Note sent
+- Status updated (only fires if activity or mood actually changed)
+- Note sent (awaits confirmed write before notifying)
 - Milestone added
-- Bucket list item added
+- Bucket list item added (awaits confirmed write before notifying)
 - Meetup date set (LDR mode)
 - Date night date set (Together mode)
 
-> Prompt: "Read CLAUDE.md. Add FCM push notifications via a Vercel serverless function at api/notify.js. Client registers for push on login and stores the FCM token at users/{uid}/fcmToken in RTDB. The serverless function reads the partner's FCM token and sends a notification via FCM HTTP v1 API. Triggers: pulse sent, memory jar entry written, status updated, note sent, milestone added, bucket list item added, meetup date set, date night date set. Handle iOS PWA limitations — Web Push only works on iOS 16.4+ with an installed PWA. FCM_SERVER_KEY is a Vercel environment variable — never expose to client."
+**Notification content:** title uses partner's display name dynamically. Body text is trigger-specific.
 
-### Session 3 — Domain + Branding
+**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, note → Notes, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Story tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
+
+**Account page:** now has Profile and Notifications sub-tabs using existing page-tabs pattern. Notifications tab shows per-trigger on/off toggles stored at `users/{uid}/notificationPrefs/`. Toggles disabled until OS permission granted. Defaults: all triggers ON if notificationPrefs node absent.
+
+**iOS:** Web Push only works on iOS 16.4+ with PWA installed to home screen. `pushSupported()` bails unless running in standalone mode.
+
+**Known limitation:** notification icon shows as white square on Android status bar — needs proper monochrome icon asset (Session 3 / branding task). Chrome may flag staging URL as possible spam — resolves with custom domain.
+
+### Session 3 — Domain + Branding (next)
 Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
