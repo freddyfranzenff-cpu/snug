@@ -1,0 +1,205 @@
+import { state } from './state.js';
+import { R } from './registry.js';
+
+// ── HOME TABS ──────────────────────────────────────────
+window.switchHomeTab = function(tab){
+  ['now','us','moments'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+    const panel = document.getElementById(`panel-${t}`);
+    panel.classList.toggle('active', t===tab);
+    if(t===tab) panel.scrollTop = 0;
+  });
+  // Re-invalidate map size when Now tab shown — Leaflet needs visible container
+  if(tab==='now' && state.mapInstance){
+    setTimeout(()=>{ try{ state.mapInstance.invalidateSize(); }catch(e){} }, 50);
+  }
+};
+
+// Update dynamic subtitles on Moments tab
+function updateMomentsSubtitles(){
+  const msCount = state.localMilestones ? state.localMilestones.length : 0;
+  const msEl = document.getElementById('moments-milestone-sub');
+  if(msEl) msEl.textContent = msCount > 0 ? `${msCount} moment${msCount!==1?'s':''} together` : 'Your shared moments';
+
+  const blTotal = state.localBucket ? state.localBucket.length : 0;
+  const blDone = state.localBucket ? state.localBucket.filter(i=>i.done).length : 0;
+  const blEl = document.getElementById('moments-bucket-sub');
+  if(blEl) blEl.textContent = blTotal > 0 ? `${blDone} of ${blTotal} done` : 'Dreams to share';
+
+  // Letter sub — show next unlock date if exists
+  const ltEl = document.getElementById('moments-letter-sub');
+  if(ltEl && state.meetupDate){
+    const _y=state.meetupDate.getFullYear(),_m=String(state.meetupDate.getMonth()+1).padStart(2,'0'),_d=String(state.meetupDate.getDate()).padStart(2,'0');
+    ltEl.textContent = `Opens ${_d}.${_m}.${_y}`;
+  }
+}
+
+// Update bucket progress on Us tab
+function updateHomeBucketProgress(){
+  if(!state.localBucket) return;
+  const total = state.localBucket.length;
+  const done = state.localBucket.filter(i=>i.done).length;
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  const doneEl = document.getElementById('home-bl-done');
+  const totalEl = document.getElementById('home-bl-total');
+  const barEl = document.getElementById('home-bl-bar');
+  if(doneEl) doneEl.textContent = done;
+  if(totalEl) totalEl.textContent = total;
+  if(barEl) barEl.style.width = `${pct}%`;
+}
+
+// ── STATUS + MOOD ────────────────────────────────────────
+const STATUS_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+function fmtStatusTime(ts){
+  if(!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff/60000);
+  const hrs = Math.floor(diff/3600000);
+  if(mins < 1) return 'Just now';
+  if(mins < 60) return `${mins}m ago`;
+  return `${hrs}h ago`;
+}
+
+const ACTIVITY_EMOJI = {
+  'Working':'💼','Reading':'📖','Music':'🎵','Eating':'🍽️',
+  'Gaming':'🎮','Sports':'⚽','Resting':'😴','Traveling':'✈️','Cooking':'🍳',
+  'Outside':'☀️','Shopping':'🛍️','Studying':'📚'
+};
+
+function renderStatusCard(){
+  const now = Date.now();
+  // Set names
+  const myNameEl = document.getElementById('status-my-name');
+  const otherNameEl = document.getElementById('status-other-name');
+  if(myNameEl) myNameEl.textContent = state.ME||'—';
+  if(otherNameEl) otherNameEl.textContent = state.OTHER||'—';
+
+  // My status
+  const myEmoji = document.getElementById('status-my-emoji');
+  const myActivity = document.getElementById('status-my-activity');
+  const myMood = document.getElementById('status-my-mood');
+  const myTime = document.getElementById('status-my-time');
+  const myExpired = !state.myStatus || !state.myStatus.updatedAt || (now - state.myStatus.updatedAt > R.STATUS_EXPIRY_MS);
+  if(myExpired){
+    if(myEmoji){ myEmoji.textContent = '💤'; myEmoji.style.opacity='.35'; }
+    if(myActivity) myActivity.innerHTML = '<span class="status-empty">No status set</span>';
+    if(myMood) myMood.textContent = '';
+    if(myTime) myTime.textContent = '';
+  } else {
+    if(myEmoji){ myEmoji.textContent = R.ACTIVITY_EMOJI[state.myStatus.activity]||'—'; myEmoji.style.opacity='1'; }
+    if(myActivity) myActivity.textContent = state.myStatus.activity||'';
+    if(myMood) myMood.textContent = state.myStatus.mood ? `feeling ${state.myStatus.mood}` : '';
+    if(myTime) myTime.textContent = R.fmtStatusTime(state.myStatus.updatedAt);
+  }
+
+  // Partner status
+  const otherEmoji = document.getElementById('status-other-emoji');
+  const otherActivity = document.getElementById('status-other-activity');
+  const otherMood = document.getElementById('status-other-mood');
+  const otherTime = document.getElementById('status-other-time');
+  const otherExpired = !state.otherStatus || !state.otherStatus.updatedAt || (now - state.otherStatus.updatedAt > R.STATUS_EXPIRY_MS);
+  if(otherExpired){
+    if(otherEmoji){ otherEmoji.textContent = '💤'; otherEmoji.style.opacity='.35'; }
+    if(otherActivity) otherActivity.innerHTML = '<span class="status-empty">No status set</span>';
+    if(otherMood) otherMood.textContent = '';
+    if(otherTime) otherTime.textContent = '';
+  } else {
+    if(otherEmoji){ otherEmoji.textContent = R.ACTIVITY_EMOJI[state.otherStatus.activity]||'—'; otherEmoji.style.opacity='1'; }
+    if(otherActivity) otherActivity.textContent = state.otherStatus.activity||'';
+    if(otherMood) otherMood.textContent = state.otherStatus.mood ? `feeling ${state.otherStatus.mood}` : '';
+    if(otherTime) otherTime.textContent = R.fmtStatusTime(state.otherStatus.updatedAt);
+  }
+}
+
+window.openStatusSheet = function(){
+  document.getElementById('bottom-nav').style.display='none';
+  // Pre-select current values
+  document.querySelectorAll('.status-act-opt').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.activity === (state.myStatus?.activity||null));
+  });
+  document.querySelectorAll('.status-mood-pill').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.mood === (state.myStatus?.mood||null));
+  });
+  state._selectedActivity = state.myStatus?.activity||null;
+  state._selectedMood = state.myStatus?.mood||null;
+  document.getElementById('status-sheet-overlay').classList.add('open');
+  // Wire swipe-to-dismiss on the status sheet handle
+  const sheet = document.getElementById('status-sheet-overlay')?.querySelector('.status-sheet');
+  const handle = sheet?.querySelector('.status-sheet-handle');
+  if(sheet && handle){
+    // Clean up previous listeners before adding new ones
+    if(handle._swipeCleanup) handle._swipeCleanup();
+    let startY=0, currentY=0, dragging=false;
+    const onStart=(e)=>{ startY=(e.touches?e.touches[0].clientY:e.clientY); dragging=true; sheet.style.transition='none'; };
+    const onMove=(e)=>{ if(!dragging)return; currentY=(e.touches?e.touches[0].clientY:e.clientY); const dy=Math.max(0,currentY-startY); sheet.style.transform=`translateY(${dy}px)`; if(e.cancelable)e.preventDefault(); };
+    const onEnd=()=>{ if(!dragging)return; dragging=false; sheet.style.transition='transform .25s ease'; const dy=Math.max(0,currentY-startY); if(dy>80){ sheet.style.transform='translateY(100%)'; setTimeout(()=>{ window.closeStatusSheet(); sheet.style.transform=''; sheet.style.transition=''; },250); } else { sheet.style.transform=''; setTimeout(()=>{ sheet.style.transition=''; },250); } };
+    handle.addEventListener('touchstart', onStart, {passive:true});
+    handle.addEventListener('touchmove', onMove, {passive:false});
+    handle.addEventListener('touchend', onEnd);
+    handle.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    // Remove previous listeners on next open
+    if(handle._swipeCleanup) handle._swipeCleanup();
+    handle._swipeCleanup = () => {
+      handle.removeEventListener('touchstart', onStart);
+      handle.removeEventListener('touchmove', onMove);
+      handle.removeEventListener('touchend', onEnd);
+      handle.removeEventListener('mousedown', onStart);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+    };
+  }
+};
+
+window.closeStatusSheet = function(){
+  document.getElementById('bottom-nav').style.display='flex';
+  document.getElementById('status-sheet-overlay').classList.remove('open');
+};
+
+window.selectActivity = function(el){
+  document.querySelectorAll('.status-act-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  state._selectedActivity = el.dataset.activity;
+};
+
+window.selectMood = function(el){
+  document.querySelectorAll('.status-mood-pill').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  state._selectedMood = el.dataset.mood;
+};
+
+window.saveStatus = async function(){
+  if(!state._selectedActivity && !state._selectedMood) return;
+  if(!state.db||!state.coupleId||!state.myUid) return;
+  const status = {
+    activity: state._selectedActivity||null,
+    mood: state._selectedMood||null,
+    updatedAt: Date.now()
+  };
+  try{
+    await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/presence/${state.myUid}/status`), status);
+    state.myStatus = status;
+    R.renderStatusCard();
+    closeStatusSheet();
+  }catch(e){
+    console.error('saveStatus failed:', e);
+  }
+};
+
+// Start a 1-minute interval to refresh status time labels and check expiry
+function startStatusRefresh(){
+  if(state.statusRefreshInterval) clearInterval(state.statusRefreshInterval);
+  state.statusRefreshInterval = setInterval(()=>{ R.renderStatusCard(); }, 60000);
+}
+
+
+// ── Register for cross-module access ─────────────────────
+R.updateMomentsSubtitles = updateMomentsSubtitles;
+R.updateHomeBucketProgress = updateHomeBucketProgress;
+R.STATUS_EXPIRY_MS = STATUS_EXPIRY_MS;
+R.fmtStatusTime = fmtStatusTime;
+R.ACTIVITY_EMOJI = ACTIVITY_EMOJI;
+R.renderStatusCard = renderStatusCard;
+R.startStatusRefresh = startStatusRefresh;
