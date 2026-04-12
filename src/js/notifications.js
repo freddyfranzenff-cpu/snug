@@ -217,7 +217,7 @@ async function notifyPartner(trigger){
   }
 }
 
-const TRIGGER_KEYS = ['pulse','note','memoryJar','milestone','bucket','status','meetup','dateNight','dnHint','dnGuess','dnReveal'];
+const TRIGGER_KEYS = ['pulse','note','memoryJar','milestone','bucket','status','meetup','dateNight','dnHint','dnGuess','dnCorrect','dnReveal'];
 
 async function initNotificationPrefs(){
   const unsupportedMsg = document.getElementById('notif-unsupported-msg');

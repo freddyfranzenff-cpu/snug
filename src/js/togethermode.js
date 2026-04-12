@@ -177,6 +177,15 @@ function loadDnPlanner(){
     const isPlanner = hasPlannerId && d.plannerId === state.myUid;
     const revealed = !!d.revealed;
 
+    // M2 safety: if the current plan is NOT an active mystery (open, or a
+    // revealed mystery) but the activeMystery lock still exists in DB, the
+    // lock is stale — clear it. Only the planner (or legacy own-uid lock)
+    // can clear under the rules, so we try and swallow permission errors.
+    if(!(mode === 'mystery' && !revealed) && state.dbRemove && state.db && state.coupleId){
+      state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`))
+        .catch(()=>{ /* permission denied or not-present — ignore */ });
+    }
+
     if(mode === 'mystery' && !revealed){
       if(!hasPlannerId){
         // Data integrity issue — mystery flagged but no plannerId. Offer recovery.
@@ -575,8 +584,25 @@ window.saveDnPickerSheet = async function(){
   state.meetupDate = new Date(`${dateVal}T${effectiveTime}:00`);
 
   if(state.db && state.dbSet && state.coupleId){
+    const storedMeetup = `${dateVal}T${effectiveTime}:00`;
+    const amRef = state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`);
+    let activeMysteryWritten = false; // tracks whether we set activeMystery=myUid for rollback
     try{
-      const storedMeetup = `${dateVal}T${effectiveTime}:00`;
+      // STEP 1 (Together only): write activeMystery FIRST so the meetupDate
+      // .validate rule sees the lock before any partner device can observe
+      // the new meetupDate. LDR never touches this field.
+      if(!isLDR){
+        if(mode === 'mystery'){
+          await state.dbSet(amRef, state.myUid);
+          activeMysteryWritten = true;
+        } else {
+          // Switching to / staying in open: clear any stale lock before the
+          // meetupDate write so partner validate passes on subsequent edits.
+          await state.dbRemove(amRef);
+        }
+      }
+
+      // STEP 2: write meetupDate.
       await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), storedMeetup);
 
       // LDR mode: no datePlan node, just meetup date.
@@ -636,7 +662,18 @@ window.saveDnPickerSheet = async function(){
       _updateUnreadLetterUnlockDates(storedMeetup);
 
       R.notifyPartner && R.notifyPartner('dateNight');
-    }catch(e){ console.error('saveDnPickerSheet failed:',e); }
+    }catch(e){
+      console.error('saveDnPickerSheet failed:',e);
+      // Atomic rollback: if we set activeMystery but a later write failed,
+      // clear it so the mystery lock doesn't linger without a real mystery.
+      if(activeMysteryWritten){
+        try{
+          await state.dbRemove(amRef);
+        }catch(e2){ console.warn('activeMystery rollback failed:',e2); }
+      }
+      window.alert('Could not save your date. Please check your connection and try again.');
+      return;
+    }
   }
 
   R.startCountdown && R.startCountdown();
@@ -701,7 +738,7 @@ window.markHintCorrect = async function(hintKey){
       state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/hints/${hintKey}/correct`),
       true
     );
-    R.notifyPartner && R.notifyPartner('dnReveal');
+    R.notifyPartner && R.notifyPartner('dnCorrect');
   }catch(e){ console.error('markHintCorrect failed:',e); }
 };
 
@@ -778,6 +815,9 @@ window.confirmDnReveal = async function(){
   }
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/revealed`), true);
+    try{
+      await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
+    }catch(e){ console.warn('activeMystery clear on reveal failed:',e); }
     R.notifyPartner && R.notifyPartner('dnReveal');
     window.closeDnRevealSheet();
   }catch(e){
@@ -882,6 +922,7 @@ window.saveDnDoneSheet = async function(){
     try{
       await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`));
       await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
+      await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
     }catch(e){ console.warn('datePlan/meetupDate cleanup after Date Done failed:',e); }
 
     _dnDonePhotoFile = null;

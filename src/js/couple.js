@@ -139,6 +139,28 @@ window.selectSettingsMode = async function(mode){
   if(!state.db||!state.coupleId) return;
   if(mode === state.coupleType) return; // already in this mode
 
+  const resetToggle = () => {
+    const ldrBtn = document.getElementById('settings-mode-ldr');
+    const togBtn = document.getElementById('settings-mode-together');
+    if(ldrBtn) ldrBtn.classList.toggle('active', state.coupleType==='ldr');
+    if(togBtn) togBtn.classList.toggle('active', state.coupleType==='together');
+  };
+
+  // Mystery-date lock: if a non-revealed mystery is active and the current
+  // user is not the planner, abort. Mode switches clear meetupDate, which
+  // would destroy the planner's surprise.
+  const plan = state._dnCurrentPlan || {};
+  const mysteryActive = state.coupleType === 'together'
+    && plan.mode === 'mystery'
+    && !plan.revealed
+    && plan.plannerId
+    && plan.plannerId !== state.myUid;
+  if(mysteryActive){
+    window.alert("Your partner's mystery date is still active. Only your partner can change or cancel it before the reveal.");
+    resetToggle();
+    return;
+  }
+
   // Check if there's an active letter round or a date set
   const hasDate = !!state.meetupDate && state.meetupDate > new Date();
   const hasActiveRound = state.letterRounds && state.letterRounds.some(r => {
@@ -155,21 +177,42 @@ window.selectSettingsMode = async function(mode){
 Your letters will be kept but your current date will be cleared. You can set a new one after switching.`
     );
     if(!confirmed){
-      // Re-sync toggle back to current mode
-      const ldrBtn = document.getElementById('settings-mode-ldr');
-      const togBtn = document.getElementById('settings-mode-together');
-      if(ldrBtn) ldrBtn.classList.toggle('active', state.coupleType==='ldr');
-      if(togBtn) togBtn.classList.toggle('active', state.coupleType==='together');
+      resetToggle();
       return;
     }
-    // Clear the date
+    // Capture the old dateKey before wiping meetupDate so we can clean up the
+    // orphaned datePlan/{dateKey} node that would otherwise linger.
+    const oldDateKey = state.meetupDate
+      ? `${state.meetupDate.getFullYear()}-${String(state.meetupDate.getMonth()+1).padStart(2,'0')}-${String(state.meetupDate.getDate()).padStart(2,'0')}`
+      : null;
     try{
       await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
       state.meetupDate = null;
+      // Clean up the orphan datePlan node (hints/guesses/plan content).
+      if(oldDateKey){
+        try{
+          await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${oldDateKey}`));
+        }catch(e){ console.warn('datePlan cleanup on mode switch failed:',e); }
+      }
       // Update countdown UI
       if(window.startCountdown) R.startCountdown();
       R._syncDnPickerBtn && R._syncDnPickerBtn();
     }catch(e){ console.error('clearMeetupDate failed:',e); }
+  }
+
+  // M2: always clear activeMystery on ANY mode switch — not just when a date
+  // was present. This also safety-cleans any orphaned lock left behind by an
+  // earlier partial failure, regardless of whether the user hit the prompt
+  // branch above.
+  try{
+    await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
+  }catch(e){ console.warn('activeMystery clear on mode switch failed:',e); }
+
+  // Leaving Together mode — drop stale plan state so the LDR save path
+  // doesn't trigger mystery-hint confirmation prompts against dead data.
+  if(state.coupleType === 'together' && mode === 'ldr'){
+    state._dnCurrentPlan = null;
+    if(state._dnUnsub){ try{state._dnUnsub();}catch(e){} state._dnUnsub = null; }
   }
 
   try{

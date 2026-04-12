@@ -47,6 +47,10 @@ const TRIGGER_ROUTES = {
   memoryJar: { page: 'memory'                    },
   meetup:    { page: 'home',      tab: 'moments' },
   dateNight: { page: 'home',      tab: 'moments' },
+  dnHint:    { page: 'home',      tab: 'now'     },
+  dnGuess:   { page: 'home',      tab: 'now'     },
+  dnCorrect: { page: 'home',      tab: 'now'     },
+  dnReveal:  { page: 'home',      tab: 'now'     },
 };
 
 self.addEventListener('notificationclick', event => {

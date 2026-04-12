@@ -356,12 +356,10 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
       if(d?.meetupDate){
         const stored = d.meetupDate;
         state.meetupDate = new Date(stored);
-        // Restore time input if Together mode and time was stored
+        // Restore _dnTimeVal from stored meetup string (Together mode reads this).
         if(stored.includes('T') && !stored.endsWith('T00:00:00')){
           const timePart = stored.split('T')[1]?.substring(0,5)||'19:00';
           state._dnTimeVal = timePart;
-          const ti = document.getElementById('meetup-time-input');
-          if(ti) ti.value = timePart;
         }
       }
       state.coupleType = d?.coupleType||'ldr';

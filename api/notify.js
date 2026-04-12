@@ -27,6 +27,7 @@ const TRIGGERS = {
   dateNight: { title: n => `${n} set your next date night`, body: () => 'Tap to see when' },
   dnHint:    { title: n => `${n} dropped a hint ✨`,         body: () => 'A clue about your mystery date' },
   dnGuess:   { title: n => `${n} took a guess`,             body: n => `See what ${n} thinks you're planning` },
+  dnCorrect: { title: n => `${n} reacted to your guess`,    body: () => 'You got it right!' },
   dnReveal:  { title: n => `${n} revealed the mystery 🎉`,  body: () => 'Tap to see the full plan' },
 };
 
