@@ -34,11 +34,11 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 ```
 snug/
   src/
-    index.html              ← HTML shell (1175 lines); inline <head> IIFE kept for --app-height
+    index.html              ← HTML shell; inline <head> IIFE kept for --app-height
     styles/
-      main.css              ← All CSS (1077 lines)
+      main.css              ← All CSS
     js/
-      main.js               ← Thin entry point (51 lines) — imports all modules, bootstraps R.tryInitFirebase()
+      main.js               ← Thin entry point — imports all modules, bootstraps R.tryInitFirebase()
       state.js              ← Single mutable `state` object holding all former top-level globals
       registry.js           ← Mutable `R` namespace — modules attach functions at load, call sites use R.X()
       firebase-config.js    ← Firebase init, reads from import.meta.env.VITE_*
@@ -62,6 +62,7 @@ snug/
       places.js             ← Places map page
       avatar.js             ← Avatar upload and display
       notifications.js      ← FCM token registration, notifyPartner(), deep-link routing, notification prefs UI
+      tonightsmood.js       ← Tonight's Mood — pick/waiting/reveal states, bottom sheet, day rollover
   firebase-messaging-sw.js  ← FCM background message handler (repo root, symlinked into public/)
   public/
     icons/                  ← Symlink → ../icons/
@@ -84,7 +85,7 @@ snug/
 - `state.js` exports a single mutable `state` object — sidesteps ES module `let`-binding reassignment limits
 - `registry.js` exports a mutable `R` namespace — modules attach functions at load time, cross-module call sites use `R.X()` to avoid circular import evaluation-order problems
 - `window.*` handlers preserved in their original modules — inline `onclick=` attributes in `index.html` keep working unchanged
-- All 105 R.* registrations verified present; 68 inline onclick handlers audited — all clean
+- All R.* registrations verified present; all inline onclick handlers audited — all clean
 
 ---
 
@@ -148,6 +149,10 @@ couples/{coupleId}/
   pulses/{pushId}/
     from (uid), to (uid), fromName, time (ms)
 
+  tonightsMood/{dateKey ('YYYY-MM-DD')}/{uid}/
+    mood        'cosy' | 'romantic' | 'adventurous' | 'netflix' | 'productive' | 'chaotic' | 'talky' | 'celebratory' | 'hungry'
+    chosenAt    number (ms timestamp)
+
 invites/{code}/
   coupleId, createdBy (uid), createdAt, expiresAt (48h), used (bool)
 ```
@@ -159,12 +164,12 @@ Snug has two modes toggled per couple. `applyMode(type)` handles all UI switchin
 
 **LDR mode** (`coupleType === 'ldr'`):
 - Shows: `ldr-section-wrap` (live clocks, distance km, weather, sleep indicators)
-- Hides: `todays-plan`, `dn-planner` (Today's plan + Date night planner)
+- Hides: `todays-plan`, `dn-planner`, `tonights-mood-card`
 - Countdown label: "Next meetup"
 - Letters unlock at midnight on meetup date
 
 **Together mode** (`coupleType === 'together'`):
-- Shows: `todays-plan`, `dn-planner`
+- Shows: `todays-plan`, `dn-planner`, `tonights-mood-card`
 - Hides: `ldr-section-wrap`
 - Countdown label: "Next date night"
 - Letters unlock at the date night time (`_dnTimeVal`, default `19:00`)
@@ -241,7 +246,7 @@ The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it 
 - **Do NOT revert to CommonJS `require`/`module.exports`** — Vercel requires ES module default export
 
 ### Known issue
-- `manifest.json` returns 401 from service worker fetch — caused by symlink in `public/` not being followed correctly by Vercel. Deferred to Session 1b. No functional impact on the app.
+- `manifest.json` returns 401 from service worker fetch — caused by symlink in `public/` not being followed correctly by Vercel. Deferred. No functional impact on the app.
 
 ---
 
@@ -267,8 +272,8 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 ## Service Worker
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v104`)
-- Current version: `ylc-v104` (bumped in Session 2)
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v108`)
+- Current version: `ylc-v108` (bumped in Session 3b)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -306,6 +311,9 @@ _mjMyEntry, _mjOtherEntry     // today's entry objects | null
 _mjStreakCount                 // integer
 _mjUnsub                      // Firebase unsub function
 
+// Tonight's Mood
+_tmInFlight                   // boolean — true while mood submission is in-flight
+
 // Deletion guard
 _selfDeleting                 // boolean — true while this user is deleting
 
@@ -339,6 +347,8 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `startCountdown()` | Starts 1s interval for countdown card + metric chip |
 | `initPulse()` | Firebase listener on `pulses` node, renders received banner + history |
 | `sendPulse()` | Rate-limited (60s cooldown) — pushes `{from, to, fromName, time}` to pulses |
+| `initTonightsMood()` | Starts Firebase listener on `tonightsMood/{dateKey}`, manages pick/waiting/reveal states, wires bottom sheet |
+| `teardownTonightsMood()` | Clears mood listener, day-roll interval, and `_tmInFlight` — called on sign-out and LDR mode switch |
 | `doDeleteAccount()` | Path 1 deletion — reauthenticates, wipes couple node, deletes auth account |
 | `doLinkingDeleteAccount()` | Path 2 deletion — same steps as Path 1, accessible from linking screen |
 
@@ -502,32 +512,7 @@ service firebase.storage {
 Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
 
 ### ✅ Session 1b — JS Module Split (complete)
-Split `src/js/main.js` (4522 lines, one big file) into feature modules. The globals (`myUid`, `coupleId`, `db`, etc.) need to be moved to a shared state module that other modules import from. Suggested structure:
-
-```
-src/js/
-  main.js           ← entry point + bootstrap only
-  state.js          ← all shared global variables (exported)
-  auth.js           ← onAuthStateChanged, login, signup, onboarding
-  couple.js         ← couple creation, joining, linking, offboarding
-  ui.js             ← applyMode, startUI, showPage, switchHomeTab
-  notes.js          ← submitNote, deleteNote, reactToNote, renderNotes
-  milestones.js     ← milestone CRUD, places map
-  bucket.js         ← bucket list CRUD
-  letters.js        ← letter system, unlock logic
-  memoryjar.js      ← memory jar, streak calculation
-  pulse.js          ← sendPulse, initPulse, updateReceivedBanner
-  status.js         ← status card, status sheet
-  weather.js        ← fetchWeather, wIcon, wDesc
-  presence.js       ← GPS, timezone, city detection, _pushPresence
-  countdown.js      ← startCountdown, updateMetricChips
-  settings.js       ← name, email, password, avatar, mode, start date
-  firebase-config.js ← already exists
-  app-height.js      ← already exists
-  sw-register.js     ← already exists
-```
-
-> Prompt: "Read CLAUDE.md. Split src/js/main.js into feature modules as described in the Session 1b section. Create src/js/state.js to hold all shared globals as exported variables. Other modules import from state.js. Do not change any functionality — pure refactor only. Run vite build to confirm no errors before committing to staging."
+Split `src/js/main.js` (4522 lines, one big file) into feature modules. Created `state.js` for shared globals and `registry.js` for the R namespace. All 105 R.* registrations verified present; 68 inline onclick handlers audited clean.
 
 ### ✅ Session 2 — Push Notifications (complete)
 FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account auth. Tokens stored as map at `users/{uid}/fcmTokens/{tokenHash}` — supports multiple devices per user. Legacy single `fcmToken` string also read for backwards compatibility and cleared on next register.
@@ -545,21 +530,22 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 - Mystery date guess submitted (dnGuess)
 - Mystery date revealed (dnReveal)
 - Mystery date guess marked correct (dnCorrect)
+- Tonight's Mood — partner picked, your turn (moodPick)
+- Tonight's Mood — both picked, see the reveal (moodMatch)
 
 **Notification content:** title uses partner's display name dynamically. Body text is trigger-specific.
 
-**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, note → Notes, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Story tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
+**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, note → Notes, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Story tab, moodPick/moodMatch → Now tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
 
-**Account page:** now has Profile and Notifications sub-tabs using existing page-tabs pattern. Notifications tab shows per-trigger on/off toggles stored at `users/{uid}/notificationPrefs/`. Toggles disabled until OS permission granted. Defaults: all triggers ON if notificationPrefs node absent.
+**Account page:** now has Profile and Notifications sub-tabs using existing page-tabs pattern. Notifications tab shows per-trigger on/off toggles stored at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share a single `tonightsMood` toggle. Toggles disabled until OS permission granted. Defaults: all triggers ON if notificationPrefs node absent.
 
 **iOS:** Web Push only works on iOS 16.4+ with PWA installed to home screen. `pushSupported()` bails unless running in standalone mode.
 
-**Known limitation:** notification icon shows as white square on Android status bar — needs proper monochrome icon asset (Session 3 / branding task). Chrome may flag staging URL as possible spam — resolves with custom domain.
+**Known limitation:** notification icon shows as white square on Android status bar — needs proper monochrome icon asset. Chrome may flag staging URL as possible spam — resolves with custom domain.
 
 ### Phase 1 — Together Mode Polish (current)
-Three features shipping before test rollout to 10 couples.
 
-**✅ 1. Mystery Date Picker (Session 3a — complete)**
+**✅ Session 3a — Mystery Date Picker (complete)**
 Enhancement to date night planner. Planner chooses Open or Mystery mode when setting a date.
 - Open date: both partners see full plan (where/what/who), both can edit
 - Mystery date: only planner sees full plan. Partner sees mystery card with date + time (if set).
@@ -582,14 +568,26 @@ Enhancement to date night planner. Planner chooses Open or Mystery mode when set
 - Reduced size of Together/days counter in home screen top right
 - Global pronoun rule: always use partner display name, never they/their/them
 
-**2. Tonight's Mood (Session 3b)**
-Daily Together mode ritual. Both partners independently pick a mood each evening.
-Moods: playful, cosy, romantic, adventurous, just Netflix.
-App only reveals what the other picked after both have chosen.
-If match → celebration moment. If different → gentle compromise suggestion.
-Stored at couples/{coupleId}/tonightsMood/{dateKey}/{uid}/: { mood, chosenAt }
+**✅ Session 3b — Tonight's Mood (complete)**
+Daily Together mode ritual. Both partners independently pick one of 9 moods each evening via a bottom sheet picker. Neither sees the other's pick until both have chosen. On reveal: match → mood-specific celebration message. Mismatch → hardcoded compromise suggestion from a 36-combo matrix.
 
-**3. Contextual Tooltips + Empty State Copy (Session 3c)**
+**Moods:** cosy 🛋️ · romantic 🌹 · adventurous 🗺️ · just Netflix 📺 · productive ✅ · chaotic 🌀 · talky 💬 · celebratory 🥂 · hungry 🍕
+
+**Key implementation details:**
+- New module: `src/js/tonightsmood.js` — registered as `R.initTonightsMood` and `R.teardownTonightsMood`
+- Bottom sheet picker reuses `_initSheetSwipe` pattern from `status.js`
+- Single tap commits, no confirm button, sheet closes immediately
+- Partner mood never rendered until own mood is present — enforced in `_renderFromSnap`, not just DOM
+- `runTransaction` used for race-free simultaneous pick — preserves partner's entry, determines correct notification trigger atomically
+- Day rollover via 60s interval watching for dateKey change (robust to DST) — replaces recursive midnight timer
+- `teardownTonightsMood()` called on sign-out (all 3 paths in auth.js) and on Together → LDR mode switch
+- `state._tmInFlight` guard prevents double-tap double-submission
+- Reveal state is final — no mood change after both have picked (intentional)
+- Notifications: `moodPick` fires when partner hasn't picked yet; `moodMatch` fires when partner already picked. Both gated by single `tonightsMood` pref toggle via `PREF_ALIAS` map in `api/notify.js`
+- Firebase rules: `.validate` (not `.write`) enforces own-uid scoping; write-through of unchanged partner entry permitted for transaction pattern
+- dateKey uses device local time — Together mode assumes same-city couple; timezone edge case for LDR couples exploring Together mode is accepted
+
+**3. Session 3c — Contextual Tooltips + Empty State Copy (next)**
 Small info icon on each feature — tapping shows 2-sentence explanation.
 Empty state copy: meaningful placeholder text when sections have no content.
 First-use walkthrough: one-time guided tour on first login.
@@ -597,7 +595,7 @@ Applies to both LDR and Together mode.
 
 ### Phase 2 — Test Rollout
 Roll out to ~10 couples after Phase 1 is stable. Mix of LDR and Together couples.
-Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion, mystery date creation rate.
+Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion rate, mystery date creation rate.
 
-### Session 3 — Domain + Branding (after Phase 2)
-Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains.
+### Session 4 — Domain + Branding (after Phase 2)
+Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains. Fix notification icon white square on Android (monochrome asset needed).
