@@ -129,14 +129,16 @@ couples/{coupleId}/
   memoryJar/{dateKey ('YYYY-MM-DD')}/{uid}/
     text, createdAt
 
+  activeMystery    uid of current mystery planner (set when mystery created, cleared on reveal/cancel/done)
+
   datePlan/{dateKey}/
     mode             'open' | 'mystery'
-    plannerId        uid of mystery date creator
+    plannerId        uid of mystery date creator (write-once)
     where, what, who plan details (open dates, or after mystery reveal)
     revealed         boolean (mystery dates only) — false until planner reveals
     time             optional HH:MM string — if absent, letters unlock at 23:59
     hints/{pushId}/
-      text, authorUid, createdAt
+      text, authorUid, createdAt, correct (boolean — planner marks guess correct)
       guess/
         text, authorUid, createdAt
 
@@ -386,9 +388,95 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
 
 ---
 
-## Firebase Security Rules Summary
+## Firebase Security Rules
+
+### RTDB Rules (current published version)
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "avatarUrl": { ".read": "auth != null" }
+      }
+    },
+    "invites": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid || (!newData.exists() && data.child('coupleId').val() != null && root.child('couples').child(data.child('coupleId').val()).child('members').child(auth.uid).exists()))",
+        "used": { ".write": "auth != null && newData.isBoolean() && newData.val() === true" }
+      }
+    },
+    "couples": {
+      "$coupleId": {
+        ".read": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()",
+        ".write": "auth != null && (!data.exists() || root.child('couples').child($coupleId).child('members').child(auth.uid).exists())",
+        "members": { "$memberUid": { ".write": "auth != null && auth.uid === $memberUid" } },
+        "presence": { "$memberUid": { ".write": "auth != null && auth.uid === $memberUid" } },
+        "activeMystery": {
+          ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && ((newData.exists() && newData.val() === auth.uid) || (!newData.exists() && (!data.exists() || data.val() === auth.uid)))",
+          ".validate": "newData.isString() && root.child('couples').child($coupleId).child('members').child(newData.val()).exists()"
+        },
+        "meetupDate": {
+          ".validate": "!root.child('couples').child($coupleId).child('activeMystery').exists() || root.child('couples').child($coupleId).child('activeMystery').val() === auth.uid"
+        },
+        "datePlan": {
+          "$dateKey": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.child('mode').exists() || data.child('mode').val() !== 'mystery' || data.child('revealed').val() === true || auth.uid === data.child('plannerId').val())",
+            "plannerId": { ".validate": "!data.exists() || data.val() === newData.val()" },
+            "hints": {
+              ".validate": "newData.hasChildren() || !newData.exists()",
+              "$pushId": {
+                ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').exists() || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').val() !== 'mystery' || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('revealed').val() === true || auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val())",
+                ".validate": "data.exists() || (newData.child('authorUid').val() === auth.uid && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().parent().child('plannerId').val()))",
+                "text": { ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()" },
+                "guess": {
+                  ".write": "auth != null && !data.exists() && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
+                  ".validate": "!data.exists() && newData.child('authorUid').val() === auth.uid && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
+                  "text": { ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()" }
+                },
+                "correct": { ".write": "auth != null && auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()" }
+              }
+            },
+            "revealed": { ".validate": "newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())" }
+          }
+        }
+      }
+    },
+    "$other": { ".read": false, ".write": false }
+  }
+}
+```
+
+### Storage Rules (current published version)
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /avatars/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && filename == request.auth.uid + '.jpg' && request.resource.size < 2 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && filename == request.auth.uid + '.jpg';
+    }
+    match /milestones/{milestoneKey}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null;
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+### Rules summary
 - `users/$uid`: read/write own data only. `avatarUrl` any-auth readable (partner avatar display).
 - `couples/$coupleId`: members-only read/write. Bootstrap escape: `!data.exists()` allows owner to create couple node.
+- `activeMystery`: only settable to own uid, only clearable by current lock holder. Blocks non-planner meetupDate changes.
+- `datePlan/$dateKey`: non-planner blocked from writing when mystery is active and unrevealed.
+- `hints/$pushId`: planner-only write on creation. Guess: non-planner only, immutable. Correct: planner only.
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
 - Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
@@ -440,6 +528,10 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 - Bucket list item added (awaits confirmed write before notifying)
 - Meetup date set (LDR mode)
 - Date night date set (Together mode)
+- Mystery date hint dropped (dnHint)
+- Mystery date guess submitted (dnGuess)
+- Mystery date revealed (dnReveal)
+- Mystery date guess marked correct (dnCorrect)
 
 **Notification content:** title uses partner's display name dynamically. Body text is trigger-specific.
 
@@ -454,17 +546,28 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 ### Phase 1 — Together Mode Polish (current)
 Three features shipping before test rollout to 10 couples.
 
-**1. Mystery Date Picker (Session 3a)**
+**✅ 1. Mystery Date Picker (Session 3a — complete)**
 Enhancement to date night planner. Planner chooses Open or Mystery mode when setting a date.
-- Open date: both partners see full plan (where/what/who), both can edit — existing behaviour
+- Open date: both partners see full plan (where/what/who), both can edit
 - Mystery date: only planner sees full plan. Partner sees mystery card with date + time (if set).
 - Hint system: max 3 hints, one active at a time, next hint only after partner guesses current one
-- Hints and guesses: text only, immutable after submission, stored as Firebase push entries
-- Reveal: planner taps Reveal → confirmation sheet → sets revealed:true → partner card updates
-- Date Done: after reveal, button opens sheet to convert to milestone with hints/guesses as notes + photo
+- Hints and guesses: text only, immutable after submission (enforced at rules layer)
+- Planner can react to correct guess with "You got it!" — stored as hints/$pushId/correct: true
+- Reveal: planner taps Reveal → confirmation sheet → sets revealed:true → partner card updates live
+- Date Done: after reveal, button opens sheet to convert to milestone with formatted hints/guesses + photo
 - Letter unlock rule: if time set → unlock at that time. If time not set → unlock at 23:59 (fallback)
-- Picker redesign: modern bottom sheet (inspired by status update sheet) with Date, Time (optional), Mode fields
-- Meetup date picker (LDR): Date only — do not change its logic
+- Picker redesign: modern bottom sheet with Date, Time (optional), Mode (Open/Mystery) fields
+- LDR meetup picker also modernised — date only, same bottom sheet style
+- activeMystery field on couple node locks meetupDate changes to planner only while mystery is active
+- Non-planner cannot change date, switch modes, or see plan details while mystery is unrevealed
+- Partner name always used instead of generic pronouns (they/their/them) — global rule
+- Open date plan content migrates when date changes (where/what/who carried over)
+- Notifications: dnHint, dnGuess, dnReveal, dnCorrect triggers added with partner name in title
+
+**Additional UI fixes shipped with Session 3a:**
+- Removed old native time input from Together mode date night section
+- Reduced size of Together/days counter in home screen top right
+- Global pronoun rule: always use partner display name, never they/their/them
 
 **2. Tonight's Mood (Session 3b)**
 Daily Together mode ritual. Both partners independently pick a mood each evening.
