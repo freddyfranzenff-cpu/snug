@@ -417,6 +417,36 @@
         </div>
       </div>
 
+      <!-- Tonight's Mood (Together mode only) -->
+      <div id="tonights-mood-card" style="display:none;">
+        <p class="section-heading" style="margin-top:0;">Tonight's Mood</p>
+        <div class="mood-card-inner">
+          <div id="mood-pick-state">
+            <p id="mood-pick-hint" class="mood-pick-hint" style="display:none;"></p>
+            <div class="mj-input-row">
+              <button class="mj-add-btn" onclick="openMoodSheet()">Pick tonight's mood</button>
+            </div>
+          </div>
+          <div id="mood-waiting-state" style="display:none;">
+            <div class="mood-waiting-row">
+              <div class="mood-pill" id="mood-waiting-pill"></div>
+            </div>
+            <div class="mood-waiting-sub" id="mood-waiting-sub"></div>
+            <div class="mj-input-row">
+              <button class="mj-add-btn" onclick="openMoodSheet()">Change mood</button>
+            </div>
+          </div>
+          <div id="mood-reveal-state" style="display:none;">
+            <div class="mood-reveal-row">
+              <div class="mood-chip" id="mood-reveal-mine"></div>
+              <div class="mood-chip" id="mood-reveal-theirs"></div>
+            </div>
+            <div class="mood-reveal-banner" id="mood-reveal-banner" style="display:none;"></div>
+            <div class="mood-reveal-msg" id="mood-reveal-msg"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Date night planner (Together mode only) -->
       <div class="dn-planner" id="dn-planner">
         <div class="section-heading" style="margin-top:0;">
@@ -638,6 +668,17 @@
 
   <!-- SETTINGS PAGE -->
 
+
+    <!-- Tonight's Mood bottom sheet -->
+  <div class="together-sheet-overlay" id="mood-sheet-overlay" onclick="if(event.target===this)closeMoodSheet()">
+    <div class="together-sheet" id="mood-sheet">
+      <div class="together-sheet-handle"></div>
+      <div class="together-sheet-title">Tonight's Mood</div>
+      <div id="mood-sheet-list"></div>
+      <p id="mood-sheet-error" class="mood-sheet-error" style="display:none;"></p>
+      <button onclick="closeMoodSheet()" class="together-sheet-cancel">Cancel</button>
+    </div>
+  </div>
 
     <!-- Status bottom sheet -->
   <div class="status-sheet-overlay" id="status-sheet-overlay" onclick="if(event.target===this)closeStatusSheet()">
@@ -1196,6 +1237,13 @@
               <div class="settings-row-muted">When the surprise is revealed</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="dnReveal"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Tonight's Mood</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> picks their mood</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="tonightsMood"/><span></span></label>
           </div>
         </div>
         <p id="notif-saved-msg" style="display:none;font-size:.62rem;color:var(--muted);margin:.4rem 0 0;">Saved</p>

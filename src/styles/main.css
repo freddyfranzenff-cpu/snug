@@ -823,6 +823,32 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-field-input{width:100%;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);outline:none;padding:0;}
   .dn-field-input::placeholder{color:var(--muted);}
   /* ── Today's plan ─────────────────────────────────────────── */
+  /* ── Tonight's Mood card ─────────────────────────────── */
+  #tonights-mood-card{margin-bottom:.65rem;}
+  .mood-card-inner{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:.85rem .9rem .6rem;}
+  .mood-pick-hint{font-size:.7rem;color:var(--muted);margin:0 0 .55rem;line-height:1.4;}
+  .mood-waiting-row{display:flex;justify-content:flex-start;margin-bottom:.4rem;}
+  .mood-waiting-sub{font-size:.65rem;color:var(--muted);margin:0 0 .45rem;font-style:italic;}
+  .mood-pill{display:inline-flex;align-items:center;gap:.4rem;background:var(--kll);color:var(--k);border-radius:999px;padding:.35rem .8rem;font-size:.75rem;font-weight:600;}
+  .mood-pill .mood-pill-emoji{font-size:.95rem;}
+  .mood-reveal-row{display:flex;gap:.6rem;margin-bottom:.55rem;}
+  .mood-chip{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:.6rem .5rem;text-align:center;}
+  .mood-chip-name{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
+  .mood-chip-emoji{font-size:1.45rem;line-height:1;margin-bottom:.15rem;}
+  .mood-chip-label{font-size:.72rem;color:var(--text);font-weight:600;}
+  .mood-reveal-banner{background:var(--kll);color:var(--k);border-radius:12px;padding:.55rem .9rem;text-align:center;font-weight:600;font-size:.8rem;margin-bottom:.4rem;}
+  .mood-reveal-msg{text-align:center;font-size:.72rem;line-height:1.45;padding:.2rem .3rem .4rem;}
+  .mood-reveal-msg-match{color:var(--k);font-weight:500;}
+  .mood-reveal-msg-compromise{color:var(--muted);font-style:italic;}
+  /* Mood sheet rows */
+  #mood-sheet-list{padding:.35rem 0 .5rem;}
+  .mood-sheet-row{display:flex;align-items:center;gap:.85rem;padding:14px 20px;cursor:pointer;transition:background-color .15s;}
+  .mood-sheet-row:hover,.mood-sheet-row:active{background:var(--kll);}
+  .mood-sheet-row.disabled{opacity:.5;pointer-events:none;}
+  .mood-sheet-emoji{font-size:1.35rem;line-height:1;width:1.6rem;text-align:center;}
+  .mood-sheet-label{font-size:.82rem;color:var(--text);font-weight:500;text-transform:capitalize;}
+  .mood-sheet-error{margin:.4rem 1.1rem 0;padding:.55rem .8rem;background:#fdecea;color:#a1342d;border-radius:10px;font-size:.68rem;line-height:1.4;text-align:center;}
+
   .todays-plan{display:none;margin-bottom:.65rem;}
   .todays-plan.visible{display:block;}
   .todays-plan-heading{display:none;}

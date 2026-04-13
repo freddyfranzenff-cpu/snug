@@ -29,6 +29,15 @@ const TRIGGERS = {
   dnGuess:   { title: n => `${n} took a guess`,             body: n => `See what ${n} thinks you're planning` },
   dnCorrect: { title: n => `${n} reacted to your guess`,    body: () => 'You got it right!' },
   dnReveal:  { title: n => `${n} revealed the mystery 🎉`,  body: () => 'Tap to see the full plan' },
+  moodPick:  { title: n => `${n} has picked their mood`,    body: n => `${n} has picked their mood — what's yours tonight?` },
+  moodMatch: { title: n => `${n} picked their mood`,        body: () => 'See if you match!' },
+};
+
+// Some triggers share a single user-facing pref toggle.
+// e.g. both mood variants are gated by notificationPrefs.tonightsMood.
+const PREF_ALIAS = {
+  moodPick:  'tonightsMood',
+  moodMatch: 'tonightsMood',
 };
 
 let _cachedToken = null;
@@ -135,8 +144,10 @@ export default async function handler(req, res){
     if(!entries.length){
       return res.status(200).json({ skipped: 'no token' });
     }
-    // Default: enabled unless explicitly false
-    if(prefs && prefs[trigger] === false){
+    // Default: enabled unless explicitly false.
+    // Some triggers share a single pref toggle via PREF_ALIAS.
+    const prefKey = PREF_ALIAS[trigger] || trigger;
+    if(prefs && prefs[prefKey] === false){
       return res.status(200).json({ skipped: 'pref disabled' });
     }
 

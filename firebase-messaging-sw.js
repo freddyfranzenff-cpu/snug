@@ -51,6 +51,8 @@ const TRIGGER_ROUTES = {
   dnGuess:   { page: 'home',      tab: 'now'     },
   dnCorrect: { page: 'home',      tab: 'now'     },
   dnReveal:  { page: 'home',      tab: 'now'     },
+  moodPick:  { page: 'home',      tab: 'now'     },
+  moodMatch: { page: 'home',      tab: 'now'     },
 };
 
 self.addEventListener('notificationclick', event => {

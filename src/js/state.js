@@ -93,6 +93,7 @@ export const state = {
   _dnTimeVal: '19:00',
   _dnUnsub: null, _dnCurrentPlan: {},
   _tpUnsub: null, _tpMyCurrentVal: '',
+  _tmInFlight: false,
 
   // ── Status sheet selection ────────────────────────────────
   _selectedActivity: null, _selectedMood: null,

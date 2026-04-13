@@ -454,6 +454,8 @@ async function tryInitFirebase(){
         if(onboardIcon) onboardIcon.style.display='';
         if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
         if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
+        if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+        state._tmInFlight=false;
         state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
         state.coupleType='ldr';
         state.myTz=null;state.otherTz=null;state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;
@@ -523,6 +525,7 @@ async function tryInitFirebase(){
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
             if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
+            if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
             if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
@@ -592,6 +595,7 @@ async function tryInitFirebase(){
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
             if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
+            if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
             if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}

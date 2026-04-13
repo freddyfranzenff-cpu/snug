@@ -78,6 +78,17 @@ function applyMode(type){
     todaysPlan.classList.toggle('visible', isTogether);
     if(isTogether) R.loadTodaysPlan && R.loadTodaysPlan();
   }
+
+  // Tonight's Mood — Together mode only
+  const moodCard = document.getElementById('tonights-mood-card');
+  if(moodCard){
+    moodCard.style.display = isTogether ? '' : 'none';
+    if(isTogether){
+      R.initTonightsMood && R.initTonightsMood();
+    } else {
+      R.teardownTonightsMood && R.teardownTonightsMood();
+    }
+  }
 }
 
 function startCoupleTypeListener(){

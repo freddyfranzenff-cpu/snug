@@ -21,6 +21,7 @@ import './pulse.js';
 import './letters.js';
 import './memoryjar.js';
 import './togethermode.js';
+import './tonightsmood.js';
 import './status.js';
 import './avatar.js';
 import './settings.js';

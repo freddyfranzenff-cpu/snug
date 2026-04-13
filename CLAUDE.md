@@ -441,6 +441,18 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
             },
             "revealed": { ".validate": "newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())" }
           }
+        },
+        "tonightsMood": {
+          "$dateKey": {
+            "$uid": {
+              ".validate": "(auth.uid === $uid && newData.hasChildren(['mood','chosenAt'])) || (data.exists() && newData.child('mood').val() === data.child('mood').val() && newData.child('chosenAt').val() === data.child('chosenAt').val())",
+              "mood": {
+                ".validate": "newData.isString() && (newData.val() === 'cosy' || newData.val() === 'romantic' || newData.val() === 'adventurous' || newData.val() === 'netflix' || newData.val() === 'productive' || newData.val() === 'chaotic' || newData.val() === 'talky' || newData.val() === 'celebratory' || newData.val() === 'hungry')"
+              },
+              "chosenAt": { ".validate": "newData.isNumber()" },
+              "$other": { ".validate": false }
+            }
+          }
         }
       }
     },
@@ -477,6 +489,7 @@ service firebase.storage {
 - `activeMystery`: only settable to own uid, only clearable by current lock holder. Blocks non-planner meetupDate changes.
 - `datePlan/$dateKey`: non-planner blocked from writing when mystery is active and unrevealed.
 - `hints/$pushId`: planner-only write on creation. Guess: non-planner only, immutable. Correct: planner only.
+- `tonightsMood/$dateKey/$uid`: validated shape — `mood` must be one of the 9 valid mood keys, `chosenAt` must be a number, no extra children permitted. `.validate` enforces own-uid on creation/change; unchanged write-through of partner's existing entry is permitted so parent-node `runTransaction` (used for race-free pick) can rewrite the dateKey bucket without the partner's entry failing validation.
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
 - Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
