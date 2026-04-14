@@ -129,14 +129,22 @@ export default async function handler(req, res){
       rtdbGet(dbUrl, `users/${recipientUid}/notificationPrefs`, token),
     ]);
 
-    // Build [ { hash, token, legacy }, … ]
+    // Build [ { hash, token, legacy }, … ].
+    // De-dupe: if the legacy single-string fcmToken matches any value already
+    // in the fcmTokens map, skip it. Migrated users commonly have the same
+    // device token at BOTH paths until they next re-register, and sending to
+    // both produced a duplicate push on that device (notably on iOS).
     const entries = [];
+    const seenTokens = new Set();
     if(tokensMap && typeof tokensMap === 'object'){
       for(const [h, t] of Object.entries(tokensMap)){
-        if(typeof t === 'string' && t) entries.push({ hash: h, token: t, legacy: false });
+        if(typeof t === 'string' && t){
+          entries.push({ hash: h, token: t, legacy: false });
+          seenTokens.add(t);
+        }
       }
     }
-    if(typeof legacyToken === 'string' && legacyToken){
+    if(typeof legacyToken === 'string' && legacyToken && !seenTokens.has(legacyToken)){
       entries.push({ hash: null, token: legacyToken, legacy: true });
     }
 

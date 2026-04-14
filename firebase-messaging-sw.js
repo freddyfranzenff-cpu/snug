@@ -44,8 +44,8 @@ const TRIGGER_ROUTES = {
   bucket:    { page: 'bucket'                    },
   // 'memory' routes via legacyMap → memories page, jar sub-tab
   memoryJar: { page: 'memory'                    },
-  meetup:    { page: 'home',      tab: 'summary' },
-  dateNight: { page: 'home',      tab: 'summary' },
+  meetup:    { page: 'home',      tab: 'us'      },
+  dateNight: { page: 'home',      tab: 'us'      },
   dnHint:    { page: 'home',      tab: 'now'     },
   dnGuess:   { page: 'home',      tab: 'now'     },
   dnCorrect: { page: 'home',      tab: 'now'     },

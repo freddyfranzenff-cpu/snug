@@ -2,8 +2,12 @@ import { state } from './state.js';
 import { R } from './registry.js';
 
 // ── HOME TABS ──────────────────────────────────────────
+const HOME_TABS = ['now','us','summary'];
 window.switchHomeTab = function(tab){
-  ['now','us','summary'].forEach(t=>{
+  // Unknown tab (e.g. legacy 'moments' from a cached cold-start notification)
+  // falls back to Now so the page is never blank.
+  if(!HOME_TABS.includes(tab)) tab = 'now';
+  HOME_TABS.forEach(t=>{
     const btn = document.getElementById(`tab-${t}`);
     if(btn) btn.classList.toggle('active', t===tab);
     const panel = document.getElementById(`panel-${t}`);
@@ -21,9 +25,6 @@ window.switchHomeTab = function(tab){
   }
 };
 
-// Moments tab removed — Story/Moments section replaced by Summary tab.
-// Kept as a no-op so legacy callers still work until they're cleaned up.
-function updateMomentsSubtitles(){}
 
 // Update bucket progress on Us tab
 function updateHomeBucketProgress(){
@@ -166,7 +167,6 @@ function startStatusRefresh(){
 
 
 // ── Register for cross-module access ─────────────────────
-R.updateMomentsSubtitles = updateMomentsSubtitles;
 R.updateHomeBucketProgress = updateHomeBucketProgress;
 R.STATUS_EXPIRY_MS = STATUS_EXPIRY_MS;
 R.fmtStatusTime = fmtStatusTime;

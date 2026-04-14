@@ -176,7 +176,6 @@ function startUI(){
   R.checkMeetupDateInput();
   // ── Persistent real-time listeners ─────────────────────
   if(state.db&&state.fbOnValue){
-    R.updateMomentsSubtitles&&R.updateMomentsSubtitles();
     R.renderStatusCard&&R.renderStatusCard();
     R.startStatusRefresh&&R.startStatusRefresh();
     // One-time startup calls
@@ -190,7 +189,6 @@ function startUI(){
       const items=d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[];
       state.localMilestones=[...items];
       R.renderMilestones(items);
-      R.updateMomentsSubtitles();
       R.updateMetricChips&&R.updateMetricChips();
     });
     // Bucket
@@ -201,7 +199,6 @@ function startUI(){
       state.localBucket=[...items];
       R.renderBucket(items);
       R.updateHomeBucketProgress();
-      R.updateMomentsSubtitles();
     });
   }
   function tickClocks(){document.getElementById("my-time").textContent=R.fmtTime(state.myTz);document.getElementById("my-date").textContent=R.fmtDate(state.myTz);document.getElementById("other-time").textContent=R.fmtTime(state.otherTz||"UTC");document.getElementById("other-date").textContent=R.fmtDate(state.otherTz||"UTC");}

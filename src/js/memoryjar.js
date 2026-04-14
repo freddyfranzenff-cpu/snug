@@ -201,6 +201,11 @@ async function _mjLoadAndRender(){
   R._mjRenderHistory();
 }
 
+// Persist Earlier-section expanded month keys across tab navigations so a
+// month the user tapped open doesn't re-collapse when they return. Stored at
+// module scope because _mjRenderHistory re-renders from scratch on every visit.
+const _mjExpandedMonths = new Set();
+
 function _mjRenderHistory(){
   if(!state.db || !state.coupleId) return;
   const histEl = document.getElementById('mj-history-list');
@@ -243,7 +248,7 @@ function _mjRenderHistory(){
         const dd = all[dk]||{};
         return dd[state.myUid]?.text && dd[state.partnerUid]?.text;
       }).length;
-      const isOpen = false; // collapsed by default; tap to expand
+      const isOpen = _mjExpandedMonths.has(monthKey); // persist user taps across visits
       const groupId = `mj-month-${monthKey.replace('-','_')}`;
 
       const dayCards = days.map(dateKey=>{
@@ -271,7 +276,7 @@ function _mjRenderHistory(){
       const metaText = `${totalDays} day${totalDays!==1?'s':''} · both wrote ${bothCount} time${bothCount!==1?'s':''}`;
 
       return `<div class="mj-month-group">
-        <div class="mj-month-header" onclick="window._mjToggleMonth('${groupId}')">
+        <div class="mj-month-header" onclick="window._mjToggleMonth('${groupId}','${monthKey}')">
           <div>
             <div class="mj-month-name">${monthName}</div>
             <div class="mj-month-meta">${metaText}</div>
@@ -286,13 +291,17 @@ function _mjRenderHistory(){
   },{onlyOnce:true});
 }
 
-window._mjToggleMonth = function(groupId){
+window._mjToggleMonth = function(groupId, monthKey){
   const days = document.getElementById(groupId);
   const arrow = document.getElementById(groupId+'-arrow');
   if(!days||!arrow) return;
-  const isOpen = days.classList.contains('open');
-  days.classList.toggle('open', !isOpen);
-  arrow.classList.toggle('open', !isOpen);
+  const willOpen = !days.classList.contains('open');
+  days.classList.toggle('open', willOpen);
+  arrow.classList.toggle('open', willOpen);
+  if(monthKey){
+    if(willOpen) _mjExpandedMonths.add(monthKey);
+    else _mjExpandedMonths.delete(monthKey);
+  }
 };
 
 function _mjEscape(str){
@@ -339,3 +348,4 @@ R.renderMemoryJarPage = renderMemoryJarPage;
 R._mjLoadAndRender = _mjLoadAndRender;
 R._mjRenderHistory = _mjRenderHistory;
 R._mjEscape = _mjEscape;
+R._mjResetExpandedMonths = () => _mjExpandedMonths.clear();

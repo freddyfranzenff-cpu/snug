@@ -112,12 +112,22 @@ async function registerFcmToken(){
       );
     }catch(e){}
 
-    // Foreground messages — the app is visible, so don't surface a system
-    // notification. The earlier fallback (manually constructing a Notification
-    // via `new Notification`) caused duplicate alerts on iOS PWAs, where FCM
-    // would also render the push through the service worker. Silent handler
-    // keeps the app tree in sync without double-notifying the user.
-    onMessage(_messaging, () => {});
+    // Foreground messages — show a system notification manually since the
+    // page is visible and FCM suppresses them by default on desktop.
+    // The iOS duplicate-notification issue is fixed server-side in api/notify.js
+    // by de-duping the legacy fcmToken against the fcmTokens map, so this
+    // foreground handler is safe to restore.
+    onMessage(_messaging, payload => {
+      const n = payload.notification || {};
+      if(!n.title) return;
+      try{
+        new Notification(n.title, {
+          body: n.body || '',
+          icon: '/icons/icon-192.png',
+          tag: `snug-${payload.data?.trigger || 'msg'}`,
+        });
+      }catch(e){}
+    });
   }catch(e){
     console.warn('[notify] register failed:', e);
   }finally{

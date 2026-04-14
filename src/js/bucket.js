@@ -59,7 +59,7 @@ window.filterBucket=function(cat){
   if(state.db&&state.fbOnValue){
     state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/bucket`),snap=>{
       const d=snap.val();
-      R.renderBucket(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]); R.updateHomeBucketProgress(); R.updateMomentsSubtitles();
+      R.renderBucket(d?Object.entries(d).map(([k,v])=>({...v,_key:k})):[]); R.updateHomeBucketProgress();
     },{onlyOnce:true});
   } else R.renderBucket([...state.localBucket]);
 };

@@ -158,12 +158,12 @@ Snug has two modes toggled per couple. `applyMode(type)` handles all UI switchin
 
 **LDR mode** (`coupleType === 'ldr'`):
 - Shows: `ldr-section-wrap` (live clocks, distance km, weather, sleep indicators)
-- Hides: `todays-plan`, `dn-planner`, `tonights-mood-card`
+- Hides: `dn-planner`, `tonights-mood-card`
 - Countdown label: "Next meetup"
 - Letters unlock at midnight on meetup date
 
 **Together mode** (`coupleType === 'together'`):
-- Shows: `todays-plan`, `dn-planner`, `tonights-mood-card`
+- Shows: `dn-planner`, `tonights-mood-card`
 - Hides: `ldr-section-wrap`
 - Countdown label: "Next date night"
 - Letters unlock at the date night time (`_dnTimeVal`, default `19:00`)
@@ -266,8 +266,8 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 ## Service Worker
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v109`)
-- Current version: `ylc-v109` (bumped in Session 3c)
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v110`)
+- Current version: `ylc-v110` (bumped in Session 3c review fixes)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -334,7 +334,7 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `startCoupleTypeListener()` | Real-time listener on `couples/{id}/coupleType` — calls `applyMode()` on change |
 | `applyMode(type)` | Switches ALL UI between LDR and Together — visibility, labels, mode pill, settings toggle |
 | `watchForPartner(cId, uid)` | Polls `couples/{id}/members` — redirects to app when partner joins |
-| `showPage(page)` | Navigates to full standalone page (milestones, notes, bucket, places, letter) |
+| `showPage(page)` | Navigates to full standalone page (milestones, bucket, places, letter) |
 | `switchHomeTab(tab)` | Switches Now/Us/Story panels, resets scroll to top |
 | `updateDistanceAndSleep()` | Haversine distance from coords + sleep status from timezone hour |
 | `updateMetricChips()` | Updates 3 bottom chips: meetup countdown, milestone count, streak |

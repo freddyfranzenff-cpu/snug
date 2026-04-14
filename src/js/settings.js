@@ -194,7 +194,15 @@ window.autoSaveName = async function(val){
     if(el) el.value = state.ME||'';
     return;
   }
-  if(name === state.ME) return; // no change
+  if(name === state.ME){
+    // Same value — give visible feedback instead of silently no-op'ing.
+    if(success){
+      success.style.display='block';
+      success.textContent='Name unchanged.';
+      setTimeout(()=>{ success.style.display='none'; },1500);
+    }
+    return;
+  }
   try{
     await state.dbSet(state.dbRef(state.db, `users/${state.myUid}/name`), name);
     if(state.myCity) await state.dbSet(state.dbRef(state.db, `users/${state.myUid}/city`), state.myCity);
@@ -203,9 +211,11 @@ window.autoSaveName = async function(val){
     });
     state.ME = name;
     state.myName = name;
-    // Update greeting + couple name
+    // Rebuild the whole greeting via R.greeting so the "Good morning, " prefix
+    // and <em> italic wrapper stay intact. Replacing just the em's textContent
+    // would work too, but calling R.greeting keeps the time-of-day part fresh.
     const greet = document.getElementById('home-greeting');
-    if(greet) greet.textContent = name;
+    if(greet && R.greeting) greet.innerHTML = R.greeting(name, state.myTz);
     const sbEl = null; // removed sidebar
     if(sbEl) sbEl.innerHTML = `${R._esc(state.ME)} <em>&</em> ${R._esc(state.OTHER)}`;
     const mhEl = document.getElementById('mobile-header-couple-name');
@@ -621,6 +631,8 @@ window.doSignOut = async function(){
     if(_obi) _obi.style.display='';
     if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
     if(state._meetupDateUnsub){try{state._meetupDateUnsub();}catch(e){}state._meetupDateUnsub=null;}
+    if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+    if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
     state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
     state.coupleType='ldr';
     state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;

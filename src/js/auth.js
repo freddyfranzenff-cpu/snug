@@ -388,8 +388,9 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
     document.querySelectorAll('.bn-item').forEach(n=>n.classList.remove('active'));
     const homeN = document.getElementById('nav-home');
     if(homeN) homeN.classList.add('active');
-    // Reset home tabs to Now
-    ['now','us','moments'].forEach(t=>{
+    // Reset home tabs to Now — every known panel must have .active removed,
+    // otherwise two panels can end up visible simultaneously on re-login.
+    ['now','us','summary'].forEach(t=>{
       const tp=document.getElementById(`panel-${t}`);
       const tb=document.getElementById(`tab-${t}`);
       if(tp) tp.classList.toggle('active',t==='now');
@@ -454,6 +455,8 @@ async function tryInitFirebase(){
         if(onboardIcon) onboardIcon.style.display='';
         if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
         if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+        if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+        if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
         state._tmInFlight=false;
         state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
         state.coupleType='ldr';

@@ -170,7 +170,7 @@ window.selectSettingsMode = async function(mode){
   const needsPrompt = hasDate || hasActiveRound;
 
   if(needsPrompt){
-    const modeLabel = mode === 'together' ? 'Living together' : 'Long distance';
+    const modeLabel = mode === 'together' ? 'Together' : 'Long distance';
     const confirmed = window.confirm(
       `Switch to ${modeLabel} mode?
 

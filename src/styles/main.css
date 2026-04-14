@@ -606,7 +606,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     .page-header{flex-direction:row;align-items:center;flex-wrap:wrap;gap:.5rem .75rem}
     .page-header>div{flex:1;min-width:0}
     .milestone-add-btn{flex-shrink:0}
-    .note-grid,.ng{grid-template-columns:1fr}
+    .ng{grid-template-columns:1fr}
     .timeline{padding-left:1.4rem}
     .m-photo-wrap{height:110px}
     .places-map{height:260px}
@@ -673,14 +673,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .home-bl-bar{background:linear-gradient(90deg,var(--k),var(--pk));height:100%;border-radius:4px;transition:width .4s ease;}
   .home-bl-stats{display:flex;justify-content:space-between;align-items:center;}
   .home-bl-stat{font-size:.6rem;color:var(--muted);}
-  /* Moments tab links */
-  .moments-link{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.65rem;cursor:pointer;transition:opacity .2s;}
-  .moments-link:hover{opacity:.8;}
-  .moments-link-left{display:flex;align-items:center;gap:.75rem;}
-  .moments-link-icon{width:36px;height:36px;border-radius:10px;background:rgba(232,98,42,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .moments-link-title{font-size:.78rem;font-weight:600;color:var(--text);}
-  .moments-link-sub{font-size:.58rem;color:var(--muted);margin-top:.1rem;}
-  .moments-link-arrow{font-size:1rem;color:var(--muted);}
   /* ── Status + Mood ──────────────────────────────────────── */
   .status-card{background:var(--surface);border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:.65rem;}
   .status-card-header{display:flex;align-items:center;justify-content:flex-end;padding:.45rem .9rem .2rem;}
@@ -1139,6 +1131,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .timeline-end{margin-bottom:.35rem;}
 
   /* ── SUMMARY TAB ── */
+  .summary-streak-wrap{margin-bottom:.6rem;}
+  .summary-streak-wrap:empty{display:none;}
+  .summary-streak-wrap .summary-card{min-height:unset;}
   .summary-range-toggle{
     display:flex;background:var(--surface);border:1px solid var(--border);
     border-radius:12px;overflow:hidden;margin-bottom:.8rem;
@@ -1172,12 +1167,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   }
   .summary-card-sub{font-size:.58rem;color:var(--muted);}
 
-  /* Home → Us tab: scroll overlap fix
-     bump bottom padding so the last card clears the fixed bottom-nav, mirroring
-     the breathing room used by .page-tab-panel.active on Milestones. */
-  .home-tab-panel.active{
-    padding-left:0;padding-right:0;
-    padding-bottom:calc(5rem + env(safe-area-inset-bottom,0px));
+  /* Home → Us tab: scroll overlap fix — scoped to panel-us only (Now and
+     Summary had no issue). Mirrors the padding-bottom used by the Milestones
+     reference panel so the last card clears the fixed bottom-nav. */
+  #panel-us.home-tab-panel.active{
+    padding-bottom:calc(3.5rem + env(safe-area-inset-bottom,0px));
   }
 
   /* Settings tightening (Account) */
