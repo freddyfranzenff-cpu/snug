@@ -30,7 +30,7 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 
 ---
 
-## File Structure (post Session 1b refactor)
+## File Structure
 ```
 snug/
   src/
@@ -153,6 +153,21 @@ invites/{code}/
 
 ---
 
+## Navigation Structure
+
+### Bottom nav (4 tabs)
+- **Home** — main daily view with Now / Us / Summary sub-tabs
+- **Memories** — Milestones / Places / Memory Jar
+- **Ours** — Bucket List / Letters (page ID: `page-together`, `showPage('together')` unchanged)
+- **Account** — Profile / Notifications
+
+### Home sub-tabs
+- **Now** — Pulse, Right Now (LDR clocks/weather/distance), Status, metric chips
+- **Us** — Countdown, Memory Jar preview, Recent Notes preview
+- **Summary** — Week/Month stats: memory jar entries, streak, pulses, milestones, Tonight's Mood match rate (Together only)
+
+---
+
 ## Two Modes
 Snug has two modes toggled per couple. `applyMode(type)` handles all UI switching. Mode is stored as `coupleType` on the couple node and live-synced via `startCoupleTypeListener()`.
 
@@ -168,6 +183,9 @@ Snug has two modes toggled per couple. `applyMode(type)` handles all UI switchin
 - Countdown label: "Next date night"
 - Letters unlock at the date night time (`_dnTimeVal`, default `19:00`)
 - Metric chip: "Date night" instead of "Next meetup"
+- Summary tab shows Tonight's Mood match rate (hidden in LDR)
+
+**Mode display labels:** "Long distance" and "Together" (display only — `coupleType` data values remain `'ldr'` and `'together'`)
 
 ---
 
@@ -203,6 +221,8 @@ body (height: var(--app-height) px, overflow: hidden, flex col)
 
 The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it runs synchronously before first CSS paint. Do not move it to a module.
 
+**Known scroll root cause fixed — do not revert:** `.home-cd-card` had a stale `display:flex;flex-direction:column;justify-content:space-between` declaration causing layout unpredictability on narrow viewports. Removed — card now uses default block layout.
+
 ---
 
 ## Design System
@@ -227,6 +247,8 @@ The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it 
 **Buttons:** Primary = coral-to-pink gradient with subtle shadow. Secondary = white with warm border.
 **Tab bars:** White surface, `border-radius: 14px`, `1px solid var(--border)`, active tab gets `--kll` background
 **Bottom sheets:** `border-radius: 24px 24px 0 0`, swipe-to-dismiss via handle drag
+
+**Metric chips:** three tiles at bottom of Now panel — ✈ Next Meetup · ✦ Milestones · 🔥 Streak. All use unicode glyphs with `font-size:.85rem; color:var(--k)`. Note: 🔥 is a color emoji and cannot honour `color:var(--k)` — it renders in system emoji colors. Accepted trade-off.
 
 ---
 
@@ -267,7 +289,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v112` (bumped in Session 3c review round 2)
+- Current version: `ylc-v112` (bumped in post-testing debug round)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -320,6 +342,11 @@ unsubMilestones, unsubBucket, unsubPulse
 _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 ```
 
+**Note:** `summary.js` and `memoryjar.js` maintain additional module-level state not on `state`:
+- `summary.js`: `_currentRange` (week/month), `_requestSeq` (race guard) — reset via `R.resetSummary()`
+- `memoryjar.js`: `_mjExpandedMonths` Set (persists expanded state across tab visits) — reset via `R._mjResetExpandedMonths()`
+- Both reset functions called on all three sign-out paths in `auth.js` (main sign-out, partner-deletion, permission-denied)
+
 ---
 
 ## Key JS Functions
@@ -335,7 +362,7 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `applyMode(type)` | Switches ALL UI between LDR and Together — visibility, labels, mode pill, settings toggle |
 | `watchForPartner(cId, uid)` | Polls `couples/{id}/members` — redirects to app when partner joins |
 | `showPage(page)` | Navigates to full standalone page (milestones, bucket, places, letter) |
-| `switchHomeTab(tab)` | Switches Now/Us/Summary panels, resets scroll to top |
+| `switchHomeTab(tab)` | Switches Now/Us/Summary panels, resets scroll to top. Unknown tab values fall back to 'now' |
 | `updateDistanceAndSleep()` | Haversine distance from coords + sleep status from timezone hour |
 | `updateMetricChips()` | Updates 3 bottom chips: meetup countdown, milestone count, streak |
 | `startCountdown()` | Starts 1s interval for countdown card + metric chip |
@@ -343,6 +370,8 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `sendPulse()` | Rate-limited (60s cooldown) — pushes `{from, to, fromName, time}` to pulses |
 | `initTonightsMood()` | Starts Firebase listener on `tonightsMood/{dateKey}`, manages pick/waiting/reveal states, wires bottom sheet |
 | `teardownTonightsMood()` | Clears mood listener, day-roll interval, and `_tmInFlight` — called on sign-out and LDR mode switch |
+| `renderSummary(range)` | One-shot reads for Summary tab stats, race-guarded via `_requestSeq` |
+| `resetSummary()` | Resets `_currentRange` and `_requestSeq`, flips toggle back to Week — called on all sign-out paths |
 | `doDeleteAccount()` | Path 1 deletion — reauthenticates, wipes couple node, deletes auth account |
 | `doLinkingDeleteAccount()` | Path 2 deletion — same steps as Path 1, accessible from linking screen |
 
@@ -358,7 +387,7 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 ---
 
 ## Offboarding Flow
-Two paths — both run identical 12-step deletion sequence:
+Two paths — both run identical sequence:
 1. Validate input === 'DELETE', reauthenticate
 2. Set `_selfDeleting = true`
 3. Read milestone photo paths + invite code
@@ -382,6 +411,8 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
 - **Africa bug:** GPS coords `[0,0]` check prevents bad presence push
 - **iOS PWA login:** Complete signup in browser before installing to home screen
 - **AppId:** Old hardcoded appId in index.html was stale — env var version (`db66ccb1ddcc0278d9fb84`) is correct
+- **iOS double notification:** Root cause was legacy `fcmToken` string + `fcmTokens` map both pointing to same device. Fixed server-side in `api/notify.js` — legacy token skipped if its value already exists in the map
+- **Countdown card overlap:** `.home-cd-card` had stale `display:flex;flex-direction:column;justify-content:space-between` causing layout unpredictability on narrow viewports. Removed — card now uses default block layout
 
 ---
 
@@ -500,18 +531,9 @@ service firebase.storage {
 
 ---
 
-## Session Roadmap
+## Push Notifications
 
-### ✅ Session 1 — Infrastructure (complete)
-Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
-
-### ✅ Session 1b — JS Module Split (complete)
-Split `src/js/main.js` (4522 lines, one big file) into feature modules. Created `state.js` for shared globals and `registry.js` for the R namespace. All 105 R.* registrations verified present; 68 inline onclick handlers audited clean.
-
-### ✅ Session 2 — Push Notifications (complete)
-FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account auth. Tokens stored as map at `users/{uid}/fcmTokens/{tokenHash}` — supports multiple devices per user. Legacy single `fcmToken` string also read for backwards compatibility and cleared on next register.
-
-**Triggers (all implemented):**
+### Triggers (all implemented)
 - Pulse sent
 - Memory jar entry written
 - Status updated (only fires if activity or mood actually changed)
@@ -526,101 +548,65 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 - Tonight's Mood — partner picked, your turn (moodPick)
 - Tonight's Mood — both picked, see the reveal (moodMatch)
 
-**Notification content:** title uses partner's display name dynamically. Body text is trigger-specific.
+### Notification content
+Title uses partner's display name dynamically. Body text is trigger-specific.
 
-**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Summary tab, moodPick/moodMatch → Now tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
+### Deep linking
+Tapping a notification opens the relevant section:
+- pulse/status → Now tab
+- milestone → Milestones page
+- bucket → Bucket list page
+- memoryJar → Memory Jar page
+- meetup/dateNight → Us tab (countdown + date picker live here)
+- moodPick/moodMatch → Now tab
 
-**Account page:** now has Profile and Notifications sub-tabs using existing page-tabs pattern. Notifications tab shows per-trigger on/off toggles stored at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share a single `tonightsMood` toggle. Toggles disabled until OS permission granted. Defaults: all triggers ON if notificationPrefs node absent.
+Works both live (postMessage) and cold-start (sessionStorage + URL params). Unknown `?tab=` values fall back to `'now'`.
 
-**iOS:** Web Push only works on iOS 16.4+ with PWA installed to home screen. `pushSupported()` bails unless running in standalone mode.
+### Token management
+Tokens stored as map at `users/{uid}/fcmTokens/{tokenHash}` — supports multiple devices. Legacy single `fcmToken` string read for backwards compatibility. **Server-side de-dupe:** `api/notify.js` skips the legacy token if its value already exists in the `fcmTokens` map — prevents iOS double notifications for users who haven't re-registered since the map migration.
 
-**Known limitation:** notification icon shows as white square on Android status bar — needs proper monochrome icon asset. Chrome may flag staging URL as possible spam — resolves with custom domain.
+### Notification preferences
+Per-trigger toggles at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share a single `tonightsMood` toggle via `PREF_ALIAS` map. Defaults: all triggers ON if node absent.
 
-### Phase 1 — Together Mode Polish (current)
+### iOS
+Web Push only works on iOS 16.4+ with PWA installed to home screen. `pushSupported()` bails unless running in standalone mode.
 
-**✅ Session 3a — Mystery Date Picker (complete)**
-Enhancement to date night planner. Planner chooses Open or Mystery mode when setting a date.
-- Open date: both partners see full plan (where/what/who), both can edit
-- Mystery date: only planner sees full plan. Partner sees mystery card with date + time (if set).
-- Hint system: max 3 hints, one active at a time, next hint only after partner guesses current one
-- Hints and guesses: text only, immutable after submission (enforced at rules layer)
-- Planner can react to correct guess with "You got it!" — stored as hints/$pushId/correct: true
-- Reveal: planner taps Reveal → confirmation sheet → sets revealed:true → partner card updates live
-- Date Done: after reveal, button opens sheet to convert to milestone with formatted hints/guesses + photo
-- Letter unlock rule: if time set → unlock at that time. If time not set → unlock at 23:59 (fallback)
-- Picker redesign: modern bottom sheet with Date, Time (optional), Mode (Open/Mystery) fields
-- LDR meetup picker also modernised — date only, same bottom sheet style
-- activeMystery field on couple node locks meetupDate changes to planner only while mystery is active
-- Non-planner cannot change date, switch modes, or see plan details while mystery is unrevealed
-- Partner name always used instead of generic pronouns (they/their/them) — global rule
-- Open date plan content migrates when date changes (where/what/who carried over)
-- Notifications: dnHint, dnGuess, dnReveal, dnCorrect triggers added with partner name in title
+### Known limitation
+Notification icon shows as white square on Android status bar — needs proper monochrome icon asset. Deferred to domain/branding session.
 
-**Additional UI fixes shipped with Session 3a:**
-- Removed old native time input from Together mode date night section
-- Reduced size of Together/days counter in home screen top right
-- Global pronoun rule: always use partner display name, never they/their/them
+---
 
-**✅ Session 3b — Tonight's Mood (complete)**
-Daily Together mode ritual. Both partners independently pick one of 9 moods each evening via a bottom sheet picker. Neither sees the other's pick until both have chosen. On reveal: match → mood-specific celebration message. Mismatch → hardcoded compromise suggestion from a 36-combo matrix.
+## Session Roadmap
 
-**Moods:** cosy 🛋️ · romantic 🌹 · adventurous 🗺️ · just Netflix 📺 · productive ✅ · chaotic 🌀 · talky 💬 · celebratory 🥂 · hungry 🍕
+### ✅ Session 1 — Infrastructure (complete)
+Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
 
-**Key implementation details:**
-- New module: `src/js/tonightsmood.js` — registered as `R.initTonightsMood` and `R.teardownTonightsMood`
-- Bottom sheet picker reuses `_initSheetSwipe` pattern from `status.js`
-- Single tap commits, no confirm button, sheet closes immediately
-- Partner mood never rendered until own mood is present — enforced in `_renderFromSnap`, not just DOM
-- `runTransaction` used for race-free simultaneous pick — preserves partner's entry, determines correct notification trigger atomically
-- Day rollover via 60s interval watching for dateKey change (robust to DST) — replaces recursive midnight timer
-- `teardownTonightsMood()` called on sign-out (all 3 paths in auth.js) and on Together → LDR mode switch
-- `state._tmInFlight` guard prevents double-tap double-submission
-- Reveal state is final — no mood change after both have picked (intentional)
-- Notifications: `moodPick` fires when partner hasn't picked yet; `moodMatch` fires when partner already picked. Both gated by single `tonightsMood` pref toggle via `PREF_ALIAS` map in `api/notify.js`
-- Firebase rules: `.validate` (not `.write`) enforces own-uid scoping; write-through of unchanged partner entry permitted for transaction pattern
-- dateKey uses device local time — Together mode assumes same-city couple; timezone edge case for LDR couples exploring Together mode is accepted
+### ✅ Session 1b — JS Module Split (complete)
+Split `src/js/main.js` (4522 lines) into feature modules. Created `state.js` for shared globals and `registry.js` for the R namespace. All R.* registrations verified present; all inline onclick handlers audited clean.
 
-**✅ Session 3c — Cleanup + Summary tab (complete)**
-Feature removals, rename pass, UI polish, and a brand-new Summary tab on Home.
+### ✅ Session 2 — Push Notifications (complete)
+FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account auth. Full trigger set implemented. Deep linking for all triggers. Per-trigger notification prefs UI on Account page.
 
-**Removed:**
-- **Notes feature** deleted entirely — `src/js/notes.js`, HTML (page, preview, sub-tab), CSS, Firebase listener, `localNotes`/`unsubNotes` state, the `note` notification trigger, the deep-link route, and the notification pref toggle.
-- **Today's Plan** (`todayPlan` node) removed from Together mode — HTML, bottom sheet, CSS, `loadTodaysPlan`, `_tpUnsub`/`_tpMyCurrentVal` state.
+### ✅ Session 3a — Mystery Date Picker (complete)
+Enhancement to date night planner. Open vs Mystery mode. Hint system (max 3, one active at a time). Reveal flow. Date Done → milestone conversion. activeMystery lock on couple node. LDR meetup picker modernised. Global pronoun rule (always partner name, never they/their/them).
 
-**Renamed:**
-- Home → "Story" sub-tab replaced with "**Summary**". Old panel-moments (link shortcuts to milestones/letters/places/bucket) deleted.
-- Bottom nav "Together" → "**Ours**" (label only — page ID stays `page-together` so existing `showPage('together')` calls still work).
-- "Living together" → "**Together**" in both linking screen and settings (display label only; `coupleType === 'together'` data value unchanged).
+### ✅ Session 3b — Tonight's Mood (complete)
+Daily Together mode ritual. 9 moods, bottom sheet picker, pick/waiting/reveal states. Match messages + 36-combo mismatch matrix. `runTransaction` for race-free simultaneous picks. Day rollover via 60s interval. Full teardown on sign-out and mode switch. Firebase `.validate` rules enforce mood shape and own-uid scoping.
 
-**New Summary tab (`src/js/summary.js`):**
-- Week/Month toggle (defaults to week). All reads are one-shot snapshots (`{onlyOnce:true}`) — no persistent listeners.
-- Stat cards: memory jar entries per user, current streak, pulses sent per user, milestones added in range, and (Together mode only) Tonight's Mood match rate.
-- Empty state: "Nothing here yet — your story is just getting started."
-- Grid of `.summary-card` tiles using existing design tokens.
+### ✅ Session 3c — Cleanup, Polish + Summary Tab (complete)
+**Removed:** Notes feature entirely. Today's Plan (Together mode).
 
-**Other polish:**
-- Tonight's Mood — activity list extended with Gym / Driving / Socialising; mood pills gained calm / lonely / loved / anxious.
-- Status sheet iOS duplicate notification fix — `onMessage` handler no longer creates a secondary system `Notification`; the SW's push is the sole surface.
-- Memory Jar "Earlier" months now collapsed by default — only expand on tap.
-- Home → Us tab: bumped scroll bottom padding to `5rem + safe-area` so the last card clears the fixed bottom-nav.
-- Pulse card: tightened internal layout + min-width:0 on flex children to stop the "last sent" chip clipping.
-- Countdown card: wrapped cd-row + datetime-row in `.cd-align-row` for baseline alignment between timer numbers and the Set date button.
-- Metric chip streak: flame emoji replaced with stroked SVG to match Next Meetup / Milestones icons.
-- Partner-name footer added to Milestones, Places, and Bucket list pages.
-- Account → Profile: name is now a dedicated row with explicit Save button (`saveNameFromInput`) rather than onblur auto-save.
-- Account spacing tightened between section headings (Profile / Security / Your Snug).
-- Expand buttons in Change password / Change email now render full-width.
-- Memories bottom-nav icon swapped to a journal/notebook mark that reads better at 20px.
+**Renamed:** Story sub-tab → Summary. Bottom nav "Together" → "Ours" (page ID `page-together` unchanged). "Living together" → "Together" (display label only, `coupleType` data value unchanged).
 
-**Session 4 — Contextual Tooltips + Empty State Copy (next)**
-Small info icon on each feature — tapping shows 2-sentence explanation.
-Empty state copy: meaningful placeholder text when sections have no content.
-First-use walkthrough: one-time guided tour on first login.
-Applies to both LDR and Together mode.
+**New Summary tab (`src/js/summary.js`):** Week/Month toggle. One-shot Firebase reads (no persistent listeners). Stat cards: memory jar entries per user, current streak (live, not range-filtered), pulses sent per user, milestones added in range, Tonight's Mood match rate (Together mode only). Race guard via `_requestSeq`. Module-level state reset on all sign-out paths.
 
-### Phase 2 — Test Rollout
-Roll out to ~10 couples after Phase 1 is stable. Mix of LDR and Together couples.
-Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion rate, mystery date creation rate.
+**Bug fixes shipped:** iOS double notification (server-side token de-dupe). Countdown card overlap (removed stale flex layout from `.home-cd-card`). Memory Jar Earlier months collapsed by default, expanded state persists in `_mjExpandedMonths` Set across tab visits. Pulse card clipping fixed. Account name save rebuilds greeting correctly. Status sheet +3 activities (Gym/Driving/Socialising) +4 moods (calm/lonely/loved/anxious). Partner name footers on Milestones, Places, Bucket List. Account spacing and button layout tightened. Memories bottom nav icon updated to notebook style.
 
-### Session 4 — Domain + Branding (after Phase 2)
+### Phase 2 — Test Rollout (next)
+Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Tooltips) are complete. Mix of LDR and Together couples. Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion rate, mystery date creation rate.
+
+### Session 4 — Contextual Tooltips + Empty State Copy (next)
+Small info icon on each feature — tapping shows 2-sentence explanation. Empty state copy: meaningful placeholder text when sections have no content. First-use walkthrough: one-time guided tour on first login. Applies to both LDR and Together mode.
+
+### Session 5 — Domain + Branding (after Phase 2)
 Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains. Fix notification icon white square on Android (monochrome asset needed).
