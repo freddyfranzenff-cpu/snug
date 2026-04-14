@@ -495,7 +495,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   .home-hero-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem}
   .home-map-card{margin-bottom:0!important}
-  .home-cd-card{padding:1.1rem 1.2rem;display:flex;flex-direction:column;justify-content:space-between}
+  .home-cd-card{padding:1.1rem 1.2rem}
 
   .home-dist-strip{display:flex;align-items:center;gap:.6rem;padding:.55rem .9rem}
   .home-dist-city{flex-shrink:0;min-width:44px;max-width:90px;overflow:hidden}
@@ -606,7 +606,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     .page-header{flex-direction:row;align-items:center;flex-wrap:wrap;gap:.5rem .75rem}
     .page-header>div{flex:1;min-width:0}
     .milestone-add-btn{flex-shrink:0}
-    .ng{grid-template-columns:1fr}
     .timeline{padding-left:1.4rem}
     .m-photo-wrap{height:110px}
     .places-map{height:260px}
@@ -630,9 +629,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     .home-greeting-row{margin-bottom:2rem;padding-bottom:1.25rem;gap:.65rem}
     .home-days-num{font-size:2rem}
     .home-greeting-left{flex:1;min-width:0}
-    .home-cd-card .stat-card-header{flex-direction:row;align-items:center}
     .home-hero-row{grid-template-columns:1fr;gap:.65rem;margin-bottom:.65rem}
-    .home-cd-card{min-height:unset;padding:.9rem 1rem}
+    .home-cd-card{padding:.9rem 1rem}
     .home-dist-strip{flex-direction:row;padding:.75rem 1rem;gap:.85rem}
     .home-map-card #map{height:140px}
     #map{height:140px}
@@ -1124,9 +1122,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .cd-align-row .datetime-row{margin:0;display:flex;align-items:center;}
   .cd-align-row .dn-picker-btn{margin:0;}
 
-  /* Metric icon SVG sizing — matches the text icons */
-  .home-metric-icon svg{display:block;margin:0 auto;}
-
   /* Memories page bottom — partner names text reinforcement */
   .timeline-end{margin-bottom:.35rem;}
 
@@ -1167,12 +1162,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   }
   .summary-card-sub{font-size:.58rem;color:var(--muted);}
 
-  /* Home → Us tab: scroll overlap fix — scoped to panel-us only (Now and
-     Summary had no issue). Mirrors the padding-bottom used by the Milestones
-     reference panel so the last card clears the fixed bottom-nav. */
-  #panel-us.home-tab-panel.active{
-    padding-bottom:calc(3.5rem + env(safe-area-inset-bottom,0px));
-  }
+  /* Home → Us tab: root cause was `.home-cd-card` declaring
+     `display:flex;flex-direction:column;justify-content:space-between` —
+     a leftover from an older layout with a `.stat-card-header` child. That
+     flex-column didn't serve a purpose at the current structure but combined
+     with `.card { overflow:hidden }` it caused layout unpredictability on
+     narrow viewports when `.cd-align-row` wrapped. Fix was structural on the
+     card itself, not on the panel padding — see line ~498 of this file. */
 
   /* Settings tightening (Account) */
   .settings-section-heading{margin:.95rem 0 .4rem;}

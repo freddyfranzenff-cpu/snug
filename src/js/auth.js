@@ -526,6 +526,8 @@ async function tryInitFirebase(){
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+            if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+            if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
             if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
@@ -594,6 +596,8 @@ async function tryInitFirebase(){
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+            if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+            if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
             if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}

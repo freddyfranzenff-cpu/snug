@@ -266,8 +266,8 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 ## Service Worker
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v110`)
-- Current version: `ylc-v110` (bumped in Session 3c review fixes)
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
+- Current version: `ylc-v112` (bumped in Session 3c review round 2)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -335,7 +335,7 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `applyMode(type)` | Switches ALL UI between LDR and Together — visibility, labels, mode pill, settings toggle |
 | `watchForPartner(cId, uid)` | Polls `couples/{id}/members` — redirects to app when partner joins |
 | `showPage(page)` | Navigates to full standalone page (milestones, bucket, places, letter) |
-| `switchHomeTab(tab)` | Switches Now/Us/Story panels, resets scroll to top |
+| `switchHomeTab(tab)` | Switches Now/Us/Summary panels, resets scroll to top |
 | `updateDistanceAndSleep()` | Haversine distance from coords + sleep status from timezone hour |
 | `updateMetricChips()` | Updates 3 bottom chips: meetup countdown, milestone count, streak |
 | `startCountdown()` | Starts 1s interval for countdown card + metric chip |
