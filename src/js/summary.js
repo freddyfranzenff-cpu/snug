@@ -158,7 +158,6 @@ function _renderStreakCard(){
   el.innerHTML = `<div class="summary-card">
     <div class="summary-card-label">Current streak</div>
     <div class="summary-card-value">${streak ? `${streak}d` : '—'}</div>
-    <div class="summary-card-sub">live · not range-filtered</div>
   </div>`;
 }
 
