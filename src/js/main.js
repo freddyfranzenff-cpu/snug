@@ -12,7 +12,6 @@ import { R } from './registry.js';
 // correctness.
 import './weather.js';
 import './presence.js';
-import './notes.js';
 import './milestones.js';
 import './countdown.js';
 import './bucket.js';
@@ -22,6 +21,7 @@ import './letters.js';
 import './memoryjar.js';
 import './togethermode.js';
 import './tonightsmood.js';
+import './summary.js';
 import './status.js';
 import './avatar.js';
 import './settings.js';

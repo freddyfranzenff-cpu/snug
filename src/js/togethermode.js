@@ -211,39 +211,6 @@ function loadDnPlanner(){
   });
 }
 
-// ── Today's plan ─────────────────────────────────────────────
-
-function _tpTodayKey(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function loadTodaysPlan(){
-  if(state._tpUnsub){ try{state._tpUnsub();}catch(e){} state._tpUnsub=null; }
-  if(!state.db||!state.coupleId||!state.myUid||!state.partnerUid) return;
-  const today = R._tpTodayKey();
-
-  // Apply avatars (photos if available, initials as fallback)
-  R.applyAllAvatars && R.applyAllAvatars();
-
-  state._tpUnsub = state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/todaysPlan/${today}`), snap=>{
-    const d = snap.val()||{};
-    state._tpMyCurrentVal = d[state.myUid]||'';
-    // My display
-    const myDisplay = document.getElementById('tp-my-display');
-    if(myDisplay){
-      myDisplay.textContent = d[state.myUid]||'Nothing yet today';
-      myDisplay.className = d[state.myUid] ? 'tp-display-value' : 'tp-display-empty';
-    }
-    // Other display
-    const otherEl = document.getElementById('tp-other-text');
-    if(otherEl){
-      otherEl.textContent = d[state.partnerUid]||`Waiting for a plan from ${state.OTHER || 'your partner'}…`;
-      otherEl.className = d[state.partnerUid] ? 'tp-display-value' : 'tp-display-empty';
-    }
-  });
-}
-
 // ── BOTTOM SHEET SWIPE DISMISS ────────────────────────────────
 function _initSheetSwipe(sheetId, overlayId, closeFn, handleSelector){
   const sheet = document.getElementById(sheetId);
@@ -329,34 +296,6 @@ window.saveDnSheet = async function(){
     await state.dbUpdate(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`), patch);
     window.closeDnSheet();
   }catch(e){ console.error('saveDnSheet failed:',e); }
-};
-
-
-// ── Today's Plan Sheet ──────────────────────────────────────
-window.openTpSheet = function(){
-  document.getElementById('bottom-nav').style.display='none';
-  const inp = document.getElementById('tp-sheet-input');
-  const ctr = document.getElementById('tp-sheet-counter');
-  if(inp){ inp.value = state._tpMyCurrentVal||''; }
-  if(ctr && inp) ctr.textContent = (inp.value.length)+'/150';
-  document.getElementById('tp-sheet-overlay').classList.add('open');
-  setTimeout(()=>inp?.focus(),100);
-  R._initSheetSwipe('tp-sheet','tp-sheet-overlay', window.closeTpSheet);
-};
-
-window.closeTpSheet = function(){
-  document.getElementById('bottom-nav').style.display='flex';
-  document.getElementById('tp-sheet-overlay').classList.remove('open');
-};
-
-window.saveTpSheet = async function(){
-  if(!state.db||!state.coupleId||!state.myUid) return;
-  const today = R._tpTodayKey();
-  const val = document.getElementById('tp-sheet-input')?.value.trim()||'';
-  try{
-    await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/todaysPlan/${today}/${state.myUid}`), val);
-    window.closeTpSheet();
-  }catch(e){ console.error('saveTpSheet failed:',e); }
 };
 
 
@@ -940,7 +879,5 @@ R._localDateStr = _localDateStr;
 R._showTimeInput = _showTimeInput;
 R._dnDateKey = _dnDateKey;
 R.loadDnPlanner = loadDnPlanner;
-R._tpTodayKey = _tpTodayKey;
-R.loadTodaysPlan = loadTodaysPlan;
 R._initSheetSwipe = _initSheetSwipe;
 R._syncDnPickerBtn = _syncDnPickerBtn;

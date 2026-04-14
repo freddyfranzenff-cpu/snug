@@ -243,7 +243,7 @@ function _mjRenderHistory(){
         const dd = all[dk]||{};
         return dd[state.myUid]?.text && dd[state.partnerUid]?.text;
       }).length;
-      const isOpen = mIdx === 0; // most recent month open by default
+      const isOpen = false; // collapsed by default; tap to expand
       const groupId = `mj-month-${monthKey.replace('-','_')}`;
 
       const dayCards = days.map(dateKey=>{

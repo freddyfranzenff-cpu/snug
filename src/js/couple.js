@@ -44,10 +44,6 @@ function applyMode(type){
   // sidebar countdown label removed
   R.updateMetricChips&&R.updateMetricChips();
 
-  // Moments tab letter subtitle
-  const letterSub = document.getElementById('moments-letter-sub');
-  if(letterSub) letterSub.textContent = isLDR ? 'Sealed until you meet' : 'Sealed until your date night';
-
   // Update settings toggle if visible
   const settingsLdr = document.getElementById('settings-mode-ldr');
   const settingsTog = document.getElementById('settings-mode-together');
@@ -70,13 +66,6 @@ function applyMode(type){
     const show = isTogether && !!state.meetupDate;
     dnPlanner.classList.toggle('visible', show);
     if(show) R.loadDnPlanner && R.loadDnPlanner();
-  }
-
-  // Today's plan — Together mode only
-  const todaysPlan = document.getElementById('todays-plan');
-  if(todaysPlan){
-    todaysPlan.classList.toggle('visible', isTogether);
-    if(isTogether) R.loadTodaysPlan && R.loadTodaysPlan();
   }
 
   // Tonight's Mood — Together mode only

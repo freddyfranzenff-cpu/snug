@@ -3,36 +3,27 @@ import { R } from './registry.js';
 
 // ── HOME TABS ──────────────────────────────────────────
 window.switchHomeTab = function(tab){
-  ['now','us','moments'].forEach(t=>{
-    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+  ['now','us','summary'].forEach(t=>{
+    const btn = document.getElementById(`tab-${t}`);
+    if(btn) btn.classList.toggle('active', t===tab);
     const panel = document.getElementById(`panel-${t}`);
-    panel.classList.toggle('active', t===tab);
-    if(t===tab) panel.scrollTop = 0;
+    if(panel){
+      panel.classList.toggle('active', t===tab);
+      if(t===tab) panel.scrollTop = 0;
+    }
   });
+  if(tab==='summary' && R.renderSummary){
+    R.renderSummary();
+  }
   // Re-invalidate map size when Now tab shown — Leaflet needs visible container
   if(tab==='now' && state.mapInstance){
     setTimeout(()=>{ try{ state.mapInstance.invalidateSize(); }catch(e){} }, 50);
   }
 };
 
-// Update dynamic subtitles on Moments tab
-function updateMomentsSubtitles(){
-  const msCount = state.localMilestones ? state.localMilestones.length : 0;
-  const msEl = document.getElementById('moments-milestone-sub');
-  if(msEl) msEl.textContent = msCount > 0 ? `${msCount} moment${msCount!==1?'s':''} together` : 'Your shared moments';
-
-  const blTotal = state.localBucket ? state.localBucket.length : 0;
-  const blDone = state.localBucket ? state.localBucket.filter(i=>i.done).length : 0;
-  const blEl = document.getElementById('moments-bucket-sub');
-  if(blEl) blEl.textContent = blTotal > 0 ? `${blDone} of ${blTotal} done` : 'Dreams to share';
-
-  // Letter sub — show next unlock date if exists
-  const ltEl = document.getElementById('moments-letter-sub');
-  if(ltEl && state.meetupDate){
-    const _y=state.meetupDate.getFullYear(),_m=String(state.meetupDate.getMonth()+1).padStart(2,'0'),_d=String(state.meetupDate.getDate()).padStart(2,'0');
-    ltEl.textContent = `Opens ${_d}.${_m}.${_y}`;
-  }
-}
+// Moments tab removed — Story/Moments section replaced by Summary tab.
+// Kept as a no-op so legacy callers still work until they're cleaned up.
+function updateMomentsSubtitles(){}
 
 // Update bucket progress on Us tab
 function updateHomeBucketProgress(){
@@ -64,7 +55,8 @@ function fmtStatusTime(ts){
 const ACTIVITY_EMOJI = {
   'Working':'💼','Reading':'📖','Music':'🎵','Eating':'🍽️',
   'Gaming':'🎮','Sports':'⚽','Resting':'😴','Traveling':'✈️','Cooking':'🍳',
-  'Outside':'☀️','Shopping':'🛍️','Studying':'📚'
+  'Outside':'☀️','Shopping':'🛍️','Studying':'📚',
+  'Gym':'🏋️','Driving':'🚗','Socialising':'🥂'
 };
 
 function renderStatusCard(){

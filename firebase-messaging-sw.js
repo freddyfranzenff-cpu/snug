@@ -40,13 +40,12 @@ messaging.onBackgroundMessage(payload => {
 const TRIGGER_ROUTES = {
   pulse:     { page: 'home',      tab: 'now'     },
   status:    { page: 'home',      tab: 'now'     },
-  note:      { page: 'notes'                     },
   milestone: { page: 'milestones'                },
   bucket:    { page: 'bucket'                    },
   // 'memory' routes via legacyMap → memories page, jar sub-tab
   memoryJar: { page: 'memory'                    },
-  meetup:    { page: 'home',      tab: 'moments' },
-  dateNight: { page: 'home',      tab: 'moments' },
+  meetup:    { page: 'home',      tab: 'summary' },
+  dateNight: { page: 'home',      tab: 'summary' },
   dnHint:    { page: 'home',      tab: 'now'     },
   dnGuess:   { page: 'home',      tab: 'now'     },
   dnCorrect: { page: 'home',      tab: 'now'     },

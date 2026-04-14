@@ -55,12 +55,12 @@ window.showPage=function(name){
   // Map legacy page names to new nav structure
   const legacyMap = {
     milestones:'memories', places:'memories', memory:'memories',
-    notes:'together', bucket:'together', letter:'together',
+    bucket:'together', letter:'together',
     settings:'account'
   };
   const legacyTab = {
     milestones:'milestones', places:'places', memory:'jar',
-    notes:'notes', bucket:'bucket', letter:'letter',
+    bucket:'bucket', letter:'letter',
     settings:'profile'
   };
 
@@ -144,7 +144,6 @@ function startUI(){
   document.getElementById("my-city").textContent=state.myCity||"—";
   document.getElementById("other-city").textContent=state.otherCity||"—";
   // weather city labels use my-city / other-city
-  document.getElementById("note-author-name").textContent=state.ME;
   const dna=document.getElementById("home-dist-name-a");if(dna)dna.textContent=state.ME;
   const dnb=document.getElementById("home-dist-name-b");if(dnb)dnb.textContent=state.OTHER;
   const dnaL=document.getElementById("home-dist-name-a-label");if(dnaL)dnaL.textContent=state.ME;
@@ -177,19 +176,10 @@ function startUI(){
   R.checkMeetupDateInput();
   // ── Persistent real-time listeners ─────────────────────
   if(state.db&&state.fbOnValue){
-    // Notes — store unsubscribe so we can clean up on sign-out
-    if(state.unsubNotes)state.unsubNotes();
-    state.unsubNotes=state.fbOnValue(state.dbRef(state.db,`couples/${state.coupleId}/notes`),snap=>{
-      const d=snap.val();
-      const notes=d?Object.entries(d).map(([k,v])=>({...v,_key:k})).reverse():[];
-      state.localNotes=[...notes];
-      R.renderNotes(notes);
-      R.renderNotesPreview(notes);
-      R.updateMomentsSubtitles();
-      R.renderStatusCard&&R.renderStatusCard();
-      R.startStatusRefresh&&R.startStatusRefresh();
-    });
-    // One-time startup calls — not repeated on every note change
+    R.updateMomentsSubtitles&&R.updateMomentsSubtitles();
+    R.renderStatusCard&&R.renderStatusCard();
+    R.startStatusRefresh&&R.startStatusRefresh();
+    // One-time startup calls
     R._mjLoadAndRender&&R._mjLoadAndRender();
     R.applyMode&&R.applyMode(state.coupleType);
     R.loadAvatars&&R.loadAvatars();

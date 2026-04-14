@@ -158,7 +158,7 @@
       <label class="auth-label" style="margin-top:.5rem;">Your relationship type</label>
       <div class="mode-toggle" id="create-mode-toggle">
         <button class="mode-toggle-btn active" id="create-mode-ldr" onclick="window.selectCreateMode('ldr')">📍 Long distance</button>
-        <button class="mode-toggle-btn" id="create-mode-together" onclick="window.selectCreateMode('together')">🏠 Living together</button>
+        <button class="mode-toggle-btn" id="create-mode-together" onclick="window.selectCreateMode('together')">🏠 Together</button>
       </div>
       <input type="hidden" id="couple-type-input" value="ldr"/>
       <button class="auth-submit-btn" style="background:var(--surface);color:var(--k);border:1.5px solid var(--border);" onclick="doCreateCouple()" id="create-couple-btn">Create our Snug</button>
@@ -223,12 +223,12 @@
     <span class="bn-label">Home</span>
   </button>
   <button class="bn-item" id="nav-memories" onclick="showPage('memories')">
-    <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M3 8h14"/><path d="M7 2v4M13 2v4"/></svg>
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h9l3 3v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M12 3v4h4"/><path d="M7 11h6M7 14h6"/></svg>
     <span class="bn-label">Memories</span>
   </button>
-  <button class="bn-item" id="nav-together" onclick="showPage('together')">
+  <button class="bn-item" id="nav-together" onclick="showPage('together')" aria-label="Ours">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16.5C10 16.5 3.5 12 3.5 8a3.5 3.5 0 017 0 3.5 3.5 0 017 0c0 4-6.5 8.5-6.5 8.5z"/></svg>
-    <span class="bn-label">Together</span>
+    <span class="bn-label">Ours</span>
   </button>
   <button class="bn-item" id="nav-account" onclick="showPage('account')">
     <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
@@ -285,7 +285,7 @@
     <div class="home-tabs">
       <button class="home-tab active" id="tab-now" onclick="switchHomeTab('now')">Now</button>
       <button class="home-tab" id="tab-us" onclick="switchHomeTab('us')">Us</button>
-      <button class="home-tab" id="tab-moments" onclick="switchHomeTab('moments')">Story</button>
+      <button class="home-tab" id="tab-summary" onclick="switchHomeTab('summary')">Summary</button>
     </div>
 
     <!-- ══ NOW TAB ══ -->
@@ -399,24 +399,6 @@
         </div>
       </div>
 
-      <!-- Today's plan (Together mode only) — ABOVE date night plan -->
-      <div class="todays-plan" id="todays-plan">
-        <p class="section-heading" style="margin-top:0;">Today's plan</p>
-        <div class="tp-card">
-          <div class="tp-display-row">
-            <div class="tp-avatar tp-avatar-me" id="tp-my-avatar">F</div>
-            <div class="tp-display-empty" id="tp-my-display">Nothing yet today</div>
-          </div>
-          <div class="tp-display-row">
-            <div class="tp-avatar tp-avatar-other" id="tp-other-avatar">S</div>
-            <div class="tp-display-empty" id="tp-other-text">Waiting for a plan from <span class="partner-name-slot">your partner</span>…</div>
-          </div>
-          <div class="mj-input-row">
-            <button class="mj-add-btn" onclick="openTpSheet()">+ Update plan</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Tonight's Mood (Together mode only) -->
       <div id="tonights-mood-card" style="display:none;">
         <p class="section-heading" style="margin-top:0;">Tonight's Mood</p>
@@ -470,7 +452,7 @@
           <span class="home-metric-label">Milestones</span>
         </div>
         <div class="home-metric-chip home-metric-chip-streak">
-          <span class="home-metric-icon">🔥</span>
+          <span class="home-metric-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5c1.5 2 3 3.4 3 5.5a3 3 0 01-6 0c0-.9.3-1.6.8-2.3.2 1 1 1.6 1.7 1.6 0-1.6-.5-2.9.5-4.8z"/><path d="M4.5 9.5a3.5 3.5 0 107 0c0-.5-.1-1-.3-1.4"/></svg></span>
           <span class="home-metric-value" id="metric-streak-val">—</span>
           <span class="home-metric-label">Streak</span>
         </div>
@@ -483,13 +465,11 @@
       <!-- Countdown -->
       <p class="section-heading" style="margin-top:.25rem;" id="us-countdown-label">Next meetup</p>
       <div class="card home-cd-card" style="margin-bottom:.75rem;">
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
-            <div class="cd-row" style="margin-top:0;"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
-            <div class="datetime-row">
-              <p class="card-label" style="margin:0;display:none;" id="cd-card-label">Next meetup</p>
-              <button type="button" id="dn-picker-btn" class="meetup-input dn-picker-btn" onclick="openDnPickerSheet()">Set date</button>
-            </div>
+        <div class="cd-align-row">
+          <div class="cd-row" style="margin-top:0;"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
+          <div class="datetime-row">
+            <p class="card-label" style="margin:0;display:none;" id="cd-card-label">Next meetup</p>
+            <button type="button" id="dn-picker-btn" class="meetup-input dn-picker-btn" onclick="openDnPickerSheet()">Set date</button>
           </div>
         </div>
         <p class="cd-caption" id="cd-caption">—</p>
@@ -523,14 +503,6 @@
       </div>
 
 
-      <!-- Notes preview -->
-      <div class="section-heading" style="margin-top:.75rem;">
-        <span>Recent notes</span>
-        <button class="section-heading-see-all" onclick="showPage('notes')">See all</button>
-      </div>
-      <div id="home-notes-preview" style="margin-bottom:.85rem;display:flex;flex-direction:column;gap:.65rem;"><p class="empty">No notes yet.</p></div>
-
-
       <!-- Bucket list progress -->
       <div class="section-heading" style="margin-top:.75rem;">
         <span>Bucket list</span>
@@ -547,57 +519,20 @@
       <footer class="app-footer-inner">Snug</footer>
     </div><!-- end panel-us -->
 
-    <!-- ══ MOMENTS TAB ══ -->
-    <div class="home-tab-panel" id="panel-moments">
+    <!-- ══ SUMMARY TAB ══ -->
+    <div class="home-tab-panel" id="panel-summary">
 
-      <p class="section-heading">Our story</p>
-
-      <div class="moments-link" onclick="showPage('milestones')">
-        <div class="moments-link-left">
-          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><circle cx="8" cy="8" r="2"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg></div>
-          <div>
-            <p class="moments-link-title">Milestones</p>
-            <p class="moments-link-sub" id="moments-milestone-sub">Your shared moments</p>
-          </div>
-        </div>
-        <span class="moments-link-arrow">›</span>
+      <div class="summary-range-toggle" id="summary-range-toggle">
+        <button class="summary-range-btn active" data-range="week" onclick="setSummaryRange('week')">This week</button>
+        <button class="summary-range-btn" data-range="month" onclick="setSummaryRange('month')">This month</button>
       </div>
 
-      <div class="moments-link" onclick="showPage('letter')">
-        <div class="moments-link-left">
-          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M2 6l6 4 6-4"/></svg></div>
-          <div>
-            <p class="moments-link-title">Letters</p>
-            <p class="moments-link-sub" id="moments-letter-sub">Sealed until you meet</p>
-          </div>
-        </div>
-        <span class="moments-link-arrow">›</span>
-      </div>
-
-      <div class="moments-link" onclick="showPage('places')">
-        <div class="moments-link-left">
-          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg></div>
-          <div>
-            <p class="moments-link-title">Places</p>
-            <p class="moments-link-sub" id="moments-places-sub">Places we've been to</p>
-          </div>
-        </div>
-        <span class="moments-link-arrow">›</span>
-      </div>
-
-      <div class="moments-link" onclick="showPage('bucket')">
-        <div class="moments-link-left">
-          <div class="moments-link-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--k)" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg></div>
-          <div>
-            <p class="moments-link-title">Bucket list</p>
-            <p class="moments-link-sub" id="moments-bucket-sub">Dreams to share</p>
-          </div>
-        </div>
-        <span class="moments-link-arrow">›</span>
+      <div class="summary-grid" id="summary-grid">
+        <p class="empty" id="summary-empty">Nothing here yet — your story is just getting started.</p>
       </div>
 
       <footer class="app-footer-inner">Snug</footer>
-    </div><!-- end panel-moments -->
+    </div><!-- end panel-summary -->
 
   </div>
 
@@ -699,6 +634,9 @@
         <div class="status-act-opt" data-activity="Outside" onclick="selectActivity(this)"><span class="status-act-icon">☀️</span><div class="status-act-label">Outside</div></div>
         <div class="status-act-opt" data-activity="Shopping" onclick="selectActivity(this)"><span class="status-act-icon">🛍️</span><div class="status-act-label">Shopping</div></div>
         <div class="status-act-opt" data-activity="Studying" onclick="selectActivity(this)"><span class="status-act-icon">📚</span><div class="status-act-label">Studying</div></div>
+        <div class="status-act-opt" data-activity="Gym" onclick="selectActivity(this)"><span class="status-act-icon">🏋️</span><div class="status-act-label">Gym</div></div>
+        <div class="status-act-opt" data-activity="Driving" onclick="selectActivity(this)"><span class="status-act-icon">🚗</span><div class="status-act-label">Driving</div></div>
+        <div class="status-act-opt" data-activity="Socialising" onclick="selectActivity(this)"><span class="status-act-icon">🥂</span><div class="status-act-label">Socialising</div></div>
       </div>
       <div class="status-sheet-section">How are you feeling?</div>
       <div class="status-mood-pills" id="status-mood-pills">
@@ -710,6 +648,10 @@
         <div class="status-mood-pill" data-mood="stressed" onclick="selectMood(this)">stressed</div>
         <div class="status-mood-pill" data-mood="grateful" onclick="selectMood(this)">grateful</div>
         <div class="status-mood-pill" data-mood="meh" onclick="selectMood(this)">meh</div>
+        <div class="status-mood-pill" data-mood="calm" onclick="selectMood(this)">calm</div>
+        <div class="status-mood-pill" data-mood="lonely" onclick="selectMood(this)">lonely</div>
+        <div class="status-mood-pill" data-mood="loved" onclick="selectMood(this)">loved</div>
+        <div class="status-mood-pill" data-mood="anxious" onclick="selectMood(this)">anxious</div>
       </div>
       <button class="status-save-btn" onclick="saveStatus()">Save status</button>
       <button onclick="closeStatusSheet()" style="display:block;width:calc(100% - 2.2rem);margin:.2rem 1.1rem .25rem;padding:.45rem;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-align:center;">Cancel</button>
@@ -734,6 +676,7 @@
     <p class="milestone-counter" id="milestone-counter">You have <span>0</span> milestones together</p>
     <div class="timeline" id="milestone-timeline"><p class="empty">No milestones yet. Add your first one!</p></div>
     <div class="timeline-end" id="timeline-end" style="display:none;">& counting…</div>
+    <footer class="app-footer-inner">Snug</footer>
     <div class="add-form" id="add-milestone-form">
       <input type="text" id="m-title-input" placeholder="What happened?"/>
       <input type="text" id="m-note-input" placeholder="A little note… (optional)"/>
@@ -796,6 +739,7 @@
     <div class="places-chips" id="places-chips"></div>
 
     <p class="empty" id="places-empty" style="display:none;">No milestone locations yet. Add a location to a milestone to see it here!</p>
+    <footer class="app-footer-inner">Snug</footer>
   </div>
     </div>
     <div class="page-tab-panel" id="memories-panel-jar">
@@ -839,14 +783,13 @@
     </div>
   </div>
 
-  <!-- TOGETHER page (sub-tabs: Bucket list, Notes, Letter) -->
+  <!-- OURS page (sub-tabs: Bucket list, Letter) -->
   <div class="page" id="page-together">
     <div class="shell-page-header">
-      <h2 class="shell-page-title">Together</h2>
+      <h2 class="shell-page-title">Ours</h2>
     </div>
     <div class="page-tabs">
       <button class="page-tab active" id="together-tab-bucket" onclick="switchPageTab('together','bucket')">Bucket list</button>
-      <button class="page-tab" id="together-tab-notes" onclick="switchPageTab('together','notes')">Notes</button>
       <button class="page-tab" id="together-tab-letter" onclick="switchPageTab('together','letter')">Letter</button>
     </div>
     <div class="page-tab-panel active" id="together-panel-bucket">
@@ -896,6 +839,7 @@
     <!-- Done list -->
     <div class="bl-sep-line" id="bl-done-sep" style="display:none;"><span class="bl-sep-text">Completed</span></div>
     <div id="bl-done-list" style="display:flex;flex-direction:column;gap:.75rem;"></div>
+    <footer class="app-footer-inner">Snug</footer>
 
     <!-- Add form -->
     <div class="bl-add-form" id="bl-add-form">
@@ -911,18 +855,6 @@
         <button class="bl-save-btn" id="bl-save-btn" onclick="saveBucketItem()">Add</button>
       </div>
     </div>
-  </div>
-    </div>
-    <div class="page-tab-panel" id="together-panel-notes">
-  <div class="page" id="page-notes">
-    
-    <p class="section-heading">Write something</p>
-    <div class="notes-compose">
-      <textarea id="note-input" rows="3" placeholder="Write something…" maxlength="2000"></textarea>
-      <div class="compose-footer"><span class="author-tag" id="note-author-name">—</span><button class="send-btn" onclick="submitNote()">Send</button></div>
-    </div>
-    <p class="section-heading">All notes</p>
-    <div id="notes-wall"><p class="empty">No notes yet.</p></div>
   </div>
     </div>
     <div class="page-tab-panel" id="together-panel-letter">
@@ -978,12 +910,13 @@
         <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="window.handleAvatarUpload(this)"/>
       </div>
 
-      <!-- Name row -->
-      <div class="settings-row-new">
-        <div style="flex:1;">
+      <!-- Name row — explicit save via button -->
+      <div class="settings-row-new settings-row-name">
+        <div style="flex:1;min-width:0;">
           <div class="settings-row-label">Name</div>
-          <input type="text" class="settings-input" id="settings-name" placeholder="Your first name" autocomplete="given-name" onblur="window.autoSaveName(this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="border:none;background:none;padding:0 0 0 1px;font-size:.8rem;color:var(--text);width:100%;outline:none;font-family:inherit;"/>
+          <input type="text" class="settings-input settings-name-input" id="settings-name" placeholder="Your first name" autocomplete="given-name" onkeydown="if(event.key==='Enter')window.saveNameFromInput()"/>
         </div>
+        <button class="settings-btn settings-name-btn" onclick="window.saveNameFromInput()">Save</button>
       </div>
 
       <!-- Email row -->
@@ -1007,8 +940,8 @@
     </div>
 
     <!-- Profile feedback (auto-save) -->
-    <p class="auth-field-error" id="settings-profile-error" style="margin-bottom:.4rem;"></p>
-    <p id="settings-profile-success" style="display:none;font-size:.65rem;color:var(--green);margin-bottom:.4rem;"></p>
+    <p class="auth-field-error settings-profile-msg" id="settings-profile-error"></p>
+    <p id="settings-profile-success" class="settings-profile-msg" style="display:none;font-size:.65rem;color:var(--green);"></p>
 
     <!-- SECURITY -->
     <p class="settings-section-heading">Security</p>
@@ -1073,7 +1006,7 @@
         <div class="settings-row-label" style="margin-bottom:.5rem;">Relationship type</div>
         <div class="mode-toggle">
           <button class="mode-toggle-btn active" id="settings-mode-ldr" onclick="selectSettingsMode('ldr')">📍 Long distance</button>
-          <button class="mode-toggle-btn" id="settings-mode-together" onclick="selectSettingsMode('together')">🏠 Living together</button>
+          <button class="mode-toggle-btn" id="settings-mode-together" onclick="selectSettingsMode('together')">🏠 Together</button>
         </div>
         <div class="settings-row-desc">Updates instantly for both of you.</div>
       </div>
@@ -1160,13 +1093,6 @@
               <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> taps the heart</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="pulse"/><span></span></label>
-          </div>
-          <div class="settings-row-new">
-            <div style="flex:1;">
-              <div class="settings-row-label">Notes</div>
-              <div class="settings-row-muted">New note on the wall</div>
-            </div>
-            <label class="notif-toggle"><input type="checkbox" data-notif="note"/><span></span></label>
           </div>
           <div class="settings-row-new">
             <div style="flex:1;">
@@ -1370,21 +1296,6 @@
       </div>
       <button class="together-sheet-save" id="dn-done-save-btn" onclick="saveDnDoneSheet()">Save as milestone</button>
       <button class="together-sheet-cancel" onclick="closeDnDoneSheet()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- ── Today's Plan Sheet ─────────────────────────────── -->
-  <div class="together-sheet-overlay" id="tp-sheet-overlay" onclick="if(event.target===this)closeTpSheet()">
-    <div class="together-sheet" id="tp-sheet">
-      <div class="together-sheet-handle" id="tp-sheet-handle"></div>
-      <div class="together-sheet-title">Today's plan</div>
-      <div class="together-sheet-body">
-        <label class="together-sheet-label">What's your plan for today?</label>
-        <textarea class="together-sheet-input together-sheet-textarea" id="tp-sheet-input" placeholder="What are you up to today?" maxlength="150" oninput="document.getElementById('tp-sheet-counter').textContent=this.value.length+'/150'"></textarea>
-        <div class="together-sheet-counter" id="tp-sheet-counter">0/150</div>
-      </div>
-      <button class="together-sheet-save" onclick="saveTpSheet()">Save plan</button>
-      <button class="together-sheet-cancel" onclick="closeTpSheet()">Cancel</button>
     </div>
   </div>
 

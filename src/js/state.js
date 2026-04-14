@@ -55,8 +55,8 @@ export const state = {
   _unsubWatchOther: null,
 
   // ── Local caches ──────────────────────────────────────────
-  localNotes: [], localMilestones: [], localBucket: [],
-  unsubNotes: null, unsubMilestones: null,
+  localMilestones: [], localBucket: [],
+  unsubMilestones: null,
   unsubBucket: null, unsubPulse: null,
 
   // ── Map + intervals ───────────────────────────────────────
@@ -92,7 +92,6 @@ export const state = {
   // ── Together-mode features ────────────────────────────────
   _dnTimeVal: '19:00',
   _dnUnsub: null, _dnCurrentPlan: {},
-  _tpUnsub: null, _tpMyCurrentVal: '',
   _tmInFlight: false,
 
   // ── Status sheet selection ────────────────────────────────

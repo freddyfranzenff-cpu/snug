@@ -112,19 +112,12 @@ async function registerFcmToken(){
       );
     }catch(e){}
 
-    // Foreground messages — show a system notification manually since the
-    // page is visible and FCM suppresses them by default.
-    onMessage(_messaging, payload => {
-      const n = payload.notification || {};
-      if(!n.title) return;
-      try{
-        new Notification(n.title, {
-          body: n.body || '',
-          icon: '/icons/icon-192.png',
-          tag: `snug-${payload.data?.trigger || 'msg'}`,
-        });
-      }catch(e){}
-    });
+    // Foreground messages — the app is visible, so don't surface a system
+    // notification. The earlier fallback (manually constructing a Notification
+    // via `new Notification`) caused duplicate alerts on iOS PWAs, where FCM
+    // would also render the push through the service worker. Silent handler
+    // keeps the app tree in sync without double-notifying the user.
+    onMessage(_messaging, () => {});
   }catch(e){
     console.warn('[notify] register failed:', e);
   }finally{
@@ -217,7 +210,7 @@ async function notifyPartner(trigger){
   }
 }
 
-const TRIGGER_KEYS = ['pulse','note','memoryJar','milestone','bucket','status','meetup','dateNight','dnHint','dnGuess','dnCorrect','dnReveal','tonightsMood'];
+const TRIGGER_KEYS = ['pulse','memoryJar','milestone','bucket','status','meetup','dateNight','dnHint','dnGuess','dnCorrect','dnReveal','tonightsMood'];
 
 async function initNotificationPrefs(){
   const unsupportedMsg = document.getElementById('notif-unsupported-msg');

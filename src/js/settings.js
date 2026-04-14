@@ -176,6 +176,12 @@ window.saveEmailSettings = async function(){
 
 // ── MEMORY JAR ────────────────────────────────────────────
 
+window.saveNameFromInput = function(){
+  const el = document.getElementById('settings-name');
+  if(!el) return;
+  return window.autoSaveName(el.value);
+};
+
 window.autoSaveName = async function(val){
   const name = (val||'').trim();
   const err = document.getElementById('settings-profile-error');
@@ -614,14 +620,13 @@ window.doSignOut = async function(){
     const _obi = document.getElementById('onboard-avatar-icon');
     if(_obi) _obi.style.display='';
     if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-    if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
     if(state._meetupDateUnsub){try{state._meetupDateUnsub();}catch(e){}state._meetupDateUnsub=null;}
     state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
     state.coupleType='ldr';
     state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;
     state.myTz=null;state.otherTz=null;
     state.coupleStartDate=null;state.coupleMeetupDate=null;state.meetupDate=null;R._stopLetterCountdown&&R._stopLetterCountdown();
-    state.localNotes=[];state.localMilestones=[];state.localBucket=[];
+    state.localMilestones=[];state.localBucket=[];
     state.blFilter="all";state.blEditKey=null;
     state.currentLetterRoundId=null;state.letterRounds=[];
     state.editingKey=null;state.editingOriginalAuthor=null;
@@ -633,14 +638,13 @@ window.doSignOut = async function(){
     if(state.mapInstance){try{state.mapInstance.remove();}catch(e){}state.mapInstance=null;state.myMarker=null;state.otherMarker=null;state.connectLine=null;}
     if(state.placesMapInstance){try{state.placesMapInstance.remove();}catch(e){}state.placesMapInstance=null;}
     state._msRegistry.clear();
-    if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
     if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
     if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
     if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
     if(state._watchPartnerUnsub){try{state._watchPartnerUnsub();}catch(e){}state._watchPartnerUnsub=null;}
     if(typeof state._unsubWatchOther!=="undefined"&&state._unsubWatchOther){try{state._unsubWatchOther();}catch(e){}state._unsubWatchOther=null;}
     state._lastPulseSent=0;
-    state._dnCurrentPlan={};state._tpMyCurrentVal='';
+    state._dnCurrentPlan={};
     state._dnTimeVal='19:00';
     state._selectedActivity=null;state._selectedMood=null;
     state.repositionKey=null;state.repositionDragging=false;state.pendingPhotoForKey=null;

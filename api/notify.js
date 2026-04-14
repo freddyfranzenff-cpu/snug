@@ -18,7 +18,6 @@ import crypto from 'node:crypto';
 
 const TRIGGERS = {
   pulse:     { title: n => `${n} sent you a pulse`,         body: n => `${n} is thinking of you` },
-  note:      { title: n => `${n} wrote a new note`,         body: n => `Tap to read what ${n} wrote` },
   memoryJar: { title: n => `${n} wrote in the memory jar`,  body: n => `Tap to see today's entry from ${n}` },
   milestone: { title: n => `${n} added a milestone`,        body: () => 'A new memory together' },
   bucket:    { title: n => `${n} added to the bucket list`, body: () => 'A new dream to share' },

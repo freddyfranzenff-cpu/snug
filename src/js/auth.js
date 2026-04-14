@@ -453,20 +453,18 @@ async function tryInitFirebase(){
         const onboardIcon = document.getElementById('onboard-avatar-icon');
         if(onboardIcon) onboardIcon.style.display='';
         if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-        if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
         if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
         state._tmInFlight=false;
         state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
         state.coupleType='ldr';
         state.myTz=null;state.otherTz=null;state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;
         R._stopLetterCountdown && R._stopLetterCountdown();
-        state.meetupDate=null;state.localNotes=[];state.localMilestones=[];state.localBucket=[];state.letterRounds=[];
+        state.meetupDate=null;state.localMilestones=[];state.localBucket=[];state.letterRounds=[];
         if(state.clockInterval){clearInterval(state.clockInterval);state.clockInterval=null;}
         if(state.distanceInterval){clearInterval(state.distanceInterval);state.distanceInterval=null;}
         if(state.countdownInterval){clearInterval(state.countdownInterval);state.countdownInterval=null;}
         if(window._metricInterval){clearInterval(window._metricInterval);window._metricInterval=null;}
         if(state.pulseTimeInterval){clearInterval(state.pulseTimeInterval);state.pulseTimeInterval=null;}
-        if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
         if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
         if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
         if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
@@ -477,7 +475,7 @@ async function tryInitFirebase(){
         if(state.placesMapInstance){try{state.placesMapInstance.remove();}catch(e){}state.placesMapInstance=null;}
         state._msRegistry.clear();
         state._lastPulseSent=0;
-        state._dnCurrentPlan={};state._tpMyCurrentVal='';
+        state._dnCurrentPlan={};
         state._dnTimeVal='19:00';
         state._selectedActivity=null;state._selectedMood=null;
         state.repositionKey=null;state.repositionDragging=false;state.pendingPhotoForKey=null;
@@ -523,10 +521,8 @@ async function tryInitFirebase(){
             // Partner deleted the couple — clean up all listeners first
             if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-            if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
-            if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
             if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
@@ -593,10 +589,8 @@ async function tryInitFirebase(){
           if(_coupleInitFired){
             if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
             if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-            if(state._tpUnsub){try{state._tpUnsub();}catch(e){}state._tpUnsub=null;}
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
-            if(state.unsubNotes){try{state.unsubNotes();}catch(e){}state.unsubNotes=null;}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
             if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}

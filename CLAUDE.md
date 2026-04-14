@@ -47,7 +47,6 @@ snug/
       auth.js               ← onAuthStateChanged, login, signup, onboarding
       couple.js             ← couple creation, joining, linking, offboarding
       ui.js                 ← applyMode, startUI, showPage, switchHomeTab, _pageSubContent
-      notes.js              ← submitNote, deleteNote, reactToNote, renderNotes
       milestones.js         ← milestone CRUD, places map, initMap, updateOtherMarker
       bucket.js             ← bucket list CRUD
       letters.js            ← letter system, unlock logic
@@ -63,6 +62,7 @@ snug/
       avatar.js             ← Avatar upload and display
       notifications.js      ← FCM token registration, notifyPartner(), deep-link routing, notification prefs UI
       tonightsmood.js       ← Tonight's Mood — pick/waiting/reveal states, bottom sheet, day rollover
+      summary.js            ← Home → Summary tab: week/month stats (memory jar, pulses, milestones, streak, mood match)
   firebase-messaging-sw.js  ← FCM background message handler (repo root, symlinked into public/)
   public/
     icons/                  ← Symlink → ../icons/
@@ -110,9 +110,6 @@ couples/{coupleId}/
   presence/{uid}/
     timezone, city, lat, lng, updatedAt (serverTimestamp)
 
-  notes/{pushId}/
-    text, author (display name), time (ms), reactions/{uid}: true
-
   milestones/{pushId}/
     title, date ('YYYY-MM-DD'), endDate, note, tag, emoji
     addedBy (display name), location, locationDisplay, lat, lng
@@ -142,9 +139,6 @@ couples/{coupleId}/
       text, authorUid, createdAt, correct (boolean — planner marks guess correct)
       guess/
         text, authorUid, createdAt
-
-  todayPlan/{uid}/
-    text, updatedAt
 
   pulses/{pushId}/
     from (uid), to (uid), fromName, time (ms)
@@ -272,8 +266,8 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 ## Service Worker
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
-- Current pattern: `ylc-v{number}` (e.g. `ylc-v108`)
-- Current version: `ylc-v108` (bumped in Session 3b)
+- Current pattern: `ylc-v{number}` (e.g. `ylc-v109`)
+- Current version: `ylc-v109` (bumped in Session 3c)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -318,11 +312,11 @@ _tmInFlight                   // boolean — true while mood submission is in-fl
 _selfDeleting                 // boolean — true while this user is deleting
 
 // Local caches
-localNotes, localMilestones, localBucket  // arrays, live-synced from Firebase
+localMilestones, localBucket  // arrays, live-synced from Firebase
 
 // Intervals and listeners
 clockInterval, distanceInterval, countdownInterval, pulseTimeInterval
-unsubNotes, unsubMilestones, unsubBucket, unsubPulse
+unsubMilestones, unsubBucket, unsubPulse
 _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 ```
 
@@ -521,7 +515,6 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 - Pulse sent
 - Memory jar entry written
 - Status updated (only fires if activity or mood actually changed)
-- Note sent (awaits confirmed write before notifying)
 - Milestone added
 - Bucket list item added (awaits confirmed write before notifying)
 - Meetup date set (LDR mode)
@@ -535,7 +528,7 @@ FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account 
 
 **Notification content:** title uses partner's display name dynamically. Body text is trigger-specific.
 
-**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, note → Notes, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Story tab, moodPick/moodMatch → Now tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
+**Deep linking:** tapping a notification opens the relevant section — pulse/status → Now tab, milestone → Milestones, bucket → Bucket list, memoryJar → Memory Jar, meetup/dateNight → Summary tab, moodPick/moodMatch → Now tab. Works both live (postMessage) and cold-start (sessionStorage + URL params).
 
 **Account page:** now has Profile and Notifications sub-tabs using existing page-tabs pattern. Notifications tab shows per-trigger on/off toggles stored at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share a single `tonightsMood` toggle. Toggles disabled until OS permission granted. Defaults: all triggers ON if notificationPrefs node absent.
 
@@ -587,7 +580,39 @@ Daily Together mode ritual. Both partners independently pick one of 9 moods each
 - Firebase rules: `.validate` (not `.write`) enforces own-uid scoping; write-through of unchanged partner entry permitted for transaction pattern
 - dateKey uses device local time — Together mode assumes same-city couple; timezone edge case for LDR couples exploring Together mode is accepted
 
-**3. Session 3c — Contextual Tooltips + Empty State Copy (next)**
+**✅ Session 3c — Cleanup + Summary tab (complete)**
+Feature removals, rename pass, UI polish, and a brand-new Summary tab on Home.
+
+**Removed:**
+- **Notes feature** deleted entirely — `src/js/notes.js`, HTML (page, preview, sub-tab), CSS, Firebase listener, `localNotes`/`unsubNotes` state, the `note` notification trigger, the deep-link route, and the notification pref toggle.
+- **Today's Plan** (`todayPlan` node) removed from Together mode — HTML, bottom sheet, CSS, `loadTodaysPlan`, `_tpUnsub`/`_tpMyCurrentVal` state.
+
+**Renamed:**
+- Home → "Story" sub-tab replaced with "**Summary**". Old panel-moments (link shortcuts to milestones/letters/places/bucket) deleted.
+- Bottom nav "Together" → "**Ours**" (label only — page ID stays `page-together` so existing `showPage('together')` calls still work).
+- "Living together" → "**Together**" in both linking screen and settings (display label only; `coupleType === 'together'` data value unchanged).
+
+**New Summary tab (`src/js/summary.js`):**
+- Week/Month toggle (defaults to week). All reads are one-shot snapshots (`{onlyOnce:true}`) — no persistent listeners.
+- Stat cards: memory jar entries per user, current streak, pulses sent per user, milestones added in range, and (Together mode only) Tonight's Mood match rate.
+- Empty state: "Nothing here yet — your story is just getting started."
+- Grid of `.summary-card` tiles using existing design tokens.
+
+**Other polish:**
+- Tonight's Mood — activity list extended with Gym / Driving / Socialising; mood pills gained calm / lonely / loved / anxious.
+- Status sheet iOS duplicate notification fix — `onMessage` handler no longer creates a secondary system `Notification`; the SW's push is the sole surface.
+- Memory Jar "Earlier" months now collapsed by default — only expand on tap.
+- Home → Us tab: bumped scroll bottom padding to `5rem + safe-area` so the last card clears the fixed bottom-nav.
+- Pulse card: tightened internal layout + min-width:0 on flex children to stop the "last sent" chip clipping.
+- Countdown card: wrapped cd-row + datetime-row in `.cd-align-row` for baseline alignment between timer numbers and the Set date button.
+- Metric chip streak: flame emoji replaced with stroked SVG to match Next Meetup / Milestones icons.
+- Partner-name footer added to Milestones, Places, and Bucket list pages.
+- Account → Profile: name is now a dedicated row with explicit Save button (`saveNameFromInput`) rather than onblur auto-save.
+- Account spacing tightened between section headings (Profile / Security / Your Snug).
+- Expand buttons in Change password / Change email now render full-width.
+- Memories bottom-nav icon swapped to a journal/notebook mark that reads better at 20px.
+
+**Session 4 — Contextual Tooltips + Empty State Copy (next)**
 Small info icon on each feature — tapping shows 2-sentence explanation.
 Empty state copy: meaningful placeholder text when sections have no content.
 First-use walkthrough: one-time guided tour on first login.
