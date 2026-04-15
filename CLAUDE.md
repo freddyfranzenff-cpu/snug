@@ -35,57 +35,39 @@ Long-term vision: grow to 50k+ active couples, position for acquisition by Match
 snug/
   src/
     index.html              ← HTML shell; inline <head> IIFE kept for --app-height
-    styles/
-      main.css              ← All CSS
+    styles/main.css
     js/
-      main.js               ← Thin entry point — imports all modules, bootstraps R.tryInitFirebase()
-      state.js              ← Single mutable `state` object holding all former top-level globals
-      registry.js           ← Mutable `R` namespace — modules attach functions at load, call sites use R.X()
-      firebase-config.js    ← Firebase init, reads from import.meta.env.VITE_*
-      app-height.js         ← --app-height CSS var updater
-      sw-register.js        ← Service worker registration
+      main.js               ← Thin entry — bootstraps R.tryInitFirebase()
+      state.js              ← Mutable `state` object (all former globals)
+      registry.js           ← Mutable `R` namespace for cross-module calls
+      firebase-config.js    ← Reads import.meta.env.VITE_*
+      app-height.js, sw-register.js
       auth.js               ← onAuthStateChanged, login, signup, onboarding
       couple.js             ← couple creation, joining, linking, offboarding
-      ui.js                 ← applyMode, startUI, showPage, switchHomeTab, _pageSubContent
-      milestones.js         ← milestone CRUD, places map, initMap, updateOtherMarker
-      bucket.js             ← bucket list CRUD
-      letters.js            ← letter system, unlock logic
-      memoryjar.js          ← memory jar, streak calculation
-      pulse.js              ← sendPulse, initPulse, updateReceivedBanner
-      status.js             ← status card, status sheet (drag-to-dismiss via shared _initSheetSwipe)
-      weather.js            ← fetchWeather, wIcon, wDesc
-      presence.js           ← GPS, timezone, city detection, _pushPresence
-      countdown.js          ← startCountdown, updateMetricChips
-      settings.js           ← name, email, password, avatar, mode, start date
-      togethermode.js       ← Together mode specific UI and sheets
-      places.js             ← Places map page
-      avatar.js             ← Avatar upload and display
-      notifications.js      ← FCM token registration, notifyPartner(), deep-link routing, notification prefs UI
-      tonightsmood.js       ← Tonight's Mood — pick/waiting/reveal states, bottom sheet, day rollover
-      summary.js            ← Home → Summary tab: week/month stats (memory jar, pulses, milestones, streak, mood match)
-  firebase-messaging-sw.js  ← FCM background message handler (repo root, symlinked into public/)
-  public/
-    icons/                  ← Symlink → ../icons/
-    manifest.json           ← Symlink → ../manifest.json (401 on Vercel — known issue, deferred)
-    sw.js                   ← Symlink → ../sw.js
+      ui.js                 ← applyMode, startUI, showPage, switchHomeTab
+      milestones.js, bucket.js, letters.js, memoryjar.js
+      pulse.js, status.js, weather.js, presence.js, countdown.js
+      settings.js, togethermode.js, places.js, avatar.js
+      notifications.js      ← FCM tokens, notifyPartner(), deep-link, prefs UI
+      tonightsmood.js       ← Tonight's Mood — pick/waiting/reveal, bottom sheet
+      summary.js            ← Snugshot tab: insight + week/month stats
+  firebase-messaging-sw.js  ← FCM background handler (repo root, symlinked into public/)
+  public/                   ← icons/, manifest.json, sw.js all symlinked to repo root
   api/
     weather.js              ← Vercel serverless — proxies wttr.in (ES module default export)
     notify.js               ← Vercel serverless — FCM HTTP v1 push sender, JWT service account auth
-  sw.js                     ← Service worker (repo root)
-  manifest.json             ← PWA manifest (repo root)
-  vite.config.js            ← Vite config (root=src, publicDir=public, outDir=dist)
+  sw.js, manifest.json      ← Repo root (service worker + PWA manifest)
+  vite.config.js            ← root=src, publicDir=public, outDir=dist
   vercel.json               ← framework=vite, outputDirectory=dist
-  eslint.config.js          ← ESLint flat config for vanilla JS
-  package.json              ← Vite + ESLint devDependencies
+  eslint.config.js, package.json
   .env.local                ← Firebase env vars (gitignored — never commit)
   CLAUDE.md                 ← This file
 ```
 
 ### Module architecture
-- `state.js` exports a single mutable `state` object — sidesteps ES module `let`-binding reassignment limits
-- `registry.js` exports a mutable `R` namespace — modules attach functions at load time, cross-module call sites use `R.X()` to avoid circular import evaluation-order problems
-- `window.*` handlers preserved in their original modules — inline `onclick=` attributes in `index.html` keep working unchanged
-- All R.* registrations verified present; all inline onclick handlers audited — all clean
+- `state.js` exports a single mutable `state` object — sidesteps ES module `let`-binding reassignment limits.
+- `registry.js` exports a mutable `R` namespace — modules attach functions at load, cross-module call sites use `R.X()` to avoid circular-import evaluation-order problems.
+- `window.*` handlers preserved in their original modules — inline `onclick=` attributes in `index.html` keep working unchanged.
 
 ---
 
@@ -97,75 +79,55 @@ users/{uid}/
   notificationPrefs/      per-trigger booleans (default: all true if absent)
 
 couples/{coupleId}/
-  owner            UID of creator
-  coupleType       'ldr' | 'together'
-  startDate        'YYYY-MM-DD'
+  owner, coupleType ('ldr'|'together'), startDate ('YYYY-MM-DD')
   meetupDate       'YYYY-MM-DDTHH:MM:00' (time included for Together mode)
   inviteCode       stored here AND on users/{uid}/inviteCode for cleanup
   createdAt
 
-  members/{uid}/
-    name, city, role ('owner'|'joiner')
-
-  presence/{uid}/
-    timezone, city, lat, lng, updatedAt (serverTimestamp)
+  members/{uid}/      name, city, role ('owner'|'joiner')
+  presence/{uid}/     timezone, city, lat, lng, updatedAt (serverTimestamp)
 
   milestones/{pushId}/
     title, date ('YYYY-MM-DD'), endDate, note, tag, emoji
     addedBy (display name), location, locationDisplay, lat, lng
-    photoURL, photoPath (Storage path for deletion), photoPosition
-    createdAt
+    photoURL, photoPath (Storage path for deletion), photoPosition, createdAt
 
   bucket/{pushId}/
-    title, category, addedBy (display name), done, completedAt, time
+    title, category, addedBy, done, completedAt, time
 
   letters/{pushId}/
     unlockDate ('YYYY-MM-DDTHH:MM:00'), createdAt
-    {uid}/
-      content, writtenAt, unlockDate, readAt
+    {uid}/    content, writtenAt, unlockDate, readAt
 
-  memoryJar/{dateKey ('YYYY-MM-DD')}/{uid}/
-    text, createdAt
+  memoryJar/{dateKey ('YYYY-MM-DD')}/{uid}/    text, createdAt
 
-  activeMystery    uid of current mystery planner (set when mystery created, cleared on reveal/cancel/done)
+  activeMystery    uid of current mystery planner (cleared on reveal/cancel/done)
 
   datePlan/{dateKey}/
     mode             'open' | 'mystery'
     plannerId        uid of mystery date creator (write-once)
     where, what, who plan details (open dates, or after mystery reveal)
     revealed         boolean (mystery dates only) — false until planner reveals
-    time             optional HH:MM string — if absent, letters unlock at 00:00 (start of day)
+    time             optional HH:MM — if absent, letters unlock at 00:00
     hints/{pushId}/
       text, authorUid, createdAt, correct (boolean — planner marks guess correct)
-      guess/
-        text, authorUid, createdAt
+      guess/   text, authorUid, createdAt
 
-  pulses/{pushId}/
-    from (uid), to (uid), fromName, time (ms)
+  pulses/{pushId}/    from, to, fromName, time (ms)
 
-  statusHistory/{pushId}/
-    uid       string — author uid
-    activity  string — activity saved (or '')
-    mood      string — mood saved (or '')
-    savedAt   number — ms timestamp
+  statusHistory/{pushId}/    uid, activity, mood, savedAt (ms)
     (append-only log — each status save pushes a new node; never overwritten
      or deleted. Powers real status-update counts on the Snugshot tab.)
 
-  dailyInsight/{dateKey ('YYYY-MM-DD')}/{range ('week'|'month')}/
-    text          string — generated insight body
-    rule          string — which insight rule fired (debug)
-    generatedAt   number — ms timestamp
+  dailyInsight/{dateKey}/{range ('week'|'month')}/    text, rule, generatedAt
     (one entry per local calendar day PER range; first partner to open
-     Snugshot for that range generates and writes it, the second reads
-     what's already there so both partners see the same insight. Week and
-     month cache independently so each carries its own rangeLabel copy.)
+     Snugshot generates+writes, second reads. Week and month cache independently.)
 
-  tonightsMood/{dateKey ('YYYY-MM-DD')}/{uid}/
+  tonightsMood/{dateKey}/{uid}/
     mood        'cosy' | 'romantic' | 'adventurous' | 'netflix' | 'productive' | 'chaotic' | 'talky' | 'celebratory' | 'hungry'
-    chosenAt    number (ms timestamp)
+    chosenAt    number (ms)
 
-invites/{code}/
-  coupleId, createdBy (uid), createdAt, expiresAt (48h), used (bool)
+invites/{code}/    coupleId, createdBy, createdAt, expiresAt (48h), used
 ```
 
 ---
@@ -188,19 +150,9 @@ invites/{code}/
 ## Two Modes
 Snug has two modes toggled per couple. `applyMode(type)` handles all UI switching. Mode is stored as `coupleType` on the couple node and live-synced via `startCoupleTypeListener()`.
 
-**LDR mode** (`coupleType === 'ldr'`):
-- Shows: `ldr-section-wrap` (live clocks, distance km, weather, sleep indicators)
-- Hides: `dn-planner`, `tonights-mood-card`
-- Countdown label: "Next meetup"
-- Letters unlock at midnight on meetup date
+**LDR mode** (`coupleType === 'ldr'`): shows `ldr-section-wrap` (clocks, distance, weather, sleep); hides `dn-planner`, `tonights-mood-card`. Countdown label "Next meetup". Letters unlock at midnight on meetup date.
 
-**Together mode** (`coupleType === 'together'`):
-- Shows: `dn-planner`, `tonights-mood-card`
-- Hides: `ldr-section-wrap`
-- Countdown label: "Next date night"
-- Letters unlock at the date night time (`_dnTimeVal`, default `19:00`)
-- Metric chip: "Date night" instead of "Next meetup"
-- Summary tab shows Tonight's Mood match rate (hidden in LDR)
+**Together mode** (`coupleType === 'together'`): shows `dn-planner`, `tonights-mood-card`; hides `ldr-section-wrap`. Countdown label "Next date night". Letters unlock at `_dnTimeVal` (default `19:00`). Metric chip "Date night". Summary tab shows Tonight's Mood match rate.
 
 **Mode display labels:** "Long distance" and "Together" (display only — `coupleType` data values remain `'ldr'` and `'together'`)
 
@@ -270,16 +222,9 @@ The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it 
 ---
 
 ## Weather API
-- File: `api/weather.js` (ES module, default export — required by Vercel)
-- Proxies wttr.in: `https://wttr.in/{lat},{lng}?format=j1`
-- Returns normalised shape matching open-meteo so app code is unchanged
-- Localhost: app calls open-meteo directly (detected via `location.hostname === 'localhost'`)
-- Production: app calls `/api/weather?lat=&lng=` Vercel serverless proxy
-- Uses native `fetch` + `AbortSignal.timeout(8000)` — no `require('https')`
-- **Do NOT revert to CommonJS `require`/`module.exports`** — Vercel requires ES module default export
+`api/weather.js` (ES module, default export — required by Vercel) proxies wttr.in `https://wttr.in/{lat},{lng}?format=j1` and returns normalised shape matching open-meteo so app code is unchanged. Localhost calls open-meteo directly (hostname check); production uses `/api/weather?lat=&lng=`. Native `fetch` + `AbortSignal.timeout(8000)`. **Do NOT revert to CommonJS** — Vercel requires ES module default export.
 
-### Known issue
-- `manifest.json` returns 401 from service worker fetch — caused by symlink in `public/` not being followed correctly by Vercel. Deferred. No functional impact on the app.
+**Known issue:** `manifest.json` returns 401 from service worker fetch (symlink in `public/` not followed by Vercel). Deferred. No functional impact.
 
 ---
 
@@ -370,29 +315,29 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 
 | Function | What it does |
 |---|---|
-| `tryInitFirebase()` | Dynamic ESM import of Firebase SDK 10.12.0, sets up `fbAuth` wrapper, starts `onAuthStateChanged` |
-| `onAuthStateChanged` callback | Central auth router — shows login/onboarding/linking/app based on user + couple state |
-| `loadCoupleAndStart(cId, myUid, partnerUid, members)` | Sets all global state from members snapshot, calls `detectAndStart()` |
-| `detectAndStart()` | GPS → `tzFromCoords` + `cityFromCoords` → sets myTz/myCity/myCoords → `_pushPresence` → `startUI()` |
-| `startUI()` | Shows main, populates all static UI, starts all real-time listeners and intervals |
-| `startCoupleTypeListener()` | Real-time listener on `couples/{id}/coupleType` — calls `applyMode()` on change |
-| `applyMode(type)` | Switches ALL UI between LDR and Together — visibility, labels, mode pill, settings toggle |
-| `watchForPartner(cId, uid)` | Polls `couples/{id}/members` — redirects to app when partner joins |
-| `showPage(page)` | Navigates to full standalone page (milestones, bucket, places, letter) |
-| `switchHomeTab(tab)` | Switches Now/Us/Summary panels, resets scroll to top. Unknown tab values fall back to 'now' |
-| `updateDistanceAndSleep()` | Haversine distance from coords + sleep status from timezone hour |
-| `updateMetricChips()` | Updates 3 bottom chips: meetup countdown, milestone count, streak |
-| `startCountdown()` | Starts 1s interval for countdown card + metric chip |
-| `initPulse()` | Firebase listener on `pulses` node, renders received banner + history |
-| `sendPulse()` | Rate-limited (60s cooldown) — pushes `{from, to, fromName, time}` to pulses |
-| `initTonightsMood()` | Starts Firebase listener on `tonightsMood/{dateKey}`, manages pick/waiting/reveal states, wires bottom sheet |
-| `teardownTonightsMood()` | Clears mood listener, day-roll interval, and `_tmInFlight` — called on sign-out and LDR mode switch |
-| `renderSummary(range)` | One-shot reads for Snugshot tab stats, insight card + grouped sections, race-guarded via `_requestSeq` |
-| `resetSummary()` | Resets `_currentRange` and `_requestSeq`, flips toggle back to Week — called on all sign-out paths |
-| `renderUsLetterShortcut()` | One-shot read of `letters` node; renders current upcoming letter pair under the countdown on Home → Us. Hides when no valid future meetup date. Race-guarded via module-level `_letterShortcutSeq`. |
-| `resetUsLetterShortcut()` | Bumps `_letterShortcutSeq`, hides `#us-letters-wrap`, clears row DOM. Called from all three sign-out paths in `auth.js` alongside `resetSummary`. |
-| `doDeleteAccount()` | Path 1 deletion — reauthenticates, wipes couple node, deletes auth account |
-| `doLinkingDeleteAccount()` | Path 2 deletion — same steps as Path 1, accessible from linking screen |
+| `tryInitFirebase()` | Dynamic ESM Firebase SDK import, wires `fbAuth`, starts auth listener |
+| `onAuthStateChanged` cb | Central auth router — login/onboarding/linking/app |
+| `loadCoupleAndStart(...)` | Populates state from members, triggers `detectAndStart()` |
+| `detectAndStart()` | GPS → tz/city → `_pushPresence` → `startUI()` |
+| `startUI()` | Populates static UI, starts listeners + intervals |
+| `startCoupleTypeListener()` | Live `coupleType` listener → `applyMode()` |
+| `applyMode(type)` | Switches LDR ↔ Together UI |
+| `watchForPartner(...)` | Polls members, redirects when partner joins |
+| `showPage(page)` | Standalone page navigation |
+| `switchHomeTab(tab)` | Now/Us/Summary switch, resets scroll; unknowns fall back to `'now'` |
+| `updateDistanceAndSleep()` | Haversine + tz-hour sleep status |
+| `updateMetricChips()` | 3 chips at bottom of Now |
+| `startCountdown()` | 1s interval for countdown + chip |
+| `initPulse()` | Pulse listener + banner + history |
+| `sendPulse()` | 60s-cooldown rate-limited push |
+| `initTonightsMood()` | Mood listener, pick/waiting/reveal, sheet wiring |
+| `teardownTonightsMood()` | Clears listener + day-roll + `_tmInFlight` |
+| `renderSummary(range)` | One-shot Snugshot reads, race-guarded |
+| `resetSummary()` | Resets `_currentRange`/`_requestSeq` on sign-out |
+| `renderUsLetterShortcut()` | Renders current upcoming letter pair on Us tab |
+| `resetUsLetterShortcut()` | Bumps seq, hides row, clears DOM on sign-out |
+| `doDeleteAccount()` | Path 1 offboarding |
+| `doLinkingDeleteAccount()` | Path 2 offboarding (from linking screen) |
 
 ---
 
@@ -406,32 +351,20 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 ---
 
 ## Offboarding Flow
-Two paths — both run identical sequence:
-1. Validate input === 'DELETE', reauthenticate
-2. Set `_selfDeleting = true`
-3. Read milestone photo paths + invite code
-4. Delete own avatar from Storage
-5. Delete all milestone photos (parallel)
-6. Delete invite document
-7. **Wipe entire couple node** (sets `couples/{coupleId}` to null)
-8. Clear coupleId + inviteCode on own user record
-9. Delete own RTDB user record
-10. Delete Firebase Auth account
-
-Remaining partner is notified via `_membersUnsub` listener which detects null members or permission denied.
+Two paths — both run the same sequence. Validate input === `'DELETE'`, reauthenticate, set `_selfDeleting=true`. Read milestone photo paths + invite code, delete own avatar + all milestone photos (parallel), delete invite document. Wipe entire couple node (`couples/{coupleId}=null`), clear `coupleId`+`inviteCode` on own user record, delete own RTDB user record, delete Firebase Auth account. Remaining partner is notified via `_membersUnsub` listener (detects null members or permission denied).
 
 ---
 
 ## Known Bugs Fixed — Do Not Revert
-- **Android scroll:** `.main` must have `overflow:hidden`
-- **Android/iOS panel scroll:** panels must be `display:block` not `display:flex`
-- **iOS viewport:** `--app-height` set from `window.innerHeight` in `<head>` IIFE — never use `100vh`
-- **Tap highlight:** `-webkit-tap-highlight-color:transparent` on `*` kills blue flash on Android
-- **Africa bug:** GPS coords `[0,0]` check prevents bad presence push
-- **iOS PWA login:** Complete signup in browser before installing to home screen
-- **AppId:** Old hardcoded appId in index.html was stale — env var version (`db66ccb1ddcc0278d9fb84`) is correct
-- **iOS double notification:** Root cause was legacy `fcmToken` string + `fcmTokens` map both pointing to same device. Fixed server-side in `api/notify.js` — legacy token skipped if its value already exists in the map
-- **Countdown card overlap:** `.home-cd-card` had stale `display:flex;flex-direction:column;justify-content:space-between` causing layout unpredictability on narrow viewports. Removed — card now uses default block layout
+- Android scroll: `.main` must have `overflow:hidden`
+- Android/iOS panel scroll: panels must be `display:block` not `display:flex`
+- iOS viewport: `--app-height` from `window.innerHeight` in `<head>` IIFE — never `100vh`
+- Tap highlight: `-webkit-tap-highlight-color:transparent` on `*` kills Android blue flash
+- Africa bug: GPS `[0,0]` check prevents bad presence push
+- iOS PWA login: complete signup in browser before installing to home screen
+- Stale hardcoded appId in index.html — env var version (`db66ccb1ddcc0278d9fb84`) is correct
+- iOS double notification: `api/notify.js` skips legacy `fcmToken` string if already in `fcmTokens` map
+- Countdown card overlap: removed stale flex from `.home-cd-card`; now default block layout
 
 ---
 
@@ -446,84 +379,7 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
 
 ### RTDB Rules (current published version)
 ```json
-{
-  "rules": {
-    "users": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
-        "avatarUrl": { ".read": "auth != null" }
-      }
-    },
-    "invites": {
-      "$code": {
-        ".read": "auth != null",
-        ".write": "auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid || (!newData.exists() && data.child('coupleId').val() != null && root.child('couples').child(data.child('coupleId').val()).child('members').child(auth.uid).exists()))",
-        "used": { ".write": "auth != null && newData.isBoolean() && newData.val() === true" }
-      }
-    },
-    "couples": {
-      "$coupleId": {
-        ".read": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()",
-        ".write": "auth != null && (!data.exists() || root.child('couples').child($coupleId).child('members').child(auth.uid).exists())",
-        "members": { "$memberUid": { ".write": "auth != null && auth.uid === $memberUid" } },
-        "presence": { "$memberUid": { ".write": "auth != null && auth.uid === $memberUid" } },
-        "activeMystery": {
-          ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && ((newData.exists() && newData.val() === auth.uid) || (!newData.exists() && (!data.exists() || data.val() === auth.uid)))",
-          ".validate": "newData.isString() && root.child('couples').child($coupleId).child('members').child(newData.val()).exists()"
-        },
-        "meetupDate": {
-          ".validate": "!root.child('couples').child($coupleId).child('activeMystery').exists() || root.child('couples').child($coupleId).child('activeMystery').val() === auth.uid"
-        },
-        "datePlan": {
-          "$dateKey": {
-            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.child('mode').exists() || data.child('mode').val() !== 'mystery' || data.child('revealed').val() === true || auth.uid === data.child('plannerId').val())",
-            "plannerId": { ".validate": "!data.exists() || data.val() === newData.val()" },
-            "hints": {
-              ".validate": "newData.hasChildren() || !newData.exists()",
-              "$pushId": {
-                ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').exists() || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').val() !== 'mystery' || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('revealed').val() === true || auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val())",
-                ".validate": "data.exists() || (newData.child('authorUid').val() === auth.uid && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().parent().child('plannerId').val()))",
-                "text": { ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()" },
-                "guess": {
-                  ".write": "auth != null && !data.exists() && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
-                  ".validate": "!data.exists() && newData.child('authorUid').val() === auth.uid && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
-                  "text": { ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()" }
-                },
-                "correct": { ".write": "auth != null && auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()" }
-              }
-            },
-            "revealed": { ".validate": "newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())" }
-          }
-        },
-        "statusHistory": {
-          "$pushId": {
-            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.exists() || data.child('uid').val() === auth.uid)",
-            ".validate": "newData.hasChildren(['uid','activity','mood','savedAt']) && newData.child('uid').val() === auth.uid && newData.child('savedAt').isNumber()"
-          }
-        },
-        "dailyInsight": {
-          "$dateKey": {
-            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()"
-          }
-        },
-        "tonightsMood": {
-          "$dateKey": {
-            "$uid": {
-              ".validate": "(auth.uid === $uid && newData.hasChildren(['mood','chosenAt'])) || (data.exists() && newData.child('mood').val() === data.child('mood').val() && newData.child('chosenAt').val() === data.child('chosenAt').val())",
-              "mood": {
-                ".validate": "newData.isString() && (newData.val() === 'cosy' || newData.val() === 'romantic' || newData.val() === 'adventurous' || newData.val() === 'netflix' || newData.val() === 'productive' || newData.val() === 'chaotic' || newData.val() === 'talky' || newData.val() === 'celebratory' || newData.val() === 'hungry')"
-              },
-              "chosenAt": { ".validate": "newData.isNumber()" },
-              "$other": { ".validate": false }
-            }
-          }
-        }
-      }
-    },
-    "$other": { ".read": false, ".write": false }
-  }
-}
+{"rules":{"users":{"$uid":{".read":"auth != null && auth.uid === $uid",".write":"auth != null && auth.uid === $uid","avatarUrl":{".read":"auth != null"}}},"invites":{"$code":{".read":"auth != null",".write":"auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid || (!newData.exists() && data.child('coupleId').val() != null && root.child('couples').child(data.child('coupleId').val()).child('members').child(auth.uid).exists()))","used":{".write":"auth != null && newData.isBoolean() && newData.val() === true"}}},"couples":{"$coupleId":{".read":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()",".write":"auth != null && (!data.exists() || root.child('couples').child($coupleId).child('members').child(auth.uid).exists())","members":{"$memberUid":{".write":"auth != null && auth.uid === $memberUid"}},"presence":{"$memberUid":{".write":"auth != null && auth.uid === $memberUid"}},"activeMystery":{".write":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && ((newData.exists() && newData.val() === auth.uid) || (!newData.exists() && (!data.exists() || data.val() === auth.uid)))",".validate":"newData.isString() && root.child('couples').child($coupleId).child('members').child(newData.val()).exists()"},"meetupDate":{".validate":"!root.child('couples').child($coupleId).child('activeMystery').exists() || root.child('couples').child($coupleId).child('activeMystery').val() === auth.uid"},"datePlan":{"$dateKey":{".write":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.child('mode').exists() || data.child('mode').val() !== 'mystery' || data.child('revealed').val() === true || auth.uid === data.child('plannerId').val())","plannerId":{".validate":"!data.exists() || data.val() === newData.val()"},"hints":{".validate":"newData.hasChildren() || !newData.exists()","$pushId":{".write":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').exists() || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').val() !== 'mystery' || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('revealed').val() === true || auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val())",".validate":"data.exists() || (newData.child('authorUid').val() === auth.uid && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().parent().child('plannerId').val()))","text":{".validate":"newData.isString() && newData.val().length < 500 && !data.exists()"},"guess":{".write":"auth != null && !data.exists() && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",".validate":"!data.exists() && newData.child('authorUid').val() === auth.uid && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()","text":{".validate":"newData.isString() && newData.val().length < 500 && !data.exists()"}},"correct":{".write":"auth != null && auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()"}}},"revealed":{".validate":"newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())"}}},"statusHistory":{"$pushId":{".write":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.exists() || data.child('uid').val() === auth.uid)",".validate":"newData.hasChildren(['uid','activity','mood','savedAt']) && newData.child('uid').val() === auth.uid && newData.child('savedAt').isNumber()"}},"dailyInsight":{"$dateKey":{".write":"auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()"}},"tonightsMood":{"$dateKey":{"$uid":{".validate":"(auth.uid === $uid && newData.hasChildren(['mood','chosenAt'])) || (data.exists() && newData.child('mood').val() === data.child('mood').val() && newData.child('chosenAt').val() === data.child('chosenAt').val())","mood":{".validate":"newData.isString() && (newData.val() === 'cosy' || newData.val() === 'romantic' || newData.val() === 'adventurous' || newData.val() === 'netflix' || newData.val() === 'productive' || newData.val() === 'chaotic' || newData.val() === 'talky' || newData.val() === 'celebratory' || newData.val() === 'hungry')"},"chosenAt":{".validate":"newData.isNumber()"},"$other":{".validate":false}}}}}},"$other":{".read":false,".write":false}}}
 ```
 
 ### Storage Rules (current published version)
@@ -554,9 +410,9 @@ service firebase.storage {
 - `activeMystery`: only settable to own uid, only clearable by current lock holder. Blocks non-planner meetupDate changes.
 - `datePlan/$dateKey`: non-planner blocked from writing when mystery is active and unrevealed.
 - `hints/$pushId`: planner-only write on creation. Guess: non-planner only, immutable. Correct: planner only.
-- `statusHistory/$pushId`: append-only log. Any couple member can write a new entry; existing entries are immutable (write guard blocks rewrites unless same `uid`). Validate enforces required shape + own-uid authorship + numeric `savedAt`.
-- `dailyInsight/$dateKey`: any couple member can write today's insight. Rules cascade to the `week`/`month` sub-range buckets, so no rule change is needed for per-range caching. No field validation — first writer per range wins by convention (app checks for an existing entry before writing), but rules don't enforce it because we want the harmless race-tie behavior where both partners see the same cached text on the next read.
-- `tonightsMood/$dateKey/$uid`: validated shape — `mood` must be one of the 9 valid mood keys, `chosenAt` must be a number, no extra children permitted. `.validate` enforces own-uid on creation/change; unchanged write-through of partner's existing entry is permitted so parent-node `runTransaction` (used for race-free pick) can rewrite the dateKey bucket without the partner's entry failing validation.
+- `statusHistory/$pushId`: append-only log. Any couple member can write a new entry; existing entries are immutable. Validate enforces shape + own-uid + numeric `savedAt`.
+- `dailyInsight/$dateKey`: any couple member can write today's insight. Rules cascade to `week`/`month` sub-range buckets. No field validation — first writer per range wins by convention.
+- `tonightsMood/$dateKey/$uid`: validated shape — `mood` must be one of the 9 valid keys, `chosenAt` numeric, no extras. Unchanged write-through of partner's existing entry permitted so `runTransaction` works.
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
 - Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
@@ -566,107 +422,63 @@ service firebase.storage {
 ## Push Notifications
 
 ### Triggers (all implemented)
-- Pulse sent
-- Memory jar entry written
-- Status updated (only fires if activity or mood actually changed)
-- Milestone added
-- Bucket list item added (awaits confirmed write before notifying)
-- Meetup date set (LDR mode)
-- Date night date set (Together mode)
-- Mystery date hint dropped (dnHint)
-- Mystery date guess submitted (dnGuess)
-- Mystery date revealed (dnReveal)
-- Mystery date guess marked correct (dnCorrect)
-- Tonight's Mood — partner picked, your turn (moodPick)
-- Tonight's Mood — both picked, see the reveal (moodMatch)
+Pulse sent · memory jar entry · status updated (only if changed) · milestone added · bucket item added (awaits confirmed write) · meetup date set (LDR) · date night set (Together) · dnHint · dnGuess · dnReveal · dnCorrect · moodPick · moodMatch.
 
-### Notification content
-Title uses partner's display name dynamically. Body text is trigger-specific.
+Title = partner's display name. Body is trigger-specific.
 
 ### Deep linking
-Tapping a notification opens the relevant section:
 - pulse/status → Now tab
 - milestone → Milestones page
 - bucket → Bucket list page
 - memoryJar → Memory Jar page
-- meetup/dateNight → Us tab (countdown + date picker live here)
+- meetup/dateNight → Us tab
 - moodPick/moodMatch → Now tab
 
-Works both live (postMessage) and cold-start (sessionStorage + URL params). Unknown `?tab=` values fall back to `'now'`.
+Works live (postMessage) and cold-start (sessionStorage + URL params). Unknown `?tab=` falls back to `'now'`.
 
 ### Token management
-Tokens stored as map at `users/{uid}/fcmTokens/{tokenHash}` — supports multiple devices. Legacy single `fcmToken` string read for backwards compatibility. **Server-side de-dupe:** `api/notify.js` skips the legacy token if its value already exists in the `fcmTokens` map — prevents iOS double notifications for users who haven't re-registered since the map migration.
+Map at `users/{uid}/fcmTokens/{tokenHash}` — multiple devices. Legacy single `fcmToken` string still read for back-compat. `api/notify.js` skips the legacy token if its value already exists in the map (iOS double-notification fix).
 
 ### Notification preferences
-Per-trigger toggles at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share a single `tonightsMood` toggle via `PREF_ALIAS` map. Defaults: all triggers ON if node absent.
+Per-trigger toggles at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share one `tonightsMood` toggle via `PREF_ALIAS`. Defaults: all ON if node absent.
 
-### iOS
-Web Push only works on iOS 16.4+ with PWA installed to home screen. `pushSupported()` bails unless running in standalone mode.
-
-### Known limitation
-Notification icon shows as white square on Android status bar — needs proper monochrome icon asset. Deferred to domain/branding session.
+### iOS / Known limits
+- Web Push iOS 16.4+, PWA installed only. `pushSupported()` bails unless standalone mode.
+- Android status-bar notification icon renders as white square — needs monochrome asset. Deferred.
 
 ---
 
 ## Session Roadmap
 
-### ✅ Session 1 — Infrastructure (complete)
-Split `index.html` into Vite project structure. CSS → `src/styles/`. JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed and verified on staging + main.
+### ✅ Session 1 — Infrastructure
+Split `index.html` into Vite project. CSS → `src/styles/`, JS → `src/js/`. Firebase config → env vars. ESLint added. Deployed on staging + main.
 
-### ✅ Session 1b — JS Module Split (complete)
-Split `src/js/main.js` (4522 lines) into feature modules. Created `state.js` for shared globals and `registry.js` for the R namespace. All R.* registrations verified present; all inline onclick handlers audited clean.
+### ✅ Session 1b — JS Module Split
+Split `main.js` (4522 lines) into feature modules. Created `state.js` (shared globals) and `registry.js` (R namespace). All R.* and inline onclick handlers audited clean.
 
-### ✅ Session 2 — Push Notifications (complete)
-FCM HTTP v1 via Vercel serverless (`api/notify.js`). JWT-signed service account auth. Full trigger set implemented. Deep linking for all triggers. Per-trigger notification prefs UI on Account page.
+### ✅ Session 2 — Push Notifications
+FCM HTTP v1 via Vercel serverless (`api/notify.js`), JWT service account auth. Full trigger set, deep linking, per-trigger prefs UI.
 
-### ✅ Session 3a — Mystery Date Picker (complete)
-Enhancement to date night planner. Open vs Mystery mode. Hint system (max 3, one active at a time). Reveal flow. Date Done → milestone conversion. activeMystery lock on couple node. LDR meetup picker modernised. Global pronoun rule (always partner name, never they/their/them).
+### ✅ Session 3a — Mystery Date Picker
+Enhancement to date night planner: Open vs Mystery mode, hint system (max 3, one active), reveal flow, Date Done → milestone conversion, `activeMystery` lock. LDR meetup picker modernised. Global pronoun rule: always partner name, never they/their/them.
 
-### ✅ Session 3b — Tonight's Mood (complete)
-Daily Together mode ritual. 9 moods, bottom sheet picker, pick/waiting/reveal states. Match messages + 36-combo mismatch matrix. `runTransaction` for race-free simultaneous picks. Day rollover via 60s interval. Full teardown on sign-out and mode switch. Firebase `.validate` rules enforce mood shape and own-uid scoping.
+### ✅ Session 3b — Tonight's Mood
+Daily Together ritual. 9 moods, bottom sheet, pick/waiting/reveal states. Match messages + 36-combo mismatch matrix. `runTransaction` for race-free picks. Day rollover via 60s interval. Full teardown on sign-out and mode switch. `.validate` rules enforce shape and own-uid scoping.
 
-### ✅ Session 3c — Cleanup, Polish + Summary Tab (complete)
-**Removed:** Notes feature entirely. Today's Plan (Together mode).
+### ✅ Session 3c — Cleanup, Polish + Summary Tab
+Removed Notes and Today's Plan. Renamed Story→Summary, "Together" nav→"Ours", "Living together"→"Together" (labels only). New `summary.js` with week/month toggle, one-shot reads, race guard via `_requestSeq`. Fixes: iOS double notification, countdown overlap, MJ collapse w/ persisted state, pulse clipping, greeting rebuild, status sheet additions, partner name footers.
 
-**Renamed:** Story sub-tab → Summary. Bottom nav "Together" → "Ours" (page ID `page-together` unchanged). "Living together" → "Together" (display label only, `coupleType` data value unchanged).
+### ✅ Session 3d — Snugshot redesign + Us-tab letter shortcut
+Renamed Summary→Snugshot (display only). Coral-gradient insight card + grouped sections (Memory jar, Streak full-width 🔥, Pulses, Status updates, Tonight's mood Together-only). Milestones card removed. `renderUsLetterShortcut` shows one letter pair for current upcoming meetup under countdown (Written/Not written + Unlocked/Unlocks in Xd). Status sheet: Music→TV/Netflix, Sports→Sleeping, Resting→Chilling, calm→relaxed (legacy keys kept in `ACTIVITY_EMOJI`). Account polish: `settings-name-pill`, `settings-btn-subtle`. Memories nav icon → polaroid.
 
-**New Summary tab (`src/js/summary.js`):** Week/Month toggle. One-shot Firebase reads (no persistent listeners). Stat cards: memory jar entries per user, current streak (live, not range-filtered), pulses sent per user, milestones added in range, Tonight's Mood match rate (Together mode only). Race guard via `_requestSeq`. Module-level state reset on all sign-out paths.
-
-**Bug fixes shipped:** iOS double notification (server-side token de-dupe). Countdown card overlap (removed stale flex layout from `.home-cd-card`). Memory Jar Earlier months collapsed by default, expanded state persists in `_mjExpandedMonths` Set across tab visits. Pulse card clipping fixed. Account name save rebuilds greeting correctly. Status sheet +3 activities (Gym/Driving/Socialising) +4 moods (calm/lonely/loved/anxious). Partner name footers on Milestones, Places, Bucket List. Account spacing and button layout tightened. Memories bottom nav icon updated to notebook style.
-
-### ✅ Session 3d — Snugshot redesign + Us-tab letter shortcut (complete)
-**Renamed:** Summary → Snugshot (display label only — panel ID `panel-summary`, `switchHomeTab('summary')`, and `state._mjStreakCount`-style internals unchanged).
-
-**Snugshot redesign (`src/js/summary.js` + `.snugshot-*` CSS):** Coral-gradient insight card at top generates one warm observation from the current range (broken streak, strong streak, pulse imbalance, mood match extremes, memory-jar imbalance, or a warm/quiet baseline). Grouped sections with uppercase labels: Memory jar · Streak (full-width with 🔥, longest run + current) · Pulses sent · Status updates · Tonight's mood (Together only, gradient progress bar). Milestones card removed. Two-column cards use coral dot for me / pink dot for partner. One-shot reads; race-guarded via `_requestSeq`.
-
-**Us-tab letter shortcut (`renderUsLetterShortcut` in `letters.js`):** One letter pair (me → partner, partner → me) for the current upcoming meetup only, under the countdown. Badges: Written / Not written (mine), Unlocked / Unlocks in Xd (partner). Hidden entirely when no valid future meetup exists. Refreshed on meetup-date listener fire and Us-tab switch. Previous letters remain exclusively in Ours → Letters.
-
-**Status sheet:** "Music" → "TV / Netflix" 📺, "Sports" → "Sleeping" 😴, "Resting" → "Chilling" 🛋️. Feeling "calm" → "relaxed". Legacy activity keys kept in `ACTIVITY_EMOJI` so any stale saved status still renders a sensible icon.
-
-**Account polish:** Profile name Save button → small subtle `settings-name-pill` "Update" matching the read-only / GPS-only badge style. Security confirm buttons ("Change password", "Change email") → subtle `.settings-btn-subtle` pill in coral wash, with tightened row spacing so the gap to the last input matches the overall Account rhythm.
-
-**Bottom nav:** Memories icon swapped from notebook to a polaroid-style framed photo (rect + mountain path + sun circle).
-
-### ✅ Session 3e — Snugshot review fixes + real status counts + daily insight cache (complete)
-**Status history log (new):** `saveStatus` in `status.js` now fires a parallel `dbPush` to `couples/$/statusHistory/{pushId}` alongside the primary `presence/$uid/status` `dbSet`. Each save is its own append-only node — never overwritten, never deleted. Log shape: `{uid, activity, mood, savedAt}`. Fire-and-forget: the push is not awaited, so it never delays the primary save. RTDB rules enforce same-uid authorship on create, immutability thereafter, and validated shape.
-
-**Snugshot status count from real data:** `_countStatusUpdates` in `summary.js` now reads `statusHistory` (one-shot), filters by uid + savedAt within the selected range, and returns true counts instead of the old 0-or-1 proxy. Card label formats as "1 update" (singular) or "N updates" (plural).
-
-**Insight ladder copy + rangeLabel:** All insight rule strings use a dynamic `rangeLabel` (`'this week'` / `'this month'`). Insight sub-line set dynamically as `Based on your activity ${rangeLabel}.`. Insight label (`This week's insight` / `This month's insight`) resynced inside `renderSummary` on every call, not only when the toggle is clicked. Copy tweaks: rule 5 "most of the writing in the memory jar", rule 7 "a memory moment". Grammar guard `_subjectVerb(name, 'has been')` → "You have been …" / "Freddy has been …" so the default `ME = 'You'` fallback never produces "You has been".
-
-**Two new insight rules:** Rule 5a (status imbalance, ≥3 gap) — *"{more} has been more active with status updates {rangeLabel}. {less}, even a quick one counts."* Rule 5b (both active status, each ≥3) — *"You're both keeping each other in the loop — that quiet awareness adds up."* Inserted between memory-jar imbalance and the warm baseline.
-
-**Daily insight cache:** `couples/$/dailyInsight/{YYYY-MM-DD}/{text,rule,generatedAt}`. On every Snugshot render, `renderSummary` reads `dailyInsight/${todayKey}` as part of the parallel fetch. If an entry exists → use its text directly. If not → generate via the rule ladder and fire-and-forget `dbSet` to the dateKey. Both partners see the same insight regardless of who opens first; convention-based single-write, no transaction because a racy tie writes identical text. Sub-line and label still reflect `_currentRange` dynamically.
-
-**Letter shortcut hardening:** Module-level `_letterShortcutSeq` bumped by every `renderUsLetterShortcut` call AND by `resetUsLetterShortcut`. In-flight `onlyOnce` reads check their captured seq on resolve and bail on mismatch — prevents stale paints on account switch. `resetUsLetterShortcut` registered as `R.resetUsLetterShortcut` and called from all three sign-out paths in `auth.js` alongside `resetSummary`. Sub-line copy fixed: me row says "Delivers {date} · Written/Not written", partner row says "Unlocks {date} · Unlocks in Xd / Unlocked". Countdown math now uses `Math.floor` matching `renderRoundCountdown` in `letters.js`. Unused `matchKey` removed.
-
-**Streak card:** Value shows `0d` instead of `—` when longest and current are both zero — consistent with the `Current: 0d` sub-line for brand-new couples.
+### ✅ Session 3e — Review fixes + real status counts + daily insight cache
+`saveStatus` fires parallel `dbPush` to `statusHistory/{pushId}`, append-only, rules enforce same-uid + immutability. `_countStatusUpdates` reads `statusHistory` one-shot for real counts. Insight ladder uses dynamic `rangeLabel`; grammar guard `_subjectVerb` avoids "You has been". New rules 5a (status imbalance) and 5b (both active). Daily insight cache at `dailyInsight/{dateKey}/{week|month}` — first partner generates + writes, second reads. Letter shortcut hardened via `_letterShortcutSeq` and `R.resetUsLetterShortcut` called on all sign-out paths. Countdown uses `Math.floor`. Streak card shows `0d` not `—`.
 
 ### Phase 2 — Test Rollout (next)
-Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Tooltips) are complete. Mix of LDR and Together couples. Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion rate, mystery date creation rate.
+Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Tooltips). Mix of LDR and Together. Watch: 7-day retention, MJ streak, notification open rate by trigger, Tonight's Mood completion, mystery date creation.
 
-### Session 4 — Contextual Tooltips + Empty State Copy (next)
-Small info icon on each feature — tapping shows 2-sentence explanation. Empty state copy: meaningful placeholder text when sections have no content. First-use walkthrough: one-time guided tour on first login. Applies to both LDR and Together mode.
+### Session 4 — Contextual Tooltips + Empty State Copy
+Info icon on each feature → 2-sentence tap explanation. Meaningful empty-state copy. One-time guided first-use walkthrough. Both modes.
 
-### Session 5 — Domain + Branding (after Phase 2)
-Register domain (snug.app / getsnug.app / joinsnug.com). Connect to Vercel. Update manifest.json, meta tags, invite link generation, Firebase authorised domains. Fix notification icon white square on Android (monochrome asset needed).
+### Session 5 — Domain + Branding
+Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.
