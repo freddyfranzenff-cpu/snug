@@ -109,10 +109,18 @@ function updateMetricChips(){
   const meetupVal   = document.getElementById('metric-meetup-val');
   if(meetupLabel) meetupLabel.textContent = state.coupleType==='together' ? 'Date night' : 'Next meetup';
   if(meetupVal){
-    if(state.meetupDate && state.meetupDate > new Date()){
-      const diff = state.meetupDate - new Date();
-      const days = Math.floor(diff / 86400000);
-      meetupVal.textContent = days === 0 ? 'Tomorrow' : `${days}d`;
+    // Date-portion comparison: when the meetup day matches today, show
+    // "Today" regardless of the time component (e.g. 00:00 already past).
+    if(state.meetupDate){
+      const m = state.meetupDate;
+      const now = new Date();
+      const mMid = new Date(m.getFullYear(), m.getMonth(), m.getDate());
+      const tMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dayDiff = Math.round((mMid - tMid) / 86400000);
+      if(dayDiff === 0)       meetupVal.textContent = 'Today';
+      else if(dayDiff === 1)  meetupVal.textContent = 'Tomorrow';
+      else if(dayDiff > 1)    meetupVal.textContent = `${dayDiff}d`;
+      else                    meetupVal.textContent = '—';
     } else {
       meetupVal.textContent = '—';
     }

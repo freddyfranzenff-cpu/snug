@@ -357,9 +357,10 @@ async function loadCoupleAndStart(cId, myUidVal, partnerUidVal, members){
         const stored = d.meetupDate;
         state.meetupDate = new Date(stored);
         // Restore _dnTimeVal from stored meetup string (Together mode reads this).
-        if(stored.includes('T') && !stored.endsWith('T00:00:00')){
-          const timePart = stored.split('T')[1]?.substring(0,5)||'19:00';
-          state._dnTimeVal = timePart;
+        // T00:00:00 is the "no time set" sentinel → empty _dnTimeVal.
+        if(stored.includes('T')){
+          const timePart = stored.split('T')[1]?.substring(0,5) || '';
+          state._dnTimeVal = (timePart === '00:00') ? '' : timePart;
         }
       }
       state.coupleType = d?.coupleType||'ldr';
@@ -456,6 +457,7 @@ async function tryInitFirebase(){
         if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
         if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
         if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+        if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
         if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
         state._tmInFlight=false;
         state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
@@ -527,6 +529,7 @@ async function tryInitFirebase(){
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
             if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+            if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
             if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
@@ -597,6 +600,7 @@ async function tryInitFirebase(){
             if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
             if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
             if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+            if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
             if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
             if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
             if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}

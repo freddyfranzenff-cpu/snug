@@ -374,7 +374,7 @@ function _syncDnPickerBtn(){
   if(state.meetupDate && state.meetupDate > new Date()){
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const d = state.meetupDate;
-    const timePart = (!isLDR && state._dnTimeVal && state._dnTimeVal !== '23:59') ? ` · ${state._dnTimeVal}` : '';
+    const timePart = (!isLDR && state._dnTimeVal) ? ` · ${state._dnTimeVal}` : '';
     btn.textContent = `${d.getDate()} ${months[d.getMonth()]}${timePart}`;
   } else {
     btn.textContent = isLDR ? 'Set meetup date' : 'Set date night';
@@ -411,8 +411,8 @@ window.openDnPickerSheet = function(){
     }
   }
   if(timeInput){
-    // Show the stored time only if it was actually set (not the 23:59 fallback)
-    timeInput.value = (!isLDR && state._dnTimeVal && state._dnTimeVal !== '23:59') ? state._dnTimeVal : '';
+    // Show the stored time only if it was actually set (empty string = no time)
+    timeInput.value = (!isLDR && state._dnTimeVal) ? state._dnTimeVal : '';
   }
   // Existing mode for this date (Together only)
   if(!isLDR){
@@ -470,9 +470,9 @@ window.saveDnPickerSheet = async function(){
     if(inp){ inp.style.borderColor = '#e8622a'; setTimeout(()=>inp.style.borderColor='',2000); }
     return;
   }
-  // C3: compare against the effective datetime including chosen time.
-  // If no time is picked, compare against end of day (23:59).
-  const compareTime = timeVal || '23:59';
+  // No-time picks default to start-of-day (00:00). Min date is tomorrow, so
+  // even with 00:00 the effective datetime is always in the future.
+  const compareTime = timeVal || '00:00';
   const effectiveDateTime = new Date(`${dateVal}T${compareTime}:00`);
   if(effectiveDateTime <= new Date()){
     const inp = document.getElementById('dn-picker-date');
@@ -481,7 +481,7 @@ window.saveDnPickerSheet = async function(){
   }
 
   const mode = isLDR ? 'open' : _dnPickerSelectedMode;
-  const effectiveTime = timeVal || (isLDR ? '00:00' : '23:59');
+  const effectiveTime = timeVal || '00:00';
 
   // Capture old dateKey for cleanup if it changes (H1).
   const oldDateKey = state.meetupDate
@@ -519,7 +519,8 @@ window.saveDnPickerSheet = async function(){
     if(!ok) return;
   }
 
-  state._dnTimeVal = effectiveTime;
+  // Empty string = no time set; '00:00' round-trips from storage the same way.
+  state._dnTimeVal = (!isLDR && timeVal) ? timeVal : '';
   state.meetupDate = new Date(`${dateVal}T${effectiveTime}:00`);
 
   if(state.db && state.dbSet && state.coupleId){

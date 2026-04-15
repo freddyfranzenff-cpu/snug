@@ -347,6 +347,100 @@ function _stopLetterCountdown(){
   if(state._letterCountdownInterval){ clearInterval(state._letterCountdownInterval); state._letterCountdownInterval=null; }
 }
 
+// Home → Us tab: one-letter shortcut for the current upcoming meetup only.
+// Previous letters live exclusively on the Ours → Letters page.
+// Module-level seq lets resetUsLetterShortcut invalidate any in-flight read so
+// a stale onlyOnce result from a previous user can't paint into a new user's DOM.
+let _letterShortcutSeq = 0;
+
+function renderUsLetterShortcut(){
+  const wrap = document.getElementById('us-letters-wrap');
+  const rowsEl = document.getElementById('us-letter-rows');
+  if(!wrap || !rowsEl) return;
+
+  // Hide unless a valid upcoming meetup exists
+  if(!state.meetupDate || state.meetupDate <= new Date()){
+    wrap.style.display = 'none';
+    rowsEl.innerHTML = '';
+    return;
+  }
+  if(!state.db || !state.fbOnValue){
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const mySeq = ++_letterShortcutSeq;
+
+  state.fbOnValue(state.dbRef(state.db, `couples/${state.coupleId}/letters`), snap => {
+    // Bail if another render (or a sign-out reset) has superseded us.
+    if(mySeq !== _letterShortcutSeq) return;
+    const data = snap.val() || {};
+    const unlockDateStr = R._localDateStr(state.meetupDate);
+    let match = null;
+    for(const v of Object.values(data)){
+      if(v && v.unlockDate && v.unlockDate.startsWith(unlockDateStr)){
+        match = v; break;
+      }
+    }
+
+    const myLetter = match ? (match[state.myUid] || null) : null;
+    const otherLetter = match ? (match[state.partnerUid] || null) : null;
+    const unlocked = match && R.isUnlocked(match.unlockDate);
+
+    const fmtDate = state.meetupDate.toLocaleDateString('en-GB', {day:'numeric', month:'long'});
+    // Share letters.js countdown math: floor-based diff matches renderRoundCountdown.
+    const diffMs = (match ? new Date(match.unlockDate) : state.meetupDate) - Date.now();
+    const daysLeft = Math.max(0, Math.floor(diffMs / 86400000));
+
+    const otherEsc = R._esc(state.OTHER || 'Partner');
+    const writtenPill = myLetter && myLetter.content
+      ? '<span class="us-letter-pill us-letter-pill-written">Written</span>'
+      : '<span class="us-letter-pill us-letter-pill-muted">Not written</span>';
+    const partnerPill = unlocked && otherLetter && otherLetter.content
+      ? '<span class="us-letter-pill us-letter-pill-written">Unlocked</span>'
+      : (daysLeft === 0
+          ? '<span class="us-letter-pill us-letter-pill-muted">Unlocks today</span>'
+          : `<span class="us-letter-pill us-letter-pill-muted">Unlocks in ${daysLeft}d</span>`);
+
+    const partnerDim = unlocked && otherLetter && otherLetter.content ? '' : ' us-letter-row-dim';
+    const dateEsc = R._esc(fmtDate);
+
+    rowsEl.innerHTML = `
+      <div class="us-letter-row" onclick="showPage('letter')">
+        <div class="us-letter-icon">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6l6 4 6-4"/></svg>
+        </div>
+        <div class="us-letter-body">
+          <div class="us-letter-title">Letter to ${otherEsc}</div>
+          <div class="us-letter-sub">Delivers ${dateEsc} · ${writtenPill}</div>
+        </div>
+        <span class="us-letter-chev">›</span>
+      </div>
+      <div class="us-letter-row${partnerDim}" onclick="showPage('letter')">
+        <div class="us-letter-icon">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6l6 4 6-4"/></svg>
+        </div>
+        <div class="us-letter-body">
+          <div class="us-letter-title">Letter from ${otherEsc}</div>
+          <div class="us-letter-sub">Unlocks ${dateEsc} · ${partnerPill}</div>
+        </div>
+        <span class="us-letter-chev">›</span>
+      </div>
+    `;
+    wrap.style.display = 'block';
+  }, { onlyOnce: true });
+}
+
+function resetUsLetterShortcut(){
+  // Invalidate any in-flight read so a late-resolving onlyOnce from the
+  // previous user can't paint stale rows into the next user's DOM.
+  _letterShortcutSeq++;
+  const wrap = document.getElementById('us-letters-wrap');
+  const rowsEl = document.getElementById('us-letter-rows');
+  if(wrap) wrap.style.display = 'none';
+  if(rowsEl) rowsEl.innerHTML = '';
+}
+
 
 // ── Register for cross-module access ─────────────────────
 R.isUnlocked = isUnlocked;
@@ -356,3 +450,5 @@ R.renderRoundCountdown = renderRoundCountdown;
 R.renderCurrentRound = renderCurrentRound;
 R._startLetterCountdown = _startLetterCountdown;
 R._stopLetterCountdown = _stopLetterCountdown;
+R.renderUsLetterShortcut = renderUsLetterShortcut;
+R.resetUsLetterShortcut = resetUsLetterShortcut;

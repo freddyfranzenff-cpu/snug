@@ -19,6 +19,9 @@ window.switchHomeTab = function(tab){
   if(tab==='summary' && R.renderSummary){
     R.renderSummary();
   }
+  if(tab==='us' && R.renderUsLetterShortcut){
+    R.renderUsLetterShortcut();
+  }
   // Re-invalidate map size when Now tab shown — Leaflet needs visible container
   if(tab==='now' && state.mapInstance){
     setTimeout(()=>{ try{ state.mapInstance.invalidateSize(); }catch(e){} }, 50);
@@ -54,10 +57,12 @@ function fmtStatusTime(ts){
 }
 
 const ACTIVITY_EMOJI = {
-  'Working':'💼','Reading':'📖','Music':'🎵','Eating':'🍽️',
-  'Gaming':'🎮','Sports':'⚽','Resting':'😴','Traveling':'✈️','Cooking':'🍳',
+  'Working':'💼','Reading':'📖','TV / Netflix':'📺','Eating':'🍽️',
+  'Gaming':'🎮','Sleeping':'😴','Chilling':'🛋️','Traveling':'✈️','Cooking':'🍳',
   'Outside':'☀️','Shopping':'🛍️','Studying':'📚',
-  'Gym':'🏋️','Driving':'🚗','Socialising':'🥂'
+  'Gym':'🏋️','Driving':'🚗','Socialising':'🥂',
+  // Legacy labels kept so stale status values still render a sensible icon
+  'Music':'🎵','Sports':'⚽','Resting':'😴'
 };
 
 function renderStatusCard(){
@@ -150,6 +155,27 @@ window.saveStatus = async function(){
                || (prev.mood||null)     !== status.mood;
   try{
     await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/presence/${state.myUid}/status`), status);
+    // Append-only history log: fire-and-forget, never blocks the primary save.
+    // Each push creates its own node — never overwritten or deleted. Skip the
+    // log entry if both activity and mood are empty — no point counting a
+    // blank "update" in Snugshot.
+    const hasActivity = typeof status.activity === 'string' && status.activity.length > 0;
+    const hasMood = typeof status.mood === 'string' && status.mood.length > 0;
+    if(hasActivity || hasMood){
+      try{
+        const p = state.dbPush(state.dbRef(state.db,`couples/${state.coupleId}/statusHistory`), {
+          uid: state.myUid,
+          activity: status.activity || '',
+          mood: status.mood || '',
+          savedAt: status.updatedAt
+        });
+        // Catch async rejections (e.g. rules mismatch) so they don't surface
+        // as unhandled promise rejections in the browser console.
+        if(p && typeof p.catch === 'function'){
+          p.catch(err => console.warn('statusHistory write failed:', err));
+        }
+      }catch(logErr){ console.warn('statusHistory push failed:', logErr); }
+    }
     if(changed) R.notifyPartner && R.notifyPartner('status');
     state.myStatus = status;
     R.renderStatusCard();

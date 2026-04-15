@@ -223,7 +223,7 @@
     <span class="bn-label">Home</span>
   </button>
   <button class="bn-item" id="nav-memories" onclick="showPage('memories')">
-    <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h9l3 3v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M12 3v4h4"/><path d="M7 11h6M7 14h6"/></svg>
+    <svg class="bn-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="1.5"/><line x1="6" y1="3" x2="6" y2="17"/><circle cx="13" cy="8" r="1.2"/><path d="M8 13l2.5-2.5 2 2 2-1.5"/></svg>
     <span class="bn-label">Memories</span>
   </button>
   <button class="bn-item" id="nav-together" onclick="showPage('together')" aria-label="Ours">
@@ -285,7 +285,7 @@
     <div class="home-tabs">
       <button class="home-tab active" id="tab-now" onclick="switchHomeTab('now')">Now</button>
       <button class="home-tab" id="tab-us" onclick="switchHomeTab('us')">Us</button>
-      <button class="home-tab" id="tab-summary" onclick="switchHomeTab('summary')">Summary</button>
+      <button class="home-tab" id="tab-summary" onclick="switchHomeTab('summary')">Snugshot</button>
     </div>
 
     <!-- ══ NOW TAB ══ -->
@@ -475,6 +475,13 @@
         <p class="cd-caption" id="cd-caption">—</p>
       </div>
 
+      <!-- Your letters (current upcoming letter pair only) -->
+      <div class="us-letters-wrap" id="us-letters-wrap" style="display:none;">
+        <p class="section-heading" style="margin-top:.1rem;">Your letters</p>
+        <div class="us-letter-rows" id="us-letter-rows"></div>
+        <div class="us-letters-footer" onclick="showPage('together')">Full letter section in Ours →</div>
+      </div>
+
       <!-- Memory Jar preview -->
       <div class="section-heading">
         <span>Memory jar</span>
@@ -519,19 +526,22 @@
       <footer class="app-footer-inner">Snug</footer>
     </div><!-- end panel-us -->
 
-    <!-- ══ SUMMARY TAB ══ -->
+    <!-- ══ SNUGSHOT TAB ══ -->
     <div class="home-tab-panel" id="panel-summary">
 
-      <!-- Current streak — intentionally above and outside the range toggle,
-           because streak is live and not range-filterable. -->
-      <div class="summary-streak-wrap" id="summary-streak-card"></div>
+      <!-- Insight card — label + sub-line set dynamically from _currentRange -->
+      <div class="snugshot-insight-card" id="snugshot-insight-card">
+        <div class="snugshot-insight-label">This week's insight</div>
+        <div class="snugshot-insight-body" id="snugshot-insight-body">—</div>
+        <div class="snugshot-insight-sub">Based on your activity this week.</div>
+      </div>
 
       <div class="summary-range-toggle" id="summary-range-toggle">
         <button class="summary-range-btn active" data-range="week" onclick="setSummaryRange('week')">This week</button>
         <button class="summary-range-btn" data-range="month" onclick="setSummaryRange('month')">This month</button>
       </div>
 
-      <div class="summary-grid" id="summary-grid">
+      <div class="snugshot-sections" id="summary-grid">
         <p class="empty" id="summary-empty">Nothing here yet — your story is just getting started.</p>
       </div>
 
@@ -625,11 +635,11 @@
       <div class="status-activity-grid" id="status-activity-grid">
         <div class="status-act-opt" data-activity="Working" onclick="selectActivity(this)"><span class="status-act-icon">💼</span><div class="status-act-label">Working</div></div>
         <div class="status-act-opt" data-activity="Reading" onclick="selectActivity(this)"><span class="status-act-icon">📖</span><div class="status-act-label">Reading</div></div>
-        <div class="status-act-opt" data-activity="Music" onclick="selectActivity(this)"><span class="status-act-icon">🎵</span><div class="status-act-label">Music</div></div>
+        <div class="status-act-opt" data-activity="TV / Netflix" onclick="selectActivity(this)"><span class="status-act-icon">📺</span><div class="status-act-label">TV / Netflix</div></div>
         <div class="status-act-opt" data-activity="Eating" onclick="selectActivity(this)"><span class="status-act-icon">🍽️</span><div class="status-act-label">Eating</div></div>
         <div class="status-act-opt" data-activity="Gaming" onclick="selectActivity(this)"><span class="status-act-icon">🎮</span><div class="status-act-label">Gaming</div></div>
-        <div class="status-act-opt" data-activity="Sports" onclick="selectActivity(this)"><span class="status-act-icon">⚽</span><div class="status-act-label">Sports</div></div>
-        <div class="status-act-opt" data-activity="Resting" onclick="selectActivity(this)"><span class="status-act-icon">😴</span><div class="status-act-label">Resting</div></div>
+        <div class="status-act-opt" data-activity="Sleeping" onclick="selectActivity(this)"><span class="status-act-icon">😴</span><div class="status-act-label">Sleeping</div></div>
+        <div class="status-act-opt" data-activity="Chilling" onclick="selectActivity(this)"><span class="status-act-icon">🛋️</span><div class="status-act-label">Chilling</div></div>
         <div class="status-act-opt" data-activity="Traveling" onclick="selectActivity(this)"><span class="status-act-icon">✈️</span><div class="status-act-label">Traveling</div></div>
         <div class="status-act-opt" data-activity="Cooking" onclick="selectActivity(this)"><span class="status-act-icon">🍳</span><div class="status-act-label">Cooking</div></div>
         <div class="status-act-opt" data-activity="Outside" onclick="selectActivity(this)"><span class="status-act-icon">☀️</span><div class="status-act-label">Outside</div></div>
@@ -649,7 +659,7 @@
         <div class="status-mood-pill" data-mood="stressed" onclick="selectMood(this)">stressed</div>
         <div class="status-mood-pill" data-mood="grateful" onclick="selectMood(this)">grateful</div>
         <div class="status-mood-pill" data-mood="meh" onclick="selectMood(this)">meh</div>
-        <div class="status-mood-pill" data-mood="calm" onclick="selectMood(this)">calm</div>
+        <div class="status-mood-pill" data-mood="relaxed" onclick="selectMood(this)">relaxed</div>
         <div class="status-mood-pill" data-mood="lonely" onclick="selectMood(this)">lonely</div>
         <div class="status-mood-pill" data-mood="loved" onclick="selectMood(this)">loved</div>
         <div class="status-mood-pill" data-mood="anxious" onclick="selectMood(this)">anxious</div>
@@ -917,7 +927,7 @@
           <div class="settings-row-label">Name</div>
           <input type="text" class="settings-input settings-name-input" id="settings-name" placeholder="Your first name" autocomplete="given-name" onkeydown="if(event.key==='Enter')window.saveNameFromInput()"/>
         </div>
-        <button class="settings-btn settings-name-btn" onclick="window.saveNameFromInput()">Save</button>
+        <button class="settings-name-pill" onclick="window.saveNameFromInput()">Update</button>
       </div>
 
       <!-- Email row -->
@@ -971,7 +981,7 @@
         </div>
         <p class="auth-field-error" id="settings-pw-error"></p>
         <p id="settings-pw-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
-        <button class="settings-btn" id="btn-save-password" onclick="savePasswordSettings()">Change password</button>
+        <button class="settings-btn settings-btn-subtle" id="btn-save-password" onclick="savePasswordSettings()">Change password</button>
       </div>
 
       <!-- Change email -->
@@ -993,7 +1003,7 @@
         </div>
         <p class="auth-field-error" id="settings-email-error"></p>
         <p id="settings-email-success" style="display:none;font-size:.65rem;color:var(--green);margin:.25rem 0;"></p>
-        <button class="settings-btn" id="btn-save-email" onclick="saveEmailSettings()">Change email</button>
+        <button class="settings-btn settings-btn-subtle" id="btn-save-email" onclick="saveEmailSettings()">Change email</button>
       </div>
 
     </div>

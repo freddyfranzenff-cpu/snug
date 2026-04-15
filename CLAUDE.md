@@ -134,7 +134,7 @@ couples/{coupleId}/
     plannerId        uid of mystery date creator (write-once)
     where, what, who plan details (open dates, or after mystery reveal)
     revealed         boolean (mystery dates only) — false until planner reveals
-    time             optional HH:MM string — if absent, letters unlock at 23:59
+    time             optional HH:MM string — if absent, letters unlock at 00:00 (start of day)
     hints/{pushId}/
       text, authorUid, createdAt, correct (boolean — planner marks guess correct)
       guess/
@@ -142,6 +142,23 @@ couples/{coupleId}/
 
   pulses/{pushId}/
     from (uid), to (uid), fromName, time (ms)
+
+  statusHistory/{pushId}/
+    uid       string — author uid
+    activity  string — activity saved (or '')
+    mood      string — mood saved (or '')
+    savedAt   number — ms timestamp
+    (append-only log — each status save pushes a new node; never overwritten
+     or deleted. Powers real status-update counts on the Snugshot tab.)
+
+  dailyInsight/{dateKey ('YYYY-MM-DD')}/{range ('week'|'month')}/
+    text          string — generated insight body
+    rule          string — which insight rule fired (debug)
+    generatedAt   number — ms timestamp
+    (one entry per local calendar day PER range; first partner to open
+     Snugshot for that range generates and writes it, the second reads
+     what's already there so both partners see the same insight. Week and
+     month cache independently so each carries its own rangeLabel copy.)
 
   tonightsMood/{dateKey ('YYYY-MM-DD')}/{uid}/
     mood        'cosy' | 'romantic' | 'adventurous' | 'netflix' | 'productive' | 'chaotic' | 'talky' | 'celebratory' | 'hungry'
@@ -163,8 +180,8 @@ invites/{code}/
 
 ### Home sub-tabs
 - **Now** — Pulse, Right Now (LDR clocks/weather/distance), Status, metric chips
-- **Us** — Countdown, Memory Jar preview, Recent Notes preview
-- **Summary** — Week/Month stats: memory jar entries, streak, pulses, milestones, Tonight's Mood match rate (Together only)
+- **Us** — Countdown, Your letters (current upcoming letter pair only), Memory Jar preview, Bucket progress
+- **Snugshot** — Insight card + grouped week/month stats: memory jar, longest streak, pulses, status updates, Tonight's Mood match rate (Together only). Panel ID stays `panel-summary`; `switchHomeTab('summary')` unchanged — display label only.
 
 ---
 
@@ -289,7 +306,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v112` (bumped in post-testing debug round)
+- Current version: `ylc-v116` (per-range dailyInsight cache + Snugshot stat-size tweaks + 00:00 fallback)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -370,8 +387,10 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 | `sendPulse()` | Rate-limited (60s cooldown) — pushes `{from, to, fromName, time}` to pulses |
 | `initTonightsMood()` | Starts Firebase listener on `tonightsMood/{dateKey}`, manages pick/waiting/reveal states, wires bottom sheet |
 | `teardownTonightsMood()` | Clears mood listener, day-roll interval, and `_tmInFlight` — called on sign-out and LDR mode switch |
-| `renderSummary(range)` | One-shot reads for Summary tab stats, race-guarded via `_requestSeq` |
+| `renderSummary(range)` | One-shot reads for Snugshot tab stats, insight card + grouped sections, race-guarded via `_requestSeq` |
 | `resetSummary()` | Resets `_currentRange` and `_requestSeq`, flips toggle back to Week — called on all sign-out paths |
+| `renderUsLetterShortcut()` | One-shot read of `letters` node; renders current upcoming letter pair under the countdown on Home → Us. Hides when no valid future meetup date. Race-guarded via module-level `_letterShortcutSeq`. |
+| `resetUsLetterShortcut()` | Bumps `_letterShortcutSeq`, hides `#us-letters-wrap`, clears row DOM. Called from all three sign-out paths in `auth.js` alongside `resetSummary`. |
 | `doDeleteAccount()` | Path 1 deletion — reauthenticates, wipes couple node, deletes auth account |
 | `doLinkingDeleteAccount()` | Path 2 deletion — same steps as Path 1, accessible from linking screen |
 
@@ -477,6 +496,17 @@ Remaining partner is notified via `_membersUnsub` listener which detects null me
             "revealed": { ".validate": "newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())" }
           }
         },
+        "statusHistory": {
+          "$pushId": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.exists() || data.child('uid').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['uid','activity','mood','savedAt']) && newData.child('uid').val() === auth.uid && newData.child('savedAt').isNumber()"
+          }
+        },
+        "dailyInsight": {
+          "$dateKey": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()"
+          }
+        },
         "tonightsMood": {
           "$dateKey": {
             "$uid": {
@@ -524,6 +554,8 @@ service firebase.storage {
 - `activeMystery`: only settable to own uid, only clearable by current lock holder. Blocks non-planner meetupDate changes.
 - `datePlan/$dateKey`: non-planner blocked from writing when mystery is active and unrevealed.
 - `hints/$pushId`: planner-only write on creation. Guess: non-planner only, immutable. Correct: planner only.
+- `statusHistory/$pushId`: append-only log. Any couple member can write a new entry; existing entries are immutable (write guard blocks rewrites unless same `uid`). Validate enforces required shape + own-uid authorship + numeric `savedAt`.
+- `dailyInsight/$dateKey`: any couple member can write today's insight. Rules cascade to the `week`/`month` sub-range buckets, so no rule change is needed for per-range caching. No field validation — first writer per range wins by convention (app checks for an existing entry before writing), but rules don't enforce it because we want the harmless race-tie behavior where both partners see the same cached text on the next read.
 - `tonightsMood/$dateKey/$uid`: validated shape — `mood` must be one of the 9 valid mood keys, `chosenAt` must be a number, no extra children permitted. `.validate` enforces own-uid on creation/change; unchanged write-through of partner's existing entry is permitted so parent-node `runTransaction` (used for race-free pick) can rewrite the dateKey bucket without the partner's entry failing validation.
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
@@ -601,6 +633,34 @@ Daily Together mode ritual. 9 moods, bottom sheet picker, pick/waiting/reveal st
 **New Summary tab (`src/js/summary.js`):** Week/Month toggle. One-shot Firebase reads (no persistent listeners). Stat cards: memory jar entries per user, current streak (live, not range-filtered), pulses sent per user, milestones added in range, Tonight's Mood match rate (Together mode only). Race guard via `_requestSeq`. Module-level state reset on all sign-out paths.
 
 **Bug fixes shipped:** iOS double notification (server-side token de-dupe). Countdown card overlap (removed stale flex layout from `.home-cd-card`). Memory Jar Earlier months collapsed by default, expanded state persists in `_mjExpandedMonths` Set across tab visits. Pulse card clipping fixed. Account name save rebuilds greeting correctly. Status sheet +3 activities (Gym/Driving/Socialising) +4 moods (calm/lonely/loved/anxious). Partner name footers on Milestones, Places, Bucket List. Account spacing and button layout tightened. Memories bottom nav icon updated to notebook style.
+
+### ✅ Session 3d — Snugshot redesign + Us-tab letter shortcut (complete)
+**Renamed:** Summary → Snugshot (display label only — panel ID `panel-summary`, `switchHomeTab('summary')`, and `state._mjStreakCount`-style internals unchanged).
+
+**Snugshot redesign (`src/js/summary.js` + `.snugshot-*` CSS):** Coral-gradient insight card at top generates one warm observation from the current range (broken streak, strong streak, pulse imbalance, mood match extremes, memory-jar imbalance, or a warm/quiet baseline). Grouped sections with uppercase labels: Memory jar · Streak (full-width with 🔥, longest run + current) · Pulses sent · Status updates · Tonight's mood (Together only, gradient progress bar). Milestones card removed. Two-column cards use coral dot for me / pink dot for partner. One-shot reads; race-guarded via `_requestSeq`.
+
+**Us-tab letter shortcut (`renderUsLetterShortcut` in `letters.js`):** One letter pair (me → partner, partner → me) for the current upcoming meetup only, under the countdown. Badges: Written / Not written (mine), Unlocked / Unlocks in Xd (partner). Hidden entirely when no valid future meetup exists. Refreshed on meetup-date listener fire and Us-tab switch. Previous letters remain exclusively in Ours → Letters.
+
+**Status sheet:** "Music" → "TV / Netflix" 📺, "Sports" → "Sleeping" 😴, "Resting" → "Chilling" 🛋️. Feeling "calm" → "relaxed". Legacy activity keys kept in `ACTIVITY_EMOJI` so any stale saved status still renders a sensible icon.
+
+**Account polish:** Profile name Save button → small subtle `settings-name-pill` "Update" matching the read-only / GPS-only badge style. Security confirm buttons ("Change password", "Change email") → subtle `.settings-btn-subtle` pill in coral wash, with tightened row spacing so the gap to the last input matches the overall Account rhythm.
+
+**Bottom nav:** Memories icon swapped from notebook to a polaroid-style framed photo (rect + mountain path + sun circle).
+
+### ✅ Session 3e — Snugshot review fixes + real status counts + daily insight cache (complete)
+**Status history log (new):** `saveStatus` in `status.js` now fires a parallel `dbPush` to `couples/$/statusHistory/{pushId}` alongside the primary `presence/$uid/status` `dbSet`. Each save is its own append-only node — never overwritten, never deleted. Log shape: `{uid, activity, mood, savedAt}`. Fire-and-forget: the push is not awaited, so it never delays the primary save. RTDB rules enforce same-uid authorship on create, immutability thereafter, and validated shape.
+
+**Snugshot status count from real data:** `_countStatusUpdates` in `summary.js` now reads `statusHistory` (one-shot), filters by uid + savedAt within the selected range, and returns true counts instead of the old 0-or-1 proxy. Card label formats as "1 update" (singular) or "N updates" (plural).
+
+**Insight ladder copy + rangeLabel:** All insight rule strings use a dynamic `rangeLabel` (`'this week'` / `'this month'`). Insight sub-line set dynamically as `Based on your activity ${rangeLabel}.`. Insight label (`This week's insight` / `This month's insight`) resynced inside `renderSummary` on every call, not only when the toggle is clicked. Copy tweaks: rule 5 "most of the writing in the memory jar", rule 7 "a memory moment". Grammar guard `_subjectVerb(name, 'has been')` → "You have been …" / "Freddy has been …" so the default `ME = 'You'` fallback never produces "You has been".
+
+**Two new insight rules:** Rule 5a (status imbalance, ≥3 gap) — *"{more} has been more active with status updates {rangeLabel}. {less}, even a quick one counts."* Rule 5b (both active status, each ≥3) — *"You're both keeping each other in the loop — that quiet awareness adds up."* Inserted between memory-jar imbalance and the warm baseline.
+
+**Daily insight cache:** `couples/$/dailyInsight/{YYYY-MM-DD}/{text,rule,generatedAt}`. On every Snugshot render, `renderSummary` reads `dailyInsight/${todayKey}` as part of the parallel fetch. If an entry exists → use its text directly. If not → generate via the rule ladder and fire-and-forget `dbSet` to the dateKey. Both partners see the same insight regardless of who opens first; convention-based single-write, no transaction because a racy tie writes identical text. Sub-line and label still reflect `_currentRange` dynamically.
+
+**Letter shortcut hardening:** Module-level `_letterShortcutSeq` bumped by every `renderUsLetterShortcut` call AND by `resetUsLetterShortcut`. In-flight `onlyOnce` reads check their captured seq on resolve and bail on mismatch — prevents stale paints on account switch. `resetUsLetterShortcut` registered as `R.resetUsLetterShortcut` and called from all three sign-out paths in `auth.js` alongside `resetSummary`. Sub-line copy fixed: me row says "Delivers {date} · Written/Not written", partner row says "Unlocks {date} · Unlocks in Xd / Unlocked". Countdown math now uses `Math.floor` matching `renderRoundCountdown` in `letters.js`. Unused `matchKey` removed.
+
+**Streak card:** Value shows `0d` instead of `—` when longest and current are both zero — consistent with the `Current: 0d` sub-line for brand-new couples.
 
 ### Phase 2 — Test Rollout (next)
 Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Tooltips) are complete. Mix of LDR and Together couples. Watch: 7-day retention, memory jar streak, notification open rate by trigger, Tonight's Mood completion rate, mystery date creation rate.

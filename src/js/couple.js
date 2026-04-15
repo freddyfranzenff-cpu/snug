@@ -106,9 +106,10 @@ function startMeetupDateListener(){
     } else {
       state.coupleMeetupDate = stored;
       state.meetupDate = new Date(stored);
-      if(stored.includes('T') && !stored.endsWith('T00:00:00')){
-        const timePart = stored.split('T')[1]?.substring(0,5)||'19:00';
-        state._dnTimeVal = timePart;
+      if(stored.includes('T')){
+        const timePart = stored.split('T')[1]?.substring(0,5) || '';
+        // T00:00:00 is the "no time set" sentinel → empty _dnTimeVal.
+        state._dnTimeVal = (timePart === '00:00') ? '' : timePart;
       }
     }
     const newKey = state.meetupDate
@@ -117,6 +118,7 @@ function startMeetupDateListener(){
     // Refresh UI
     R.startCountdown && R.startCountdown();
     R._syncDnPickerBtn && R._syncDnPickerBtn();
+    R.renderUsLetterShortcut && R.renderUsLetterShortcut();
     // Toggle dn-planner visibility + rebind loadDnPlanner to new dateKey
     const dnPlanner = document.getElementById('dn-planner');
     if(dnPlanner){
