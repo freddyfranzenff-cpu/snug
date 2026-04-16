@@ -165,7 +165,6 @@ export default async function handler(req, res){
     const buildMessage = (tokenStr) => ({
       message: {
         token: tokenStr,
-        notification: { title, body: bodyText },
         data: { trigger, coupleId: String(coupleId) },
         webpush: {
           notification: {

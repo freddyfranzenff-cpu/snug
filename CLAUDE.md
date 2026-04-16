@@ -419,6 +419,7 @@ Two paths — both run the same sequence. Validate input === `'DELETE'`, reauthe
 - iOS double notification: `api/notify.js` skips legacy `fcmToken` string if already in `fcmTokens` map
 - Countdown card overlap: removed stale flex from `.home-cd-card`; now default block layout
 - Android/iOS scrollbar overlap: Home tab panels (Now/Us/Snugshot) had horizontal padding on `#page-home` instead of on the panels themselves. This caused panels to be 359.6px wide instead of 390px, placing the scrollbar 15.2px inside the screen edge and overlapping content. Fixed by removing padding from `#page-home` and adding `padding: .75rem .95rem calc(3.5rem + env(safe-area-inset-bottom, 0px))` directly to `.home-tab-panel.active` — matching the same pattern used by `.page-tab-panel.active`. Also added horizontal padding to `.home-top-strip` and `.home-tabs` directly.
+- iOS double notification (background): FCM message payload contained both a top-level `notification` field and a `webpush.notification` field. On iOS PWAs, FCM auto-displayed the top-level notification AND `onBackgroundMessage` showed a second one. Tag-based collapsing is unreliable on older iOS WebKit versions so both appeared. Fixed by removing the top-level `notification` field from `buildMessage` in `api/notify.js` — making it a data-only message where only `onBackgroundMessage` controls display. Android was unaffected because it correctly collapses same-tag notifications.
 
 ---
 
