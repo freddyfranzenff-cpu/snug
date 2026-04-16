@@ -648,13 +648,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .settings-success{font-size:.62rem;color:var(--green,#2a9d5c);margin:.3rem 0 0;display:none;}
   .settings-error{font-size:.62rem;color:var(--error,#d63031);margin:.3rem 0 0;}
   /* ── Home tabs ─────────────────────────────────────────── */
-  .home-tabs{display:flex;background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:.75rem;flex-shrink:0;z-index:50;box-shadow:0 1px 0 rgba(200,85,58,0.07);}
+  .home-tabs{display:flex;background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin:0 .95rem .75rem;flex-shrink:0;z-index:50;box-shadow:0 1px 0 rgba(200,85,58,0.07);}
   .home-tab{flex:1;padding:.58rem .4rem;font-size:.68rem;font-family:'Plus Jakarta Sans',sans-serif;
     text-align:center;color:var(--muted);border:none;background:none;
     cursor:pointer;transition:all .18s;font-weight:500;letter-spacing:.01em;}
   .home-tab.active{color:var(--k);font-weight:700;background:var(--kll);}
-  .home-tab-panel{display:none;}
-  .home-tab-panel.active{display:block;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding-top:.75rem;padding-bottom:calc(3.5rem + env(safe-area-inset-bottom,0px));}
+  .home-tab-panel{display:none;padding-left:.95rem;padding-right:.95rem;}
+  .home-tab-panel.active{display:block;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:.75rem .95rem calc(3.5rem + env(safe-area-inset-bottom,0px));}
   /* home-greeting-row kept for backward compat but hidden */
   .home-greeting-row{display:none}
   .home-days-badge{display:none}
@@ -977,17 +977,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   /* Account panel has no tabs bar — give it equivalent top breathing room */
   #account-panel-profile { padding-top: .75rem; }
 
-  /* Home page — padding on sides, tab panels handle bottom padding */
-  #page-home { padding: 0 .95rem; }
-  /* Full-bleed border on home-top-strip despite page side-padding */
+  /* Home page — no horizontal padding; panels own their side padding so scrollbar sits at screen edge */
+  #page-home { padding: 0; }
   .home-top-strip {
-    padding:.55rem 0 .4rem;
+    padding:.55rem .95rem .4rem;
     border-bottom:1px solid rgba(200,85,58,0.07);
     margin-bottom:.6rem;
-    margin-left:-.95rem;
-    margin-right:-.95rem;
-    padding-left:.95rem;
-    padding-right:.95rem;
     flex-shrink:0;
   }
 
