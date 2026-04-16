@@ -50,6 +50,7 @@ snug/
       settings.js, togethermode.js, places.js, avatar.js
       notifications.js      ← FCM tokens, notifyPartner(), deep-link, prefs UI
       tonightsmood.js       ← Tonight's Mood — pick/waiting/reveal, bottom sheet
+      tooltips.js           ← Info icon system — shared bottom sheet, 13 tooltip definitions
       summary.js            ← Snugshot tab: insight + week/month stats
   firebase-messaging-sw.js  ← FCM background handler (repo root, symlinked into public/)
   public/                   ← icons/, manifest.json, sw.js all symlinked to repo root
@@ -251,7 +252,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v116` (per-range dailyInsight cache + Snugshot stat-size tweaks + 00:00 fallback)
+- Current version: `ylc-v123` (Session 4 tooltips + empty state copy + polish pass)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -308,6 +309,56 @@ _membersUnsub, _watchPartnerUnsub, _coupleTypeUnsub
 - `summary.js`: `_currentRange` (week/month), `_requestSeq` (race guard) — reset via `R.resetSummary()`
 - `memoryjar.js`: `_mjExpandedMonths` Set (persists expanded state across tab visits) — reset via `R._mjResetExpandedMonths()`
 - Both reset functions called on all three sign-out paths in `auth.js` (main sign-out, partner-deletion, permission-denied)
+
+---
+
+## Info Icon System
+
+All info icons use a single CSS class `info-btn` with no modifiers. Size and colour are controlled via targeted ancestor selectors only.
+
+### CSS rules (src/styles/main.css)
+```css
+/* Base — next to small uppercase section headings (0.5rem) and settings labels */
+.info-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1px solid var(--k); color: var(--k);
+  font-size: 6px; font-weight: 700; font-style: normal;
+  font-family: inherit; line-height: 1;
+  background: none; padding: 0; cursor: pointer; flex-shrink: 0;
+}
+
+/* Next to 1.25rem bold shell page titles (Memories, Ours) */
+.shell-page-header-row .info-btn {
+  width: 13px; height: 13px; font-size: 8px; border-width: 1.2px; margin-top: 3px;
+}
+
+/* Snugshot insight card — white on coral background */
+.snugshot-insight-card-header .info-btn {
+  width: 8px; height: 8px; font-size: 5px; border-width: 1px;
+  border-color: rgba(255,255,255,0.6); color: rgba(255,255,255,0.9);
+}
+```
+
+### Placement rules
+- **Context A — Section headings** (`.section-heading`): button is a direct flex child of the `<p>`. Text wrapped in `<span>`. The heading must have `style="justify-content:flex-start"` inline to prevent the icon being pushed right by the default `space-between`. Gap comes from the `gap:5px` already on `.section-heading`.
+- **Context B — Shell page titles** (`.shell-page-title`): button is a sibling of the `<h2>` inside `.shell-page-header-row`, which is `display:flex; align-items:center; justify-content:flex-start; gap:8px`.
+- **Context C — Snugshot insight card**: button is a sibling of `.snugshot-insight-label` inside `.snugshot-insight-card-header`, which is `display:flex; align-items:center; justify-content:flex-start; gap:6px`. The label must have `display:inline-flex; align-items:center; line-height:1` and no `margin-bottom` to avoid asymmetric box alignment.
+- **Context D — Settings/onboarding labels**: button is a direct flex child of the label element. Parent must have `display:flex; align-items:center; gap:5px` as an inline style.
+
+### Key alignment lessons
+- Never use `vertical-align` or `position:relative/top` to align icons — use flex on the parent.
+- `margin-bottom` on a flex child creates an asymmetric margin box — `align-items:center` centres the full box including the invisible margin, pushing visible text off-centre. Always remove `margin-bottom` from flex children that need optical centering.
+- `<p>` elements need `line-height:1` to eliminate descender space that offsets icon alignment.
+- Raw text nodes inside flex containers do not participate in `gap` — always wrap text in `<span>` so both text and icon are proper flex children.
+- `justify-content:space-between` on a flex parent pushes a lone second child to the far right — override with `flex-start` on any heading that has only text + icon (no "See all" button).
+
+### Tooltip JS (src/js/tooltips.js)
+- `TOOLTIPS` map: `{ id: { title, text } }` — no icons in the sheet
+- `showTooltip(id)`: sets `#tooltip-sheet .tt-title` and `#tooltip-body`, opens `#tooltip-overlay`
+- `closeTooltip()`: removes open class
+- Countdown button injected at DOM ready: reads `state.coupleType`, sets correct tooltip ID, also sets `label.style.justifyContent = 'flex-start'` and `label.style.alignItems = 'center'`
+- Swipe-to-dismiss via `R._initSheetSwipe`
 
 ---
 
@@ -477,8 +528,8 @@ Renamed Summary→Snugshot (display only). Coral-gradient insight card + grouped
 ### Phase 2 — Test Rollout (next)
 Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Tooltips). Mix of LDR and Together. Watch: 7-day retention, MJ streak, notification open rate by trigger, Tonight's Mood completion, mystery date creation.
 
-### Session 4 — Contextual Tooltips + Empty State Copy
-Info icon on each feature → 2-sentence tap explanation. Meaningful empty-state copy. One-time guided first-use walkthrough. Both modes.
+### ✅ Session 4 — Contextual Tooltips + Empty State Copy
+New `src/js/tooltips.js` module. Single shared bottom sheet (`#tooltip-overlay` / `#tooltip-sheet`). 13 `ⓘ` info icons across all features. `window.showTooltip(id)` / `window.closeTooltip()` globals. Countdown icon injected dynamically by `tooltips.js` reading `state.coupleType`. Improved empty state copy on 5 screens (milestones, bucket, memory jar, letters, places). Polish pass: pulse history inner box layout, Us tab letter shortcut labels and routing, Snugshot status card row layout, Memory jar icon removed from Us tab.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.
