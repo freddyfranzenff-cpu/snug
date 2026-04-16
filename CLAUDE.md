@@ -193,6 +193,8 @@ The `--app-height` IIFE in `<head>` of `src/index.html` must stay inline — it 
 
 **Known scroll root cause fixed — do not revert:** `.home-cd-card` had a stale `display:flex;flex-direction:column;justify-content:space-between` declaration causing layout unpredictability on narrow viewports. Removed — card now uses default block layout.
 
+**Scrollbar placement rule:** The scrollbar for `overflow-y:auto` always renders at the right edge of the element that has `overflow-y` set. If horizontal padding lives on a PARENT of the scrolling panel, the panel is narrower than the viewport and the scrollbar appears inset from the screen edge, overlapping content. Always put horizontal padding directly on the scrolling panel itself, not on its parent.
+
 ---
 
 ## Design System
@@ -416,6 +418,7 @@ Two paths — both run the same sequence. Validate input === `'DELETE'`, reauthe
 - Stale hardcoded appId in index.html — env var version (`db66ccb1ddcc0278d9fb84`) is correct
 - iOS double notification: `api/notify.js` skips legacy `fcmToken` string if already in `fcmTokens` map
 - Countdown card overlap: removed stale flex from `.home-cd-card`; now default block layout
+- Android/iOS scrollbar overlap: Home tab panels (Now/Us/Snugshot) had horizontal padding on `#page-home` instead of on the panels themselves. This caused panels to be 359.6px wide instead of 390px, placing the scrollbar 15.2px inside the screen edge and overlapping content. Fixed by removing padding from `#page-home` and adding `padding: .75rem .95rem calc(3.5rem + env(safe-area-inset-bottom, 0px))` directly to `.home-tab-panel.active` — matching the same pattern used by `.page-tab-panel.active`. Also added horizontal padding to `.home-top-strip` and `.home-tabs` directly.
 
 ---
 
