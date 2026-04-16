@@ -28,6 +28,7 @@ import './settings.js';
 import './couple.js';
 import './ui.js';
 import './notifications.js';
+import './tooltips.js';
 import './auth.js';
 
 // Read ?join=CODE from invite link URL on page load

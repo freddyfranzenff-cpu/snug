@@ -221,7 +221,7 @@ function _mjRenderHistory(){
       .sort().reverse();
 
     if(!pastKeys.length){
-      histEl.innerHTML = '<p class="empty">No earlier memories yet — start writing!</p>';
+      histEl.innerHTML = '<p class="empty">Nothing from before today yet. Write your first entry and come back tomorrow.</p>';
       return;
     }
 

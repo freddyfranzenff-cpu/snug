@@ -34,6 +34,12 @@ function _initAccountPage(tab){
   window.openSettingsPage&&window.openSettingsPage();
 }
 
+// Tooltip id per page+sub-tab — keeps the page-header info button in sync
+const _pageTabTooltipId = {
+  memories: { milestones: 'milestones', places: 'places', jar: 'memory-jar' },
+  together: { bucket: 'bucket', letter: 'letters' }
+};
+
 window.switchPageTab = function(page, tab){
   // Hide any currently visible legacy pages before switching
   R._hideLegacyPages&&R._hideLegacyPages();
@@ -47,6 +53,10 @@ window.switchPageTab = function(page, tab){
     p.classList.toggle('active', isActive);
     if(isActive) p.scrollTop = 0;
   });
+  // Update page-header info button to match active sub-tab
+  const infoBtn = document.getElementById(`${page}-info-btn`);
+  const tipId = _pageTabTooltipId[page] && _pageTabTooltipId[page][tab];
+  if(infoBtn && tipId) infoBtn.dataset.tip = tipId;
   // Init content
   if(R._pageSubContent[page]) R._pageSubContent[page].init(tab);
 };

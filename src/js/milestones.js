@@ -15,7 +15,7 @@ function renderMilestones(items){
   const tl=document.getElementById("milestone-timeline");
   const counter=document.getElementById("milestone-counter");
   const tlEnd=document.getElementById("timeline-end");
-  if(!items.length){tl.innerHTML=`<p class="empty">No milestones yet. Add your first one!</p>`;if(counter)counter.innerHTML=`You have <span>0</span> milestones together`;if(tlEnd)tlEnd.style.display="none";return;}
+  if(!items.length){tl.innerHTML=`<p class="empty">Your story starts here. Add your first milestone — a first date, a trip, anything that mattered.</p>`;if(counter)counter.innerHTML=`You have <span>0</span> milestones together`;if(tlEnd)tlEnd.style.display="none";return;}
   items.sort((a,b)=>new Date(a.date)-new Date(b.date));
   if(counter)counter.innerHTML=`You have <span>${items.length}</span> milestone${items.length!==1?"s":""} together`;
   let ci=0;

@@ -393,16 +393,22 @@ function renderUsLetterShortcut(){
     const daysLeft = Math.max(0, Math.floor(diffMs / 86400000));
 
     const otherEsc = R._esc(state.OTHER || 'Partner');
+    const partnerHasWritten = !!(otherLetter && otherLetter.content);
     const writtenPill = myLetter && myLetter.content
       ? '<span class="us-letter-pill us-letter-pill-written">Written</span>'
       : '<span class="us-letter-pill us-letter-pill-muted">Not written</span>';
-    const partnerPill = unlocked && otherLetter && otherLetter.content
-      ? '<span class="us-letter-pill us-letter-pill-written">Unlocked</span>'
-      : (daysLeft === 0
-          ? '<span class="us-letter-pill us-letter-pill-muted">Unlocks today</span>'
-          : `<span class="us-letter-pill us-letter-pill-muted">Unlocks in ${daysLeft}d</span>`);
+    let partnerPill;
+    if(!partnerHasWritten){
+      partnerPill = '<span class="us-letter-pill us-letter-pill-muted">Not written</span>';
+    } else if(unlocked){
+      partnerPill = '<span class="us-letter-pill us-letter-pill-written">Unlocked</span>';
+    } else if(daysLeft === 0){
+      partnerPill = '<span class="us-letter-pill us-letter-pill-muted">Unlocks today</span>';
+    } else {
+      partnerPill = `<span class="us-letter-pill us-letter-pill-muted">Unlocks in ${daysLeft}d</span>`;
+    }
 
-    const partnerDim = unlocked && otherLetter && otherLetter.content ? '' : ' us-letter-row-dim';
+    const partnerDim = unlocked && partnerHasWritten ? '' : ' us-letter-row-dim';
     const dateEsc = R._esc(fmtDate);
 
     rowsEl.innerHTML = `
@@ -411,7 +417,7 @@ function renderUsLetterShortcut(){
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6l6 4 6-4"/></svg>
         </div>
         <div class="us-letter-body">
-          <div class="us-letter-title">Letter to ${otherEsc}</div>
+          <div class="us-letter-title">Your letter</div>
           <div class="us-letter-sub">Delivers ${dateEsc} · ${writtenPill}</div>
         </div>
         <span class="us-letter-chev">›</span>
@@ -421,7 +427,7 @@ function renderUsLetterShortcut(){
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6l6 4 6-4"/></svg>
         </div>
         <div class="us-letter-body">
-          <div class="us-letter-title">Letter from ${otherEsc}</div>
+          <div class="us-letter-title">${otherEsc}'s letter</div>
           <div class="us-letter-sub">Unlocks ${dateEsc} · ${partnerPill}</div>
         </div>
         <span class="us-letter-chev">›</span>

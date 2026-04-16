@@ -40,13 +40,13 @@ function renderPulseHistory(pulses){
   const recent=pulses.slice(0,6);
   list.innerHTML=recent.map(p=>{
     const isMe=p.from===state.myUid||p.from===state.ME;
-    const dotClass=isMe?"":"other";
+    const dotClass=isMe?"other":"";
     const senderName=R._esc(p.fromName||(isMe?state.ME:state.OTHER));
     const otherEsc=R._esc(state.OTHER);
     const text=isMe
       ?`You were thinking of <strong>${otherEsc}</strong>`
       :`<strong>${senderName}</strong> was thinking of you`;
-    return`<div class="pulse-history-item">
+    return`<div class="pulse-history-item" style="font-size:.72rem">
       <div class="pulse-history-dot ${dotClass}"></div>
       <span class="pulse-history-text">${text}</span>
       <span class="pulse-history-time">${R.fmtPulseTs(p.time)}</span>

@@ -155,7 +155,7 @@
       <p style="font-size:.62rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Starting fresh? Create a new Snug and invite your partner.</p>
       <label class="auth-label">Together since</label>
       <input type="date" class="auth-field" id="couple-startdate"/>
-      <label class="auth-label" style="margin-top:.5rem;">Your relationship type</label>
+      <label class="auth-label" style="margin-top:.5rem;display:flex;align-items:center;gap:5px;"><span>Your relationship type</span><button class="info-btn" onclick="showTooltip('relationship-type')" aria-label="About this feature">i</button></label>
       <div class="mode-toggle" id="create-mode-toggle">
         <button class="mode-toggle-btn active" id="create-mode-ldr" onclick="window.selectCreateMode('ldr')">📍 Long distance</button>
         <button class="mode-toggle-btn" id="create-mode-together" onclick="window.selectCreateMode('together')">🏠 Together</button>
@@ -292,7 +292,7 @@
     <div class="home-tab-panel active" id="panel-now">
 
       <!-- Pulse card -->
-      <p class="section-heading">Pulse</p>
+      <p class="section-heading" style="justify-content:flex-start"><span>Pulse</span><button class="info-btn" onclick="showTooltip('pulse')" aria-label="About this feature">i</button></p>
       <div class="pulse-card" id="pulse-card">
         <div class="pulse-recv-strip" id="pulse-received-now" style="display:none;">
           <div class="pulse-recv-dot"></div>
@@ -321,7 +321,7 @@
 
       <!-- LDR: Clocks + Distance + Weather (hidden in Together mode) -->
       <div id="ldr-section-wrap">
-      <p class="section-heading">Right now</p>
+      <p class="section-heading" style="justify-content:flex-start"><span>Right now</span><button class="info-btn" onclick="showTooltip('right-now')" aria-label="About this feature">i</button></p>
       <div class="ldr-now-card" id="ldr-now-card">
         <!-- Hidden dist-strip elements for JS compat -->
         <div id="home-dist-strip" style="display:none;">
@@ -372,7 +372,7 @@
       </div><!-- end ldr-section-wrap -->
 
       <!-- Status + Mood card -->
-      <p class="section-heading">What you're up to</p>
+      <p class="section-heading" style="justify-content:flex-start"><span>What you're up to</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
       <div class="status-card" id="status-card">
         <div class="status-person-row">
           <div class="status-accent status-accent-me"></div>
@@ -401,7 +401,7 @@
 
       <!-- Tonight's Mood (Together mode only) -->
       <div id="tonights-mood-card" style="display:none;">
-        <p class="section-heading" style="margin-top:0;">Tonight's Mood</p>
+        <p class="section-heading" style="margin-top:0;justify-content:flex-start"><span>Tonight's Mood</span><button class="info-btn" onclick="showTooltip('tonights-mood')" aria-label="About this feature">i</button></p>
         <div class="mood-card-inner">
           <div id="mood-pick-state">
             <p id="mood-pick-hint" class="mood-pick-hint" style="display:none;"></p>
@@ -477,9 +477,11 @@
 
       <!-- Your letters (current upcoming letter pair only) -->
       <div class="us-letters-wrap" id="us-letters-wrap" style="display:none;">
-        <p class="section-heading" style="margin-top:.1rem;">Your letters</p>
+        <div class="section-heading" style="margin-top:.1rem;">
+          <span>Your letters</span>
+          <button class="section-heading-see-all" onclick="showPage('letter')">See all</button>
+        </div>
         <div class="us-letter-rows" id="us-letter-rows"></div>
-        <div class="us-letters-footer" onclick="showPage('together')">Full letter section in Ours →</div>
       </div>
 
       <!-- Memory Jar preview -->
@@ -531,7 +533,10 @@
 
       <!-- Insight card — label + sub-line set dynamically from _currentRange -->
       <div class="snugshot-insight-card" id="snugshot-insight-card">
-        <div class="snugshot-insight-label">This week's insight</div>
+        <div class="snugshot-insight-card-header">
+          <span class="snugshot-insight-label">This week's insight</span>
+          <button class="info-btn" aria-label="About Snugshot" onclick="showTooltip('snugshot')">i</button>
+        </div>
         <div class="snugshot-insight-body" id="snugshot-insight-body">—</div>
         <div class="snugshot-insight-sub">Based on your activity this week.</div>
       </div>
@@ -672,7 +677,10 @@
   <!-- MEMORIES page (sub-tabs: Milestones, Places, Memory jar) -->
   <div class="page" id="page-memories">
     <div class="shell-page-header">
-      <h2 class="shell-page-title">Memories</h2>
+      <div class="shell-page-header-row">
+        <h2 class="shell-page-title"><span>Memories</span></h2>
+        <button class="info-btn" id="memories-info-btn" aria-label="About this feature" onclick="showTooltip(this.dataset.tip||'milestones')" data-tip="milestones">i</button>
+      </div>
     </div>
     <div class="page-tabs">
       <button class="page-tab active" id="memories-tab-milestones" onclick="switchPageTab('memories','milestones')">Milestones</button>
@@ -685,7 +693,7 @@
       <button class="milestone-add-btn" onclick="toggleAddForm()"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>Add milestone</button>
     </div>
     <p class="milestone-counter" id="milestone-counter">You have <span>0</span> milestones together</p>
-    <div class="timeline" id="milestone-timeline"><p class="empty">No milestones yet. Add your first one!</p></div>
+    <div class="timeline" id="milestone-timeline"><p class="empty">Your story starts here. Add your first milestone — a first date, a trip, anything that mattered.</p></div>
     <div class="timeline-end" id="timeline-end" style="display:none;">& counting…</div>
     <footer class="app-footer-inner">Snug</footer>
     <div class="add-form" id="add-milestone-form">
@@ -710,7 +718,7 @@
     </div>
     <div class="page-tab-panel" id="memories-panel-places">
   <div class="page" id="page-places">
-    
+
 
     <!-- Stats -->
     <div class="places-stat-row">
@@ -749,7 +757,7 @@
     <p class="section-heading" id="places-chips-label" style="display:none;">All places</p>
     <div class="places-chips" id="places-chips"></div>
 
-    <p class="empty" id="places-empty" style="display:none;">No milestone locations yet. Add a location to a milestone to see it here!</p>
+    <p class="empty" id="places-empty" style="display:none;">No places mapped yet. Add a location to any milestone and it'll appear on your map.</p>
     <footer class="app-footer-inner">Snug</footer>
   </div>
     </div>
@@ -788,7 +796,7 @@
 
     <!-- History -->
     <p class="section-heading" style="margin-top:.85rem;">Earlier</p>
-    <div id="mj-history-list"><p class="empty">No earlier memories yet — start writing!</p></div>
+    <div id="mj-history-list"><p class="empty">Nothing from before today yet. Write your first entry and come back tomorrow.</p></div>
     <footer class="app-footer-inner">Snug</footer>
   </div>
     </div>
@@ -797,7 +805,10 @@
   <!-- OURS page (sub-tabs: Bucket list, Letter) -->
   <div class="page" id="page-together">
     <div class="shell-page-header">
-      <h2 class="shell-page-title">Ours</h2>
+      <div class="shell-page-header-row">
+        <h2 class="shell-page-title"><span>Ours</span></h2>
+        <button class="info-btn" id="together-info-btn" aria-label="About this feature" onclick="showTooltip(this.dataset.tip||'bucket')" data-tip="bucket">i</button>
+      </div>
     </div>
     <div class="page-tabs">
       <button class="page-tab active" id="together-tab-bucket" onclick="switchPageTab('together','bucket')">Bucket list</button>
@@ -845,7 +856,7 @@
 
     <!-- To do list -->
     <p class="section-heading">To do</p>
-    <div id="bl-todo-list" style="display:flex;flex-direction:column;gap:.75rem;"><p class="empty">No dreams yet. Add your first one!</p></div>
+    <div id="bl-todo-list" style="display:flex;flex-direction:column;gap:.75rem;"><p class="empty">What do you want to do together? Add your first dream — big or small, it all counts.</p></div>
 
     <!-- Done list -->
     <div class="bl-sep-line" id="bl-done-sep" style="display:none;"><span class="bl-sep-text">Completed</span></div>
@@ -871,7 +882,7 @@
     <div class="page-tab-panel" id="together-panel-letter">
   <div class="page" id="page-letter">
     <span id="letter-page-eyebrow" style="display:none;">For the day we meet</span>
-    
+
 
     <!-- Unlocked banner (shown on meetup day) -->
     <div id="letter-unlocked-banner" style="display:none;" class="letter-unlocked-banner">
@@ -884,7 +895,7 @@
     <div id="letter-timeline"></div>
 
     <!-- Empty state -->
-    <p class="empty" id="letter-empty" style="display:none;">No letters yet. Write your first one above!</p>
+    <p class="empty" id="letter-empty" style="display:none;">No letters yet. Write one now — it'll stay sealed until your meetup day.</p>
     <footer class="app-footer-inner">Snug</footer>
   </div>
     </div>
@@ -1014,7 +1025,7 @@
 
       <!-- Relationship type -->
       <div class="settings-row-new" style="flex-direction:column;align-items:stretch;">
-        <div class="settings-row-label" style="margin-bottom:.5rem;">Relationship type</div>
+        <div class="settings-row-label" style="margin-bottom:.5rem;display:flex;align-items:center;gap:5px;"><span>Relationship type</span><button class="info-btn" onclick="showTooltip('relationship-type')" aria-label="About this feature">i</button></div>
         <div class="mode-toggle">
           <button class="mode-toggle-btn active" id="settings-mode-ldr" onclick="selectSettingsMode('ldr')">📍 Long distance</button>
           <button class="mode-toggle-btn" id="settings-mode-together" onclick="selectSettingsMode('together')">🏠 Together</button>
@@ -1322,6 +1333,16 @@
       </div>
       <button class="together-sheet-save" id="mj-sheet-save" onclick="saveMjSheet()">Save memory</button>
       <button class="together-sheet-cancel" onclick="closeMjSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Tooltip Sheet ─────────────────────────────────── -->
+  <div class="together-sheet-overlay" id="tooltip-overlay" onclick="if(event.target===this)closeTooltip()">
+    <div class="together-sheet" id="tooltip-sheet">
+      <div class="together-sheet-handle"></div>
+      <p class="tt-title" id="tooltip-title"></p>
+      <p class="tt-body" id="tooltip-body"></p>
+      <button class="together-sheet-cancel" onclick="closeTooltip()">Got it</button>
     </div>
   </div>
 

@@ -365,10 +365,9 @@ async function renderSummary(){
     _statCardDot(otherName, String(pulsesTheirs), 'sent', 'other'),
   ]));
 
-  const statusSub = _rangeLabel(range);
   sections.push(_section('Status updates', [
-    _statCardDot(meName, _pluralUpdates(statusMine), statusSub, 'me'),
-    _statCardDot(otherName, _pluralUpdates(statusTheirs), statusSub, 'other'),
+    _statCardDot(meName, String(statusMine), 'updates ' + _rangeLabel(range), 'me'),
+    _statCardDot(otherName, String(statusTheirs), 'updates ' + _rangeLabel(range), 'other'),
   ]));
 
   if(state.coupleType === 'together'){
