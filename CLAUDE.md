@@ -132,6 +132,9 @@ couples/{coupleId}/
     mood        'cosy' | 'romantic' | 'adventurous' | 'netflix' | 'productive' | 'chaotic' | 'talky' | 'celebratory' | 'hungry'
     chosenAt    number (ms)
 
+meta/
+  userCount         integer — Phase 1 rollout cap (max 30). Incremented via transaction in doOnboarding; rule enforces <= 30.
+
 invites/{code}/    coupleId, createdBy, createdAt, expiresAt (48h), used
 ```
 
@@ -258,7 +261,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v123` (Session 4 tooltips + empty state copy + polish pass)
+- Current version: `ylc-v126` (PR 1 — 30-user hard cap)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -562,6 +565,9 @@ Roll out to ~10 couples after pre-rollout audit and Session 4 (Contextual Toolti
 
 ### ✅ Session 4 — Contextual Tooltips + Empty State Copy
 New `src/js/tooltips.js` module. Single shared bottom sheet (`#tooltip-overlay` / `#tooltip-sheet`). 13 `ⓘ` info icons across all features. `window.showTooltip(id)` / `window.closeTooltip()` globals. Countdown icon injected dynamically by `tooltips.js` reading `state.coupleType`. Improved empty state copy on 5 screens (milestones, bucket, memory jar, letters, places). Polish pass: pulse history inner box layout, Us tab letter shortcut labels and routing, Snugshot status card row layout, Memory jar icon removed from Us tab.
+
+### ✅ Phase 1 / PR 1 — 30-user hard cap
+RTDB `meta/userCount` node with transactional increment in `doOnboarding`. Rule enforces `newData.val() <= 30` and single-step increment. New `screen-waitlist` for rejected signups. User signed out on cap hit.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.
