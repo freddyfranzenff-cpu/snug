@@ -102,7 +102,7 @@
     "meta": {
       "userCount": {
         ".read": "auth != null",
-        ".write": "auth != null && newData.isNumber() && newData.val() <= 30 && newData.val() === (data.val() || 0) + 1"
+        ".write": "auth != null && newData.isNumber() && newData.val() <= 30 && newData.val() === (data.exists() ? data.val() : 0) + 1"
       }
     },
     "$other": {
