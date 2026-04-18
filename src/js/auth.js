@@ -716,8 +716,10 @@ window.doResendVerification = async function() {
     setTimeout(() => { btn.textContent = 'Resend email'; btn.disabled = false; }, 60000);
   } catch (e) {
     console.error('Resend failed:', e);
-    btn.textContent = 'Failed — try again';
-    setTimeout(() => { btn.disabled = false; }, 5000);
+    const isRateLimit = e?.code === 'auth/too-many-requests';
+    btn.textContent = isRateLimit ? 'Too many requests — wait a minute' : 'Failed — try again';
+    const cooldown = isRateLimit ? 60000 : 5000;
+    setTimeout(() => { btn.textContent = 'Resend email'; btn.disabled = false; }, cooldown);
   }
 };
 
