@@ -261,7 +261,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v128` (PR 3 — password policy)
+- Current version: `ylc-v129` (PR 3.5 — verification resend fix)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -575,6 +575,9 @@ RTDB `meta/userCount` node with transactional increment in `doOnboarding`. Rule 
 
 ### ✅ Phase 1 / PR 3 — Password policy enforcement
 Firebase console flipped to enforce min length 8 + uppercase + numeric. Client-side checks in doSignup updated to match. friendlyAuthError maps the new server error code.
+
+### ✅ Phase 1 / PR 3.5 — Verification Resend button fix
+doResendVerification distinguishes rate-limit (auth/too-many-requests) from generic failure. Rate-limited state uses 60s cooldown with explicit "Too many requests" message. Button text resets on re-enable.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.
