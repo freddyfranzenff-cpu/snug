@@ -9,7 +9,7 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 
 // ── Auth UI helpers ──────────────────────────────────────
 function showAuthScreen(id){
-  ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot','screen-waitlist']
+  ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot','screen-waitlist','screen-verify-email']
     .forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
   // Reset linking screen sections to visible when navigating to it
   if(id==='screen-linking'){
@@ -77,8 +77,14 @@ window.doSignup = async function(){
   const signupBtn = document.querySelector('#screen-signup .auth-submit-btn');
   if(signupBtn){ signupBtn.textContent='Creating account…'; signupBtn.disabled=true; }
   try{
-    await state.fbAuth.createUserWithEmailAndPassword(email, pw);
-    // onAuthStateChanged will fire → show onboarding
+    const cred = await state.fbAuth.createUserWithEmailAndPassword(email, pw);
+    try {
+      await state.fbAuth.sendEmailVerification(cred.user);
+    } catch (verifyErr) {
+      console.warn('sendEmailVerification failed:', verifyErr);
+      // Non-fatal — user can still resend from the verify screen
+    }
+    // onAuthStateChanged will fire with !emailVerified → verify screen
   } catch(e){
     err.textContent = R.friendlyAuthError(e.code);
     if(signupBtn){ signupBtn.textContent='Create account'; signupBtn.disabled=false; }
@@ -172,6 +178,11 @@ window.doCreateCouple = async function(){
   btn.textContent = 'Creating…';
   btn.disabled = true;
   try{
+    if (!state.fbAuth.currentUser?.emailVerified) {
+      document.getElementById('linking-error').textContent = 'Please verify your email first.';
+      btn.textContent = 'Create our Snug'; btn.disabled = false;
+      return;
+    }
     const uid = state.fbAuth.currentUser.uid;
     // Guard: prevent creating duplicate Snug
     let existingData=null;
@@ -261,6 +272,11 @@ window.doJoinCouple = async function(){
   if(joinBtn && joinBtn.disabled) return;
   if(joinBtn){ joinBtn.textContent='Joining…'; joinBtn.disabled=true; }
   try{
+    if (!state.fbAuth.currentUser?.emailVerified) {
+      err.textContent = 'Please verify your email first.';
+      if (joinBtn) { joinBtn.textContent = 'Join Snug'; joinBtn.disabled = false; }
+      return;
+    }
     const uid = state.fbAuth.currentUser.uid;
     // Check invite
     let invite = null;
@@ -425,7 +441,7 @@ async function tryInitFirebase(){
     const{initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const{getDatabase,ref,set,push,onValue,remove,serverTimestamp,update,runTransaction}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
     const{getStorage,ref:storageRef,uploadBytes,getDownloadURL,deleteObject}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
-    const{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser,sendEmailVerification}=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const app=initializeApp(FIREBASE_CONFIG);
     state.db=getDatabase(app);state.dbRef=ref;state.dbSet=set;state.dbPush=push;state.dbRemove=remove;state.fbOnValue=onValue;state.dbUpdate=update;state.fbRunTransaction=runTransaction;
     // Auth setup
@@ -440,11 +456,20 @@ async function tryInitFirebase(){
       updateEmail:(user,email)=>updateEmail(user,email),
       reauthenticateWithCredential:(user,cred)=>reauthenticateWithCredential(user,cred),
       EmailAuthProvider: EmailAuthProvider,
-      deleteUser:(user)=>deleteUser(user)
+      deleteUser:(user)=>deleteUser(user),
+      sendEmailVerification:(user)=>sendEmailVerification(user)
     };
     // Watch auth state
     onAuthStateChanged(auth, async user=>{
       state.fbAuth.currentUser = user;
+      // Email verification gate — unverified users route to verify screen
+      if (user && !user.emailVerified) {
+        R.showAuthWrap();
+        showAuthScreen('screen-verify-email');
+        const emailEl = document.getElementById('verify-email-display');
+        if (emailEl) emailEl.textContent = user.email;
+        return;
+      }
       if(!user){
         // Not logged in — clear all state and show login screen.
         // Capture uid BEFORE reset so we can clear the stored FCM token.
@@ -675,6 +700,56 @@ async function tryInitFirebase(){
   }
 }
 
+
+// ── Email verification screen handlers ───────────────────
+window.doResendVerification = async function() {
+  const btn = document.getElementById('verify-resend-btn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    await state.fbAuth.sendEmailVerification(state.fbAuth.currentUser);
+    btn.textContent = 'Sent! Check your inbox';
+    setTimeout(() => { btn.textContent = 'Resend email'; btn.disabled = false; }, 60000);
+  } catch (e) {
+    console.error('Resend failed:', e);
+    btn.textContent = 'Failed — try again';
+    setTimeout(() => { btn.disabled = false; }, 5000);
+  }
+};
+
+window.doCheckVerification = async function() {
+  const btn = document.getElementById('verify-continue-btn');
+  if (!btn || btn.disabled) return;
+  const err = document.getElementById('verify-error');
+  if (err) err.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  try {
+    await state.fbAuth.currentUser.reload();
+    // Force token refresh so email_verified claim propagates to server-side rules
+    await state.fbAuth.currentUser.getIdToken(true);
+    if (state.fbAuth.currentUser.emailVerified) {
+      // Reload the page to get a fresh auth state with verified claims everywhere
+      window.location.reload();
+    } else {
+      if (err) err.textContent = "Still not verified — check your inbox and try again.";
+      btn.textContent = "I've verified — continue";
+      btn.disabled = false;
+    }
+  } catch (e) {
+    console.error('Verification check failed:', e);
+    if (err) err.textContent = 'Something went wrong. Please try again.';
+    btn.textContent = "I've verified — continue";
+    btn.disabled = false;
+  }
+};
+
+window.doVerifySignOut = async function() {
+  try { await state.fbAuth.signOut(); } catch(e) {}
+  // onAuthStateChanged will fire with !user → show login; override to signup
+  setTimeout(() => showAuthScreen('screen-signup'), 100);
+};
 
 // ── Register for cross-module access ─────────────────────
 R.showAuthWrap = showAuthWrap;
