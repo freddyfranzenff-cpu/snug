@@ -3,3 +3,5 @@ node_modules
 dist
 .DS_Store
 .firebase/
+service-account.json
+scripts/service-account.json
