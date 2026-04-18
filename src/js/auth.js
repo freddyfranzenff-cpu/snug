@@ -73,7 +73,9 @@ window.doSignup = async function(){
   if(!state.fbAuth){ err.textContent = 'Connection error. Please refresh and try again.'; return; }
   if(!email || !pw){ err.textContent = 'Please fill in all fields.'; return; }
   if(pw !== pw2){ err.textContent = "Passwords don't match."; return; }
-  if(pw.length < 6){ err.textContent = 'Password must be at least 6 characters.'; return; }
+  if(pw.length < 8){ err.textContent = 'Password must be at least 8 characters.'; return; }
+  if(!/[A-Z]/.test(pw)){ err.textContent = 'Password must include an uppercase letter.'; return; }
+  if(!/[0-9]/.test(pw)){ err.textContent = 'Password must include a number.'; return; }
   const signupBtn = document.querySelector('#screen-signup .auth-submit-btn');
   if(signupBtn){ signupBtn.textContent='Creating account…'; signupBtn.disabled=true; }
   try{
@@ -120,6 +122,7 @@ function friendlyAuthError(code){
     'auth/wrong-password': 'Incorrect password.',
     'auth/invalid-credential': 'Incorrect email or password.',
     'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    'auth/password-does-not-meet-requirements': 'Password must be at least 8 characters with an uppercase letter and a number.',
   };
   return map[code] || 'Something went wrong. Please try again.';
 }

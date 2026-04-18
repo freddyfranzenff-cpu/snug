@@ -261,7 +261,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v127` (PR 2 — email verification)
+- Current version: `ylc-v128` (PR 3 — password policy)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -572,6 +572,9 @@ RTDB `meta/userCount` node with transactional increment in `doOnboarding`. Rule 
 
 ### ✅ Phase 1 / PR 2 — Email verification (rules-enforced)
 `sendEmailVerification` called after account creation. New `screen-verify-email` with resend and continue-after-verify buttons. `onAuthStateChanged` gates unverified users. Defensive guards in `doCreateCouple`/`doJoinCouple`. Rules require `auth.token.email_verified === true` on all writes. Existing 4 users grandfathered via `scripts/grandfather-verify.js`.
+
+### ✅ Phase 1 / PR 3 — Password policy enforcement
+Firebase console flipped to enforce min length 8 + uppercase + numeric. Client-side checks in doSignup updated to match. friendlyAuthError maps the new server error code.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.
