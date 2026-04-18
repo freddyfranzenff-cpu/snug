@@ -1,0 +1,107 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "avatarUrl": {
+          ".read": "auth != null"
+        }
+      }
+    },
+    "invites": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid || (!newData.exists() && data.child('coupleId').val() != null && root.child('couples').child(data.child('coupleId').val()).child('members').child(auth.uid).exists()))",
+        "used": {
+          ".write": "auth != null && newData.isBoolean() && newData.val() === true"
+        }
+      }
+    },
+    "couples": {
+      "$coupleId": {
+        ".read": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()",
+        ".write": "auth != null && (!data.exists() || root.child('couples').child($coupleId).child('members').child(auth.uid).exists())",
+        "members": {
+          "$memberUid": {
+            ".write": "auth != null && auth.uid === $memberUid"
+          }
+        },
+        "presence": {
+          "$memberUid": {
+            ".write": "auth != null && auth.uid === $memberUid"
+          }
+        },
+        "activeMystery": {
+          ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && ((newData.exists() && newData.val() === auth.uid) || (!newData.exists() && (!data.exists() || data.val() === auth.uid)))",
+          ".validate": "newData.isString() && root.child('couples').child($coupleId).child('members').child(newData.val()).exists()"
+        },
+        "meetupDate": {
+          ".validate": "!root.child('couples').child($coupleId).child('activeMystery').exists() || root.child('couples').child($coupleId).child('activeMystery').val() === auth.uid"
+        },
+        "datePlan": {
+          "$dateKey": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.child('mode').exists() || data.child('mode').val() !== 'mystery' || data.child('revealed').val() === true || auth.uid === data.child('plannerId').val())",
+            "plannerId": {
+              ".validate": "!data.exists() || data.val() === newData.val()"
+            },
+            "hints": {
+              ".validate": "newData.hasChildren() || !newData.exists()",
+              "$pushId": {
+                ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').exists() || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('mode').val() !== 'mystery' || root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('revealed').val() === true || auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val())",
+                ".validate": "data.exists() || (newData.child('authorUid').val() === auth.uid && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().parent().child('plannerId').val()))",
+                "text": {
+                  ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()"
+                },
+                "guess": {
+                  ".write": "auth != null && !data.exists() && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
+                  ".validate": "!data.exists() && newData.child('authorUid').val() === auth.uid && auth.uid !== root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()",
+                  "text": {
+                    ".validate": "newData.isString() && newData.val().length < 500 && !data.exists()"
+                  }
+                },
+                "correct": {
+                  ".write": "auth != null && auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val()"
+                }
+              }
+            },
+            "revealed": {
+              ".validate": "newData.isBoolean() && (auth.uid === root.child('couples').child($coupleId).child('datePlan').child($dateKey).child('plannerId').val() || auth.uid === newData.parent().child('plannerId').val())"
+            }
+          }
+        },
+        "statusHistory": {
+          "$pushId": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && (!data.exists() || data.child('uid').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['uid','activity','mood','savedAt']) && newData.child('uid').val() === auth.uid && newData.child('savedAt').isNumber()"
+          }
+        },
+        "dailyInsight": {
+          "$dateKey": {
+            ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists()"
+          }
+        },
+        "tonightsMood": {
+          "$dateKey": {
+            "$uid": {
+              ".validate": "(auth.uid === $uid && newData.hasChildren(['mood','chosenAt'])) || (data.exists() && newData.child('mood').val() === data.child('mood').val() && newData.child('chosenAt').val() === data.child('chosenAt').val())",
+              "mood": {
+                ".validate": "newData.isString() && (newData.val() === 'cosy' || newData.val() === 'romantic' || newData.val() === 'adventurous' || newData.val() === 'netflix' || newData.val() === 'productive' || newData.val() === 'chaotic' || newData.val() === 'talky' || newData.val() === 'celebratory' || newData.val() === 'hungry')"
+              },
+              "chosenAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
