@@ -58,6 +58,10 @@ snug/
     weather.js              ← Vercel serverless — proxies wttr.in (ES module default export)
     notify.js               ← Vercel serverless — FCM HTTP v1 push sender, JWT service account auth
   sw.js, manifest.json      ← Repo root (service worker + PWA manifest)
+  database.rules.json       ← RTDB security rules (deployed via firebase-tools)
+  storage.rules             ← Storage security rules (deployed via firebase-tools)
+  firebase.json             ← Firebase CLI config (points to rules files)
+  .firebaserc               ← Firebase project alias (ldrcounter)
   vite.config.js            ← root=src, publicDir=public, outDir=dist
   vercel.json               ← framework=vite, outputDirectory=dist
   eslint.config.js, package.json
@@ -471,6 +475,30 @@ service firebase.storage {
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
 - Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
+
+---
+
+## Deploying Firebase Rules
+
+Rules are version-controlled in the repo:
+- **RTDB rules:** `database.rules.json`
+- **Storage rules:** `storage.rules`
+- **Firebase config:** `firebase.json` + `.firebaserc`
+
+Deploy both:
+```
+npx firebase-tools deploy --only database,storage
+```
+
+Deploy one at a time:
+```
+npx firebase-tools deploy --only database
+npx firebase-tools deploy --only storage
+```
+
+**Warning:** Before first deploy from a new machine, run `npx firebase-tools login`.
+
+**Important:** Rules now live in the repo and must be deployed via CLI after any change. Console edits will be overwritten on next deploy.
 
 ---
 
