@@ -82,6 +82,14 @@
     <button class="auth-switch-btn" onclick="showAuthScreen('screen-login')">Back to <strong>Sign in</strong></button>
   </div>
 
+  <!-- SCREEN: Waitlist (30-user cap) -->
+  <div class="auth-screen-card" id="screen-waitlist" style="display:none;">
+    <p class="login-eyebrow">waitlist</p>
+    <h1 class="login-title">You're on the <em>waitlist</em></h1>
+    <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Snug is currently in closed testing with a small group of couples. We'll reach out when a spot opens up. Thanks for your patience!</p>
+    <button class="auth-switch-btn" onclick="window.location.reload()">Back to sign in</button>
+  </div>
+
   <!-- SCREEN 2: Sign up -->
   <div class="auth-screen-card" id="screen-signup" style="display:none;">
     <p class="login-eyebrow">create account</p>

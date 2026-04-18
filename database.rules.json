@@ -99,6 +99,12 @@
         }
       }
     },
+    "meta": {
+      "userCount": {
+        ".read": "auth != null",
+        ".write": "auth != null && newData.isNumber() && newData.val() <= 30 && newData.val() === (data.val() || 0) + 1"
+      }
+    },
     "$other": {
       ".read": false,
       ".write": false

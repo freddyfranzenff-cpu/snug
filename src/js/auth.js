@@ -9,7 +9,7 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 
 // ── Auth UI helpers ──────────────────────────────────────
 function showAuthScreen(id){
-  ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot']
+  ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot','screen-waitlist']
     .forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
   // Reset linking screen sections to visible when navigating to it
   if(id==='screen-linking'){
@@ -126,6 +126,24 @@ window.doOnboarding = async function(){
   if(!name){ err.textContent = 'Please enter your name.'; return; }
   try{
     const uid = state.fbAuth.currentUser.uid;
+    // ── 30-user hard cap (Phase 1 rollout) ──
+    const countRef = state.dbRef(state.db, 'meta/userCount');
+    let capHit = false;
+    try {
+      const result = await state.fbRunTransaction(countRef, (current) => {
+        if ((current || 0) >= 30) return;
+        return (current || 0) + 1;
+      });
+      if (!result.committed) capHit = true;
+    } catch (e) {
+      console.error('User count transaction failed:', e);
+      capHit = true;
+    }
+    if (capHit) {
+      try { await state.fbAuth.signOut(); } catch(e) {}
+      showAuthScreen('screen-waitlist');
+      return;
+    }
     await state.dbSet(state.dbRef(state.db, `users/${uid}`), {
       name, city: '', email: state.fbAuth.currentUser.email,
       createdAt: Date.now()
