@@ -35,7 +35,7 @@
         "milestones": {
           "$pushId": {
             "photoPath": {
-              ".validate": "!newData.exists() || newData.val().matches('^milestones/' + $coupleId + '/.*') || (data.exists() && newData.val() === data.val())"
+              ".validate": "!newData.exists() || newData.val().beginsWith('milestones/' + $coupleId + '/') || (data.exists() && newData.val() === data.val())"
             }
           }
         },
