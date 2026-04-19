@@ -204,9 +204,14 @@ async function unregisterFcmToken(uid){
 async function notifyPartner(trigger){
   try{
     if(!state.coupleId || !state.partnerUid) return;
+    if(!state.fbAuth?.currentUser) return;
+    const idToken = await state.fbAuth.currentUser.getIdToken();
     await fetch('/api/notify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+      },
       body: JSON.stringify({
         coupleId: state.coupleId,
         recipientUid: state.partnerUid,

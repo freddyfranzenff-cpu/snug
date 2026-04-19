@@ -261,7 +261,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v130` (PR 4 — Storage rules tighten + coupleId milestone paths)
+- Current version: `ylc-v131` (PR 6 — Harden api/notify.js with Firebase ID token verification)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -530,6 +530,9 @@ Map at `users/{uid}/fcmTokens/{tokenHash}` — multiple devices. Legacy single `
 ### Notification preferences
 Per-trigger toggles at `users/{uid}/notificationPrefs/`. `moodPick` and `moodMatch` share one `tonightsMood` toggle via `PREF_ALIAS`. Defaults: all ON if node absent.
 
+### Server-side auth
+`api/notify.js` requires `Authorization: Bearer <Firebase ID token>` on every request. Server verifies the token via firebase-admin, checks `email_verified === true`, and verifies both sender UID and `recipientUid` are members of the `coupleId`. Unauthenticated or cross-couple requests return 401/403.
+
 ### iOS / Known limits
 - Web Push iOS 16.4+, PWA installed only. `pushSupported()` bails unless standalone mode.
 - Android status-bar notification icon renders as white square — needs monochrome asset. Deferred.
@@ -582,6 +585,9 @@ doResendVerification distinguishes rate-limit (auth/too-many-requests) from gene
 
 ### ✅ Phase 1 / PR 4 — Storage rules tighten + coupleId-prefixed milestone paths
 Storage: MIME tightened to image/(jpeg|png|webp) on avatars and milestones. Milestone size cap 10MB → 5MB. New coupleId-prefixed path for new uploads. Legacy path kept permanently for existing photos. RTDB .validate on photoPath enforces new shape on creates/changes, carves out unchanged updates to existing milestones. Applies to all four upload paths: milestones.js edit/create/helper + togethermode.js dateDone.
+
+### ✅ Phase 1 / PR 6 — Harden api/notify.js with Firebase ID token verification
+Server-side: firebase-admin verifies Authorization: Bearer ID token, requires email_verified, requires both sender and recipient to be members of target coupleId. Client: notifyPartner attaches currentUser.getIdToken() on every call. Closes the unauthenticated /api/notify endpoint. App Check (full belt-and-braces variant) deferred to post-Phase-1 scale milestone.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.

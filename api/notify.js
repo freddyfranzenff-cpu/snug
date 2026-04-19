@@ -11,10 +11,28 @@
 //                                for new europe-west1 projects only.)
 //
 // Request body: { coupleId, recipientUid, trigger, senderName }
+// Auth:         Authorization: Bearer <Firebase ID token>
 //
 // Triggers map to fixed title/body templates (see TRIGGERS below).
 
 import crypto from 'node:crypto';
+import admin from 'firebase-admin';
+
+// ── Firebase Admin init (once per cold start) ──────────────
+let _sa = null;
+try {
+  _sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(_sa),
+      databaseURL: process.env.FIREBASE_DATABASE_URL
+        || _sa.databaseURL
+        || `https://${_sa.project_id}-default-rtdb.europe-west1.firebasedatabase.app`,
+    });
+  }
+} catch (e) {
+  console.error('admin init failed:', e);
+}
 
 const TRIGGERS = {
   pulse:     { title: n => `${n} sent you a pulse`,         body: n => `${n} is thinking of you` },
@@ -106,6 +124,22 @@ export default async function handler(req, res){
     return res.status(500).json({ error: 'FIREBASE_SERVICE_ACCOUNT not configured' });
   }
 
+  // ── Auth: require verified Firebase ID token ──────────────
+  const authHeader = req.headers.authorization || req.headers.Authorization || '';
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (!match) {
+    return res.status(401).json({ error: 'Missing Authorization header' });
+  }
+  let decoded;
+  try {
+    decoded = await admin.auth().verifyIdToken(match[1]);
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+  if (!decoded.email_verified) {
+    return res.status(403).json({ error: 'Email not verified' });
+  }
+
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
   const { coupleId, recipientUid, trigger, senderName } = body;
   if(!coupleId || !recipientUid || !trigger){
@@ -119,6 +153,18 @@ export default async function handler(req, res){
     const dbUrl = process.env.FIREBASE_DATABASE_URL
       || sa.databaseURL
       || `https://${sa.project_id}-default-rtdb.europe-west1.firebasedatabase.app`;
+
+    // ── Authorization: both sender and recipient must be members of coupleId ──
+    const [senderMember, recipientMember] = await Promise.all([
+      rtdbGet(dbUrl, `couples/${coupleId}/members/${decoded.uid}`, token),
+      rtdbGet(dbUrl, `couples/${coupleId}/members/${recipientUid}`, token),
+    ]);
+    if (!senderMember) {
+      return res.status(403).json({ error: 'Not a member of this couple' });
+    }
+    if (!recipientMember) {
+      return res.status(403).json({ error: 'Recipient not in this couple' });
+    }
 
     // fcmTokens is a map of tokenHash -> token string (multi-device).
     // Legacy single-string at fcmToken is read as a fallback for users who
