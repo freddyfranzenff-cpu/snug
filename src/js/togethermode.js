@@ -844,7 +844,7 @@ window.saveDnDoneSheet = async function(){
     if(_dnDonePhotoFile && state.storage && msKey){
       try{
         const file = _dnDonePhotoFile;
-        const path = `milestones/${msKey}/${Date.now()}_datenight.jpg`;
+        const path = `milestones/${state.coupleId}/${msKey}/${Date.now()}_datenight.jpg`;
         const compressed = R.compressImage ? await R.compressImage(file, 1200) : file;
         const blob = (compressed instanceof Blob) ? compressed : new Blob([compressed], {type:'image/jpeg'});
         const ref2 = state.fbStorageRef(state.storage, path);

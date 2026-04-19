@@ -261,7 +261,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v129` (PR 3.5 — verification resend fix)
+- Current version: `ylc-v130` (PR 4 — Storage rules tighten + coupleId milestone paths)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -478,7 +478,8 @@ service firebase.storage {
 - `tonightsMood/$dateKey/$uid`: validated shape — `mood` must be one of the 9 valid keys, `chosenAt` numeric, no extras. Unchanged write-through of partner's existing entry permitted so `runTransaction` works.
 - `invites/$code`: any-auth read. Write only by creator or couple member.
 - Storage `avatars/{uid}.jpg`: any-auth read, own write/delete, max 2MB, image type only.
-- Storage `milestones/`: any-auth read/write. **Known gap — TODO: scope to couple members.**
+- Storage `milestones/{coupleId}/{milestoneKey}/{filename}`: any-auth read. Write requires email_verified, 5MB cap, image/(jpeg|png|webp). New uploads use coupleId-prefixed path. Legacy path `milestones/{milestoneKey}/{filename}` still allowed for existing photos.
+- Milestone photos: new uploads go to `milestones/{coupleId}/{milestoneKey}/{filename}`. Legacy path `milestones/{milestoneKey}/{filename}` still allowed for existing photos. RTDB .validate on photoPath enforces coupleId prefix on new writes (carves out unchanged updates to legacy entries).
 
 ---
 
@@ -578,6 +579,9 @@ Firebase console flipped to enforce min length 8 + uppercase + numeric. Client-s
 
 ### ✅ Phase 1 / PR 3.5 — Verification Resend button fix
 doResendVerification distinguishes rate-limit (auth/too-many-requests) from generic failure. Rate-limited state uses 60s cooldown with explicit "Too many requests" message. Button text resets on re-enable.
+
+### ✅ Phase 1 / PR 4 — Storage rules tighten + coupleId-prefixed milestone paths
+Storage: MIME tightened to image/(jpeg|png|webp) on avatars and milestones. Milestone size cap 10MB → 5MB. New coupleId-prefixed path for new uploads. Legacy path kept permanently for existing photos. RTDB .validate on photoPath enforces new shape on creates/changes, carves out unchanged updates to existing milestones. Applies to all four upload paths: milestones.js edit/create/helper + togethermode.js dateDone.
 
 ### Session 5 — Domain + Branding
 Register domain (snug.app / getsnug.app / joinsnug.com), connect to Vercel, update `manifest.json`, meta tags, invite link generation, Firebase authorised domains. Fix Android monochrome notification icon.

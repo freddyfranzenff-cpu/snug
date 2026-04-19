@@ -205,7 +205,7 @@ window.saveMilestone=async function(){
         const file = state.pendingPhotoFile;
         const pos = state.pendingPhotoPosition;
         const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
-        const path = `milestones/${currentEditKey}/${Date.now()}_${baseName}.jpg`;
+        const path = `milestones/${state.coupleId}/${currentEditKey}/${Date.now()}_${baseName}.jpg`;
         btn.textContent = "Uploading…";
         const compressed = await R.compressImage(file, 1200);
         const uploadData = (compressed instanceof Blob) ? compressed : new Blob([compressed], {type:"image/jpeg"});
@@ -277,7 +277,7 @@ window.saveMilestone=async function(){
       ;(async()=>{
         try{
           const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
-          const path = `milestones/${capturedKey}/${Date.now()}_${baseName}.jpg`;
+          const path = `milestones/${state.coupleId}/${capturedKey}/${Date.now()}_${baseName}.jpg`;
           const photoRef = state.fbStorageRef(state.storage, path);
           await Promise.race([
             state.fbUploadBytes(photoRef, capturedBlob, {contentType:"image/jpeg"}),
@@ -433,7 +433,7 @@ async function uploadPhotoForKey(key, file, position, isNewMilestone=false){
   // Force safe .jpg filename regardless of input (handles HEIC, no-extension, etc.)
   const baseName = (file.name||file._name||"photo").replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi,"_").substring(0,40) || "photo";
   const safeName = `${baseName}.jpg`;
-  const path = `milestones/${key}/${Date.now()}_${safeName}`;
+  const path = `milestones/${state.coupleId}/${key}/${Date.now()}_${safeName}`;
   const ref = state.fbStorageRef(state.storage, path);
   // uploadBytes needs a Blob — if compressImage fell back to File, wrap it
   const uploadData = (compressed instanceof Blob) ? compressed : new Blob([compressed], {type:"image/jpeg"});

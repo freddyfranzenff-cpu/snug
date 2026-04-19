@@ -32,6 +32,13 @@
             ".write": "auth != null && auth.uid === $memberUid"
           }
         },
+        "milestones": {
+          "$pushId": {
+            "photoPath": {
+              ".validate": "!newData.exists() || newData.val().matches('^milestones/' + $coupleId + '/.*') || (data.exists() && newData.val() === data.val())"
+            }
+          }
+        },
         "activeMystery": {
           ".write": "auth != null && root.child('couples').child($coupleId).child('members').child(auth.uid).exists() && ((newData.exists() && newData.val() === auth.uid) || (!newData.exists() && (!data.exists() || data.val() === auth.uid)))",
           ".validate": "newData.isString() && root.child('couples').child($coupleId).child('members').child(newData.val()).exists()"
