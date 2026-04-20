@@ -624,8 +624,12 @@ window.saveDnPickerSheet = async function(){
         }catch(e){}
         if(!existingPlanner){
           patch.plannerId = state.myUid;
-          patch.revealed  = false;
         }
+        // Always reset revealed=false on mystery save. Otherwise stale
+        // revealed:true from a prior life of this dateKey (earlier revealed
+        // mystery, auto-revealed past date) leaks through and pre-spoils the
+        // new mystery.
+        patch.revealed = false;
       } else {
         // M1: explicit null on mystery-only fields when switching to open.
         patch.plannerId = null;

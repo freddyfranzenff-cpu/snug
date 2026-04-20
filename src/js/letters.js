@@ -25,14 +25,20 @@ function renderLetterTimeline(rounds){
   rounds.sort((a,b) => new Date(b.unlockDate) - new Date(a.unlockDate));
   state.letterRounds = rounds;
 
-  // Check if today is unlock day for any round
-  const unlockedToday = rounds.some(r => {
+  // Banner: show only when a round's unlock moment is (a) on today's calendar
+  // date AND (b) already in the past. Old logic triggered at 00:00 on the
+  // unlock day. A naive "isUnlocked" check would trigger forever for all past
+  // rounds. We want the "today is the day" banner to appear from unlock time
+  // through end-of-day only.
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const bannerActive = rounds.some(r => {
+    if(!r.unlockDate) return false;
     const d = new Date(r.unlockDate);
-    const today = new Date();
-    return d.toDateString() === today.toDateString();
+    return d.toDateString() === todayStr && d <= now;
   });
   const banner = document.getElementById("letter-unlocked-banner");
-  if(banner) banner.style.display = unlockedToday ? "block" : "none";
+  if(banner) banner.style.display = bannerActive ? "block" : "none";
 
   tl.innerHTML = "";
   // Render the empty "Write letter" tile for the current upcoming meetup
@@ -334,7 +340,14 @@ function _startLetterCountdown(){
       const unlockDate = unlockEl.dataset.unlock;
       if(!unlockDate) return;
       const diff = new Date(unlockDate) - Date.now();
-      if(diff <= 0){ R._stopLetterCountdown(); return; }
+      if(diff <= 0){
+        R._stopLetterCountdown();
+        // Re-render: R.isUnlocked is evaluated fresh, sealed tile flips to
+        // readable, banner updates. Without this, the page stays stale until
+        // the user manually navigates away and back.
+        if(window.initLetterPage) window.initLetterPage();
+        return;
+      }
       const d = Math.floor(diff/86400000);
       const h = Math.floor((diff%86400000)/3600000);
       const m = Math.floor((diff%3600000)/60000);
