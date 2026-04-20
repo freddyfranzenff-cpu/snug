@@ -186,25 +186,38 @@ function loadDnPlanner(){
         .catch(()=>{ /* permission denied or not-present — ignore */ });
     }
 
-    // Auto-reveal: if the mystery's datetime has passed, reveal automatically.
-    // No one should be locked out of plan details during the actual date
-    // just because the planner forgot to tap Reveal.
+    // Auto-reveal: once the mystery's datetime has passed, both sides should
+    // see the revealed (open) card. Security rules only allow the planner to
+    // write revealed=true, so the planner's client does the actual write
+    // (and database propagates to the partner via listener). But the partner
+    // shouldn't be stuck looking at a mystery card if the planner's device
+    // happens to be closed. So the partner's client overrides locally — d
+    // and state._dnCurrentPlan are treated as revealed for rendering only.
+    // The database catches up when the planner next opens the app.
     if(mode === 'mystery' && !revealed && state.meetupDate && state.meetupDate <= new Date()){
-      // Only the planner can write revealed=true under current rules. For the
-      // partner, we skip the write and render as mystery-unrevealed until the
-      // planner's device (or a future cloud function) flips the flag. If I'm
-      // the planner, do the write; the listener will re-fire with revealed=true.
       if(hasPlannerId && d.plannerId === state.myUid){
+        // I'm the planner — do the real write. Listener re-fires with
+        // revealed=true and renders the open card via the normal path.
         state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/revealed`), true)
           .then(()=>{
             try{ state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`)); }catch(e){}
           })
-          .catch(e => console.warn('auto-reveal failed:', e));
-        return; // Render pending the listener re-fire with revealed=true
+          .catch(e => console.warn('auto-reveal write failed:', e));
+        return;
       }
+      // I'm the partner — the planner's device may not be open. Override
+      // locally: treat as revealed for rendering purposes. Also mark the
+      // in-memory plan as revealed so _syncDnPickerBtn and other checks
+      // see the correct post-reveal state. This is purely cosmetic — the
+      // database still shows revealed=false until the planner's client
+      // writes it.
+      d.revealed = true;
+      state._dnCurrentPlan = d;
+      // Fall through to the normal render path below — with revealed=true,
+      // the code takes the open-card branch.
     }
 
-    if(mode === 'mystery' && !revealed){
+    if(mode === 'mystery' && !d.revealed){
       if(!hasPlannerId){
         // Data integrity issue — mystery flagged but no plannerId. Offer recovery.
         if(heading) heading.textContent = 'Mystery date';
