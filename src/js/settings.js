@@ -523,6 +523,8 @@ window.doDeleteAccount = async function(){
     await state.dbRemove(state.dbRef(state.db, `users/${state.myUid}`));
 
     // ── 8. Delete Firebase Auth account ──────────────────────────
+    // Tear down mood listener before deleting auth — prevents orphaned listener
+    if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
     // Use a separate try/catch so RTDB errors above never block auth deletion
     // onAuthStateChanged fires → clears all state → shows login screen
     const currentUser = state.fbAuth.currentUser || user;
@@ -614,57 +616,10 @@ window.doSignOut = async function(){
     // to prevent it from firing PERMISSION_DENIED and showing the wrong screen
     if(state._membersUnsub){ try{state._membersUnsub();}catch(e){} state._membersUnsub=null; }
     await state.fbAuth.signOut();
-    // Reset all couple/session state so a re-login starts clean
-    state.ME=null;state.OTHER=null;state.coupleId=null;state.myUid=null;state.partnerUid=null;state.myRole=null;
-    state.myName=null;state.otherName=null;
-    state.myStatus=null;state.otherStatus=null;
-    if(state.statusRefreshInterval){clearInterval(state.statusRefreshInterval);state.statusRefreshInterval=null;}
-    if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
-    if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
-    state.myAvatarUrl=null;state.otherAvatarUrl=null;
-    if(state._myAvatarUnsub){try{state._myAvatarUnsub();}catch(e){}state._myAvatarUnsub=null;}
-    if(state._otherAvatarUnsub){try{state._otherAvatarUnsub();}catch(e){}state._otherAvatarUnsub=null;}
-    if(state._onboardAvatarBlob){ state._onboardAvatarBlob=null; } state._inviteInFlight=false;state._selfDeleting=false;
-    const _obp = document.getElementById('onboard-avatar-preview');
-    if(_obp && _obp.src && _obp.src.startsWith('blob:')){ URL.revokeObjectURL(_obp.src); _obp.src=''; _obp.style.display='none'; }
-    const _obi = document.getElementById('onboard-avatar-icon');
-    if(_obi) _obi.style.display='';
-    if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-    if(state._meetupDateUnsub){try{state._meetupDateUnsub();}catch(e){}state._meetupDateUnsub=null;}
-    if(R.resetSummary){try{R.resetSummary();}catch(e){}}
-    if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
-    state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
-    state.coupleType='ldr';
-    state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;
-    state.myTz=null;state.otherTz=null;
-    state.coupleStartDate=null;state.coupleMeetupDate=null;state.meetupDate=null;R._stopLetterCountdown&&R._stopLetterCountdown();
-    state.localMilestones=[];state.localBucket=[];
-    state.blFilter="all";state.blEditKey=null;
-    state.currentLetterRoundId=null;state.letterRounds=[];
-    state.editingKey=null;state.editingOriginalAuthor=null;
-    state.pendingPhotoFile=null;state.pendingPhotoPosition="50% 50%";
-    if(state.countdownInterval){clearInterval(state.countdownInterval);state.countdownInterval=null;}
-    if(state.distanceInterval){clearInterval(state.distanceInterval);state.distanceInterval=null;}
-    if(state.clockInterval){clearInterval(state.clockInterval);state.clockInterval=null;}
-    if(state.pulseTimeInterval){clearInterval(state.pulseTimeInterval);state.pulseTimeInterval=null;}
-    if(state.mapInstance){try{state.mapInstance.remove();}catch(e){}state.mapInstance=null;state.myMarker=null;state.otherMarker=null;state.connectLine=null;}
-    if(state.placesMapInstance){try{state.placesMapInstance.remove();}catch(e){}state.placesMapInstance=null;}
-    state._msRegistry.clear();
-    if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
-    if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
-    if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
-    if(state._watchPartnerUnsub){try{state._watchPartnerUnsub();}catch(e){}state._watchPartnerUnsub=null;}
-    if(typeof state._unsubWatchOther!=="undefined"&&state._unsubWatchOther){try{state._unsubWatchOther();}catch(e){}state._unsubWatchOther=null;}
-    state._lastPulseSent=0;
-    state._dnCurrentPlan={};
-    state._dnTimeVal='19:00';
-    state._selectedActivity=null;state._selectedMood=null;
-    state.repositionKey=null;state.repositionDragging=false;state.pendingPhotoForKey=null;
-    // Hide main, show auth
+    // onAuthStateChanged(null) fires _teardownSessionState() — no duplication here.
+    // Only handle DOM transition.
     document.getElementById('main').style.display='none';
     document.getElementById('bottom-nav').style.display='none';
-    if(window._metricInterval){clearInterval(window._metricInterval);window._metricInterval=null;}
-    // Reset home to Now tab on next login
     if(typeof window.switchHomeTab==='function') window.switchHomeTab('now');
     R.showAuthWrap();
     window.showAuthScreen('screen-login');

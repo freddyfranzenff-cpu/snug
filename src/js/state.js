@@ -62,7 +62,7 @@ export const state = {
   // ── Map + intervals ───────────────────────────────────────
   mapInstance: null, myMarker: null, otherMarker: null, connectLine: null,
   countdownInterval: null, distanceInterval: null,
-  clockInterval: null, pulseTimeInterval: null,
+  clockInterval: null, pulseTimeInterval: null, _metricInterval: null,
   placesMapInstance: null, meetupDate: null,
 
   // ── Bucket list filter/edit ───────────────────────────────

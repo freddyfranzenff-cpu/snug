@@ -7,6 +7,78 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 // Couple data (loaded after auth)
 // Couple info
 
+// ── Session teardown helper ──────────────────────────────
+// Single owner for all session-end cleanup. Called from:
+//   - onAuthStateChanged(null) for sign-out
+//   - partner-deleted paths (user stays signed in, loses couple)
+function _teardownSessionState(){
+  // ── Listeners (unsub then null) ──
+  const listeners = [
+    '_coupleTypeUnsub','_meetupDateUnsub','_dnUnsub','_mjUnsub',
+    '_membersUnsub','_watchPartnerUnsub','_unsubWatchOther',
+    '_myAvatarUnsub','_otherAvatarUnsub',
+    'unsubMilestones','unsubBucket','unsubPulse',
+  ];
+  for(const k of listeners){
+    if(state[k]){try{state[k]();}catch(e){}state[k]=null;}
+  }
+
+  // ── Intervals (clearInterval then null) ──
+  const intervals = [
+    'clockInterval','distanceInterval','countdownInterval',
+    'pulseTimeInterval','_metricInterval','statusRefreshInterval',
+    '_letterCountdownInterval',
+  ];
+  for(const k of intervals){
+    if(state[k]){clearInterval(state[k]);state[k]=null;}
+  }
+
+  // ── Module teardowns ──
+  if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+  if(R.resetSummary){try{R.resetSummary();}catch(e){}}
+  if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
+  if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
+  if(R._stopLetterCountdown){try{R._stopLetterCountdown();}catch(e){}}
+
+  // ── State field resets ──
+  state.ME=null;state.OTHER=null;
+  state.coupleId=null;state.myUid=null;state.partnerUid=null;state.myRole=null;
+  state.myName=null;state.otherName=null;
+  state.myStatus=null;state.otherStatus=null;
+  state.myAvatarUrl=null;state.otherAvatarUrl=null;
+  state.myTz=null;state.otherTz=null;state.myCity=null;state.otherCity=null;
+  state.myCoords=null;state.otherCoords=null;
+  state.coupleStartDate=null;state.coupleMeetupDate=null;state.meetupDate=null;
+  state.coupleType='ldr';
+  state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
+  state.localMilestones=[];state.localBucket=[];
+  state.letterRounds=[];state.currentLetterRoundId=null;
+  state.blFilter='all';state.blEditKey=null;
+  state.editingKey=null;state.editingOriginalAuthor=null;
+  state.pendingPhotoFile=null;state.pendingPhotoPosition='50% 50%';
+  state.pendingPhotoForKey=null;
+  state.repositionKey=null;state.repositionDragging=false;
+  state._lastPulseSent=0;
+  state._dnCurrentPlan={};state._dnTimeVal='19:00';
+  state._selectedActivity=null;state._selectedMood=null;
+  state._tmInFlight=false;state._inviteInFlight=false;
+  state._onboardAvatarBlob=null;
+  state._msRegistry.clear();
+
+  // ── Maps ──
+  if(state.mapInstance){try{state.mapInstance.remove();}catch(e){}state.mapInstance=null;}
+  state.myMarker=null;state.otherMarker=null;state.connectLine=null;
+  if(state.placesMapInstance){try{state.placesMapInstance.remove();}catch(e){}state.placesMapInstance=null;}
+
+  // ── DOM cleanup (avatar preview blob URL revoke) ──
+  const onboardPreview = document.getElementById('onboard-avatar-preview');
+  if(onboardPreview && onboardPreview.src && onboardPreview.src.startsWith('blob:')){
+    URL.revokeObjectURL(onboardPreview.src); onboardPreview.src=''; onboardPreview.style.display='none';
+  }
+  const onboardIcon = document.getElementById('onboard-avatar-icon');
+  if(onboardIcon) onboardIcon.style.display='';
+}
+
 // ── Auth UI helpers ──────────────────────────────────────
 function showAuthScreen(id){
   ['screen-login','screen-signup','screen-onboarding','screen-linking','screen-invite','screen-forgot','screen-waitlist','screen-verify-email']
@@ -482,54 +554,12 @@ async function tryInitFirebase(){
         // in the sign-out block below — unregisterFcmToken depends on them
         // surviving past the reset. If you ever start nulling those handles
         // on sign-out, you must move this call or re-capture the handles.
+        // Capture uid BEFORE reset so we can clear the stored FCM token.
         const _prevUid = state.myUid;
         if(R.unregisterFcmToken){
           try{ await R.unregisterFcmToken(_prevUid); }catch(e){}
         }
-        state.ME=null;state.OTHER=null;state.myUid=null;state.partnerUid=null;state.coupleId=null;state.myRole=null;
-        state.myStatus=null;state.otherStatus=null;
-        if(state.statusRefreshInterval){clearInterval(state.statusRefreshInterval);state.statusRefreshInterval=null;}
-        if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
-        if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
-        if(state._myAvatarUnsub){try{state._myAvatarUnsub();}catch(e){}state._myAvatarUnsub=null;}
-        if(state._otherAvatarUnsub){try{state._otherAvatarUnsub();}catch(e){}state._otherAvatarUnsub=null;}
-        state.myAvatarUrl=null;state.otherAvatarUrl=null;
-        if(state._onboardAvatarBlob){ state._onboardAvatarBlob=null; }
-        // Revoke any preview object URLs
-        const onboardPreview = document.getElementById('onboard-avatar-preview');
-        if(onboardPreview && onboardPreview.src && onboardPreview.src.startsWith('blob:')){ URL.revokeObjectURL(onboardPreview.src); onboardPreview.src=''; onboardPreview.style.display='none'; }
-        const onboardIcon = document.getElementById('onboard-avatar-icon');
-        if(onboardIcon) onboardIcon.style.display='';
-        if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-        if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
-        if(R.resetSummary){try{R.resetSummary();}catch(e){}}
-        if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
-        if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
-        state._tmInFlight=false;
-        state._mjMyEntry=null;state._mjOtherEntry=null;state._mjStreakCount=0;
-        state.coupleType='ldr';
-        state.myTz=null;state.otherTz=null;state.myCity=null;state.otherCity=null;state.myCoords=null;state.otherCoords=null;
-        R._stopLetterCountdown && R._stopLetterCountdown();
-        state.meetupDate=null;state.localMilestones=[];state.localBucket=[];state.letterRounds=[];
-        if(state.clockInterval){clearInterval(state.clockInterval);state.clockInterval=null;}
-        if(state.distanceInterval){clearInterval(state.distanceInterval);state.distanceInterval=null;}
-        if(state.countdownInterval){clearInterval(state.countdownInterval);state.countdownInterval=null;}
-        if(window._metricInterval){clearInterval(window._metricInterval);window._metricInterval=null;}
-        if(state.pulseTimeInterval){clearInterval(state.pulseTimeInterval);state.pulseTimeInterval=null;}
-        if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
-        if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
-        if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
-        if(state._watchPartnerUnsub){try{state._watchPartnerUnsub();}catch(e){}state._watchPartnerUnsub=null;}
-        if(state._membersUnsub){try{state._membersUnsub();}catch(e){}state._membersUnsub=null;}
-        if(state._unsubWatchOther){try{state._unsubWatchOther();}catch(e){}state._unsubWatchOther=null;}
-        if(state.mapInstance){try{state.mapInstance.remove();}catch(e){}state.mapInstance=null;}
-        if(state.placesMapInstance){try{state.placesMapInstance.remove();}catch(e){}state.placesMapInstance=null;}
-        state._msRegistry.clear();
-        state._lastPulseSent=0;
-        state._dnCurrentPlan={};
-        state._dnTimeVal='19:00';
-        state._selectedActivity=null;state._selectedMood=null;
-        state.repositionKey=null;state.repositionDragging=false;state.pendingPhotoForKey=null;
+        _teardownSessionState();
         R.showAuthWrap();
         showAuthScreen('screen-login');
         return;
@@ -569,23 +599,12 @@ async function tryInitFirebase(){
           if(_coupleInitFired && !members){
             if(state._selfDeleting) return; // we triggered it — onAuthStateChanged handles redirect
             if(!state.fbAuth.currentUser) return; // user signed out — not a partner deletion
-            // Partner deleted the couple — clean up all listeners first
-            if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
-            if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-            if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
-            if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
-            if(R.resetSummary){try{R.resetSummary();}catch(e){}}
-            if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
-            if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
-            if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
-            if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
-            if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
+            // Partner deleted the couple — centralised teardown
+            _teardownSessionState();
             // Clean up User 2's stale coupleId from their own user record (fire-and-forget)
             state.dbSet(state.dbRef(state.db,`users/${user.uid}/coupleId`), null).catch(e=>console.warn('Could not clear stale coupleId:', e));
             // Clear any stale pending join code so linking screen doesn't pre-fill a dead code
             try{ sessionStorage.removeItem('pendingJoinCode'); localStorage.removeItem('pendingJoinCode'); }catch(e){}
-            // Show message
-            state.coupleId=null;
             document.getElementById('main').style.display='none';
             document.getElementById('bottom-nav').style.display='none';
             R.showAuthWrap();
@@ -641,16 +660,7 @@ async function tryInitFirebase(){
           try{ sessionStorage.removeItem('pendingJoinCode'); localStorage.removeItem('pendingJoinCode'); }catch(e){}
           // Tear down any active listeners if we were live in the app
           if(_coupleInitFired){
-            if(state._coupleTypeUnsub){try{state._coupleTypeUnsub();}catch(e){}state._coupleTypeUnsub=null;}
-            if(state._dnUnsub){try{state._dnUnsub();}catch(e){}state._dnUnsub=null;}
-            if(state._mjUnsub){try{state._mjUnsub();}catch(e){}state._mjUnsub=null;}
-            if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
-            if(R.resetSummary){try{R.resetSummary();}catch(e){}}
-            if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
-            if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
-            if(state.unsubMilestones){try{state.unsubMilestones();}catch(e){}state.unsubMilestones=null;}
-            if(state.unsubBucket){try{state.unsubBucket();}catch(e){}state.unsubBucket=null;}
-            if(state.unsubPulse){try{state.unsubPulse();}catch(e){}state.unsubPulse=null;}
+            _teardownSessionState();
             document.getElementById('main').style.display='none';
           }
           R.showAuthWrap();

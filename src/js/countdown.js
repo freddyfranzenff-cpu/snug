@@ -38,8 +38,8 @@ function startCountdown(){
   tick();
   state.countdownInterval=setInterval(tick,1000);
   // Update metric chip every 60s so day count stays in sync
-  if(window._metricInterval) clearInterval(window._metricInterval);
-  window._metricInterval = setInterval(()=>R.updateMetricChips&&R.updateMetricChips(), 5000);
+  if(state._metricInterval) clearInterval(state._metricInterval);
+  state._metricInterval = setInterval(()=>R.updateMetricChips&&R.updateMetricChips(), 5000);
 }
 
 // Greeting

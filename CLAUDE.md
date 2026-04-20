@@ -344,6 +344,7 @@ All info icons use a single CSS class `info-btn` with no modifiers. Size and col
 | `sendPulse()` | 60s-cooldown rate-limited push |
 | `initTonightsMood()` | Mood listener, pick/waiting/reveal, sheet wiring |
 | `renderSummary(range)` | One-shot Snugshot reads, race-guarded |
+| `_teardownSessionState()` | Centralised teardown — listeners, intervals, state reset. Called on auth logout and partner-delete |
 | `doDeleteAccount()` | Path 1 offboarding |
 | `doLinkingDeleteAccount()` | Path 2 offboarding (from linking screen) |
 
@@ -359,7 +360,7 @@ All info icons use a single CSS class `info-btn` with no modifiers. Size and col
 ---
 
 ## Offboarding Flow
-Two paths — both: validate `'DELETE'`, reauthenticate, `_selfDeleting=true`, delete avatar + milestone photos + invite doc, wipe couple node, clear own user record, delete Auth account. Partner notified via `_membersUnsub` listener.
+Two paths — both: validate `'DELETE'`, reauthenticate, `_selfDeleting=true`, delete avatar + milestone photos + invite doc, wipe couple node, clear own user record, delete Auth account. Partner notified via `_membersUnsub` listener. Session-end cleanup is centralised in `_teardownSessionState()` in `auth.js`, called from `onAuthStateChanged(null)` for sign-out and from partner-deleted paths directly.
 
 ---
 
