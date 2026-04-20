@@ -73,6 +73,11 @@ function renderLetterTimeline(rounds){
     `;
     tl.appendChild(card);
   });
+  // After rendering previous rounds, also render the empty "Write letter" tile
+  // for the current upcoming meetup (if any and not already rendered). Without
+  // this call, couples who completed a previous letter round and set a new
+  // meetup date have no way to start writing for the new round.
+  R.renderCurrentRound(rounds);
 }
 
 function renderLetterTile(letter, isMe, roundKey, unlocked, isActive){
