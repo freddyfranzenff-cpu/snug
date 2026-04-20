@@ -1,6 +1,23 @@
 import { state } from './state.js';
 import { R } from './registry.js';
 
+// Timezone-invariant day count between two YYYY-MM-DD strings.
+// Using Date.UTC() makes the result identical across all timezones and DST
+// states. Never subtract Date objects built from local-midnight parsing —
+// that produces device-dependent off-by-one errors.
+function _daysBetweenDateStrings(startStr, endStr){
+  if(!startStr || !endStr) return 0;
+  const [y1,m1,d1] = startStr.slice(0,10).split('-').map(Number);
+  const [y2,m2,d2] = endStr.slice(0,10).split('-').map(Number);
+  if(!y1 || !y2) return 0;
+  return Math.round((Date.UTC(y2, m2-1, d2) - Date.UTC(y1, m1-1, d1)) / 86400000);
+}
+
+function _todayDateStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 // Legacy pages now live inside their panels — just call special inits
 function _hideLegacyPages(){} // no-op: panels handle visibility via .active class
 
@@ -119,14 +136,11 @@ function updateMetricChips(){
   const meetupVal   = document.getElementById('metric-meetup-val');
   if(meetupLabel) meetupLabel.textContent = state.coupleType==='together' ? 'Date night' : 'Next meetup';
   if(meetupVal){
-    // Date-portion comparison: when the meetup day matches today, show
-    // "Today" regardless of the time component (e.g. 00:00 already past).
     if(state.meetupDate){
       const m = state.meetupDate;
-      const now = new Date();
-      const mMid = new Date(m.getFullYear(), m.getMonth(), m.getDate());
-      const tMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dayDiff = Math.round((mMid - tMid) / 86400000);
+      const meetupStr = `${m.getFullYear()}-${String(m.getMonth()+1).padStart(2,'0')}-${String(m.getDate()).padStart(2,'0')}`;
+      const todayStr = _todayDateStr();
+      const dayDiff = _daysBetweenDateStrings(todayStr, meetupStr);
       if(dayDiff === 0)       meetupVal.textContent = 'Today';
       else if(dayDiff === 1)  meetupVal.textContent = 'Tomorrow';
       else if(dayDiff > 1)    meetupVal.textContent = `${dayDiff}d`;
@@ -222,16 +236,15 @@ function startUI(){
   function tickClocks(){document.getElementById("my-time").textContent=R.fmtTime(state.myTz);document.getElementById("my-date").textContent=R.fmtDate(state.myTz);document.getElementById("other-time").textContent=R.fmtTime(state.otherTz||"UTC");document.getElementById("other-date").textContent=R.fmtDate(state.otherTz||"UTC");}
   tickClocks();state.clockInterval=setInterval(tickClocks,1000);
   if(state.coupleStartDate){
-    // Use T12:00:00 to avoid UTC midnight timezone-off-by-one-day issue
-    // Use local midnight for day counter so it flips at midnight not noon
-    const _sd = state.coupleStartDate.substring(0,10);
-    const startMidnight = new Date(_sd+'T00:00:00');
-    const todayMidnight = new Date(new Date().toLocaleDateString('en-CA')+'T00:00:00');
-    const daysTogether = Math.max(1, Math.floor((todayMidnight-startMidnight)/86400000)+1);
-    document.getElementById("days-together").textContent=daysTogether;
-    const sinceEl=document.getElementById("couple-since-date");
-    // Use T12:00:00 for display only to avoid timezone date shift
-    if(sinceEl){ const d=new Date(_sd+'T12:00:00'); sinceEl.textContent=`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
+    const startStr = state.coupleStartDate.slice(0,10);
+    const todayStr = _todayDateStr();
+    const daysTogether = Math.max(1, _daysBetweenDateStrings(startStr, todayStr) + 1);
+    document.getElementById("days-together").textContent = daysTogether;
+    const sinceEl = document.getElementById("couple-since-date");
+    if(sinceEl){
+      const [y,m,d] = startStr.split('-').map(Number);
+      sinceEl.textContent = `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${y}`;
+    }
   }
   if(state.meetupDate)R.updateCdCaption(state.meetupDate);R.startCountdown();
   R.updateMetricChips&&R.updateMetricChips();

@@ -186,6 +186,24 @@ function loadDnPlanner(){
         .catch(()=>{ /* permission denied or not-present — ignore */ });
     }
 
+    // Auto-reveal: if the mystery's datetime has passed, reveal automatically.
+    // No one should be locked out of plan details during the actual date
+    // just because the planner forgot to tap Reveal.
+    if(mode === 'mystery' && !revealed && state.meetupDate && state.meetupDate <= new Date()){
+      // Only the planner can write revealed=true under current rules. For the
+      // partner, we skip the write and render as mystery-unrevealed until the
+      // planner's device (or a future cloud function) flips the flag. If I'm
+      // the planner, do the write; the listener will re-fire with revealed=true.
+      if(hasPlannerId && d.plannerId === state.myUid){
+        state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}/revealed`), true)
+          .then(()=>{
+            try{ state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`)); }catch(e){}
+          })
+          .catch(e => console.warn('auto-reveal failed:', e));
+        return; // Render pending the listener re-fire with revealed=true
+      }
+    }
+
     if(mode === 'mystery' && !revealed){
       if(!hasPlannerId){
         // Data integrity issue — mystery flagged but no plannerId. Offer recovery.
@@ -399,10 +417,15 @@ window.openDnPickerSheet = function(){
   if(pickerHint && isLDR) pickerHint.textContent = 'Pick the day you\'ll see each other.';
   const dateInput = document.getElementById('dn-picker-date');
   const timeInput = document.getElementById('dn-picker-time');
+  const today = new Date();
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
   const maxD = new Date(); maxD.setFullYear(maxD.getFullYear()+2);
   if(dateInput){
-    dateInput.min = _localDateStr(tomorrow);
+    // Together mode allows today (spontaneous date night). LDR requires
+    // tomorrow or later — you don't teleport to your partner's city.
+    // Save-time check at the effectiveDateTime validates the combined
+    // date+time is actually in the future.
+    dateInput.min = _localDateStr(isLDR ? tomorrow : today);
     dateInput.max = _localDateStr(maxD);
     if(state.meetupDate && state.meetupDate > new Date()){
       dateInput.value = _localDateStr(state.meetupDate);
