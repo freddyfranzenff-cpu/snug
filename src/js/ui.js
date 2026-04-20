@@ -236,6 +236,11 @@ function startUI(){
   if(state.meetupDate)R.updateCdCaption(state.meetupDate);R.startCountdown();
   R.updateMetricChips&&R.updateMetricChips();
   R.updateMetricChips();
+  // Always land on Home / Now tab after sign-in. Prevents stale content on
+  // Account/Memories/Ours panels from the previous session being visible
+  // to the new user before they navigate there and trigger a re-render.
+  if(window.showPage) window.showPage('home');
+  if(window.switchHomeTab) window.switchHomeTab('now');
 }
 
 
