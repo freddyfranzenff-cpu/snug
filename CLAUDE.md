@@ -422,13 +422,13 @@ First deploy from new machine: `npx firebase-tools login`. Console edits overwri
 
 ## Push Notifications
 
-**Triggers:** pulse · memoryJar · status (only if changed) · milestone · bucket (awaits confirmed write) · meetup (LDR) · dateNight (Together) · dnHint · dnGuess · dnReveal · dnCorrect · moodPick · moodMatch. Title = partner name, body trigger-specific.
+**Triggers:** pulse · memoryJar · status (only if changed) · milestone · bucket (awaits confirmed write) · meetup (LDR) · dateNight (Together) · dnHint · dnGuess · dnReveal · dnCorrect · moodPick · moodMatch · moodReveal. Title = partner name except moodMatch (match is the subject). Body trigger-specific.
 
-**Deep linking:** pulse/status → Now, milestone → Milestones, bucket → Bucket, memoryJar → Memory Jar, meetup/dateNight → Us, moodPick/moodMatch → Now. Works live (postMessage) and cold-start (sessionStorage + URL params).
+**Deep linking:** pulse/status → Now, milestone → Milestones, bucket → Bucket, memoryJar → Memory Jar, meetup/dateNight → Us, moodPick/moodMatch/moodReveal → Now. Works live (postMessage) and cold-start (sessionStorage + URL params).
 
 **Tokens:** map at `users/{uid}/fcmTokens/{tokenHash}` (multi-device). Legacy `fcmToken` string still read; skipped if already in map.
 
-**Prefs:** per-trigger toggles at `notificationPrefs/`. `moodPick`/`moodMatch` share `tonightsMood` toggle via `PREF_ALIAS`. Defaults: all ON.
+**Prefs:** per-trigger toggles at `notificationPrefs/`. `moodPick`/`moodMatch`/`moodReveal` share `tonightsMood` toggle via `PREF_ALIAS`. Defaults: all ON.
 
 **Server auth:** `api/notify.js` requires `Authorization: Bearer <ID token>`, verifies via firebase-admin, checks `email_verified`, validates couple membership. 401/403 on failure.
 

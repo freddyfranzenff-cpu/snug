@@ -312,10 +312,12 @@ window.submitTonightsMood = async function(moodKey){
   // be invoked multiple times on retry — the last successful invocation is
   // the one that was committed, so `partnerAlreadyPicked` reflects that state.
   let partnerAlreadyPicked = false;
+  let partnerMoodAtCommit = null;
   try{
     const result = await state.fbRunTransaction(parentRef, current => {
       const c = current || {};
       partnerAlreadyPicked = !!(state.partnerUid && c[state.partnerUid]);
+      partnerMoodAtCommit = (state.partnerUid && c[state.partnerUid]) ? c[state.partnerUid].mood : null;
       // Preserve partner's existing entry (if any) unchanged; add/overwrite
       // mine. Writing a whole object — the $uid .validate rule has an
       // "unchanged write-through" branch for the partner side.
@@ -333,7 +335,11 @@ window.submitTonightsMood = async function(moodKey){
       return;
     }
     window.closeMoodSheet();
-    R.notifyPartner && R.notifyPartner(partnerAlreadyPicked ? 'moodMatch' : 'moodPick');
+    let trigger = 'moodPick';
+    if(partnerAlreadyPicked){
+      trigger = (partnerMoodAtCommit === moodKey) ? 'moodMatch' : 'moodReveal';
+    }
+    R.notifyPartner && R.notifyPartner(trigger);
   }catch(e){
     console.error('submitTonightsMood failed:', e);
     _setSheetRowsDisabled(false);

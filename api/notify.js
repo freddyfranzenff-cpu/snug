@@ -46,15 +46,17 @@ const TRIGGERS = {
   dnGuess:   { title: n => `${n} took a guess`,             body: n => `See what ${n} thinks you're planning` },
   dnCorrect: { title: n => `${n} reacted to your guess`,    body: () => 'You got it right!' },
   dnReveal:  { title: n => `${n} revealed the mystery 🎉`,  body: () => 'Tap to see the full plan' },
-  moodPick:  { title: n => `${n} has picked their mood`,    body: n => `${n} has picked their mood — what's yours tonight?` },
-  moodMatch: { title: n => `${n} picked their mood`,        body: () => 'See if you match!' },
+  moodPick:   { title: n => `${n} picked their mood 🌙`,     body: n => `${n} has picked — what's yours tonight?` },
+  moodMatch:  { title: n => `It's a match! ✨`,              body: n => `You and ${n} both picked the same vibe — tap to see.` },
+  moodReveal: { title: n => `You've both picked`,            body: n => `Tap to see tonight's vibe with ${n}.` },
 };
 
 // Some triggers share a single user-facing pref toggle.
 // e.g. both mood variants are gated by notificationPrefs.tonightsMood.
 const PREF_ALIAS = {
-  moodPick:  'tonightsMood',
-  moodMatch: 'tonightsMood',
+  moodPick:   'tonightsMood',
+  moodMatch:  'tonightsMood',
+  moodReveal: 'tonightsMood',
 };
 
 let _cachedToken = null;
