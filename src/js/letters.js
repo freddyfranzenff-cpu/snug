@@ -156,9 +156,12 @@ function renderCurrentRound(rounds){
   if(!tl) return;
   // If no meetup date set or date is in the past with no new date
   if(!state.meetupDate || state.meetupDate <= new Date()){
-    // Only show prompt if there's no active round already
+    // Only show the empty-state prompt for brand-new couples with zero history.
+    // When past rounds exist, the Today's-the-day banner and past rounds list
+    // are enough; nagging to set a next date belongs on the home page, not here.
     const hasActiveRound = rounds && rounds.some(r => r.unlockDate && new Date(r.unlockDate) > new Date());
-    if(!hasActiveRound){
+    const hasAnyRounds = rounds && rounds.length > 0;
+    if(!hasActiveRound && !hasAnyRounds){
       const prompt = document.createElement("div");
       prompt.style.cssText = "text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.78rem;line-height:1.7;";
       prompt.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1" stroke-linecap="round" style="display:block;margin:0 auto .75rem;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>${state.coupleType==='together'?'Set your next date night on the home page':'Set your next meetup date on the home page'}<br>to start writing new letters 💌`;
