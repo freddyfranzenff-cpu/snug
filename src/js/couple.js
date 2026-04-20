@@ -65,7 +65,14 @@ function applyMode(type){
   if(dnPlanner){
     const show = isTogether && !!state.meetupDate;
     dnPlanner.classList.toggle('visible', show);
-    if(show) R.loadDnPlanner && R.loadDnPlanner();
+    if(show){
+      R.loadDnPlanner && R.loadDnPlanner();
+    } else {
+      // Mode switched away from Together, or no date set — tear down the
+      // datePlan listener so it doesn't keep reading after the card is hidden.
+      if(state._dnUnsub){ try{state._dnUnsub();}catch(e){} state._dnUnsub = null; }
+      state._dnCurrentPlan = null;
+    }
   }
 
   // Tonight's Mood — Together mode only
@@ -150,17 +157,23 @@ window.selectSettingsMode = async function(mode){
 
   // Mystery-date lock: if a non-revealed mystery is active and the current
   // user is not the planner, abort. Mode switches clear meetupDate, which
-  // would destroy the planner's surprise.
-  const plan = state._dnCurrentPlan || {};
-  const mysteryActive = state.coupleType === 'together'
-    && plan.mode === 'mystery'
-    && !plan.revealed
-    && plan.plannerId
-    && plan.plannerId !== state.myUid;
-  if(mysteryActive){
-    window.alert("Your partner's mystery date is still active. Only your partner can change or cancel it before the reveal.");
-    resetToggle();
-    return;
+  // would destroy the planner's surprise. Read activeMystery from RTDB — it's
+  // the source of truth. state._dnCurrentPlan can be stale after dateKey
+  // rollover or if _dnUnsub was previously torn down.
+  if(state.coupleType === 'together'){
+    let activePlannerUid = null;
+    try{
+      await new Promise((res) => state.fbOnValue(
+        state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`),
+        snap => { activePlannerUid = snap.val(); res(); },
+        { onlyOnce: true }
+      ));
+    }catch(e){ /* permission or not-present — treat as no lock */ }
+    if(activePlannerUid && activePlannerUid !== state.myUid){
+      window.alert("Your partner's mystery date is still active. Only your partner can change or cancel it before the reveal.");
+      resetToggle();
+      return;
+    }
   }
 
   // Check if there's an active letter round or a date set

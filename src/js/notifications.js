@@ -184,7 +184,14 @@ async function unregisterFcmToken(uid){
           state.dbRef(state.db, `users/${uid}/fcmTokens/${_currentTokenHash}`),
           null
         );
-      }catch(e){ console.warn('[notify] clear fcmToken failed:', e); }
+      }catch(e){
+        // PERMISSION_DENIED is expected during sign-out — the auth token has
+        // already been revoked by signOut() before this write flushes. Harmless.
+        // /api/notify will clean up stale tokens on its next send attempt.
+        const isPermDenied = e && (e.code === 'PERMISSION_DENIED'
+          || /PERMISSION_DENIED/i.test(e.message || ''));
+        if(!isPermDenied) console.warn('[notify] clear fcmToken failed:', e);
+      }
     }
     if(_messaging){
       try{

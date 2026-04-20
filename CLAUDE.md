@@ -43,8 +43,8 @@ snug/
       firebase-config.js    ← Reads import.meta.env.VITE_*
       app-height.js, sw-register.js
       auth.js               ← onAuthStateChanged, login, signup, onboarding
-      couple.js             ← couple creation, joining, linking, offboarding
-      ui.js                 ← applyMode, startUI, showPage, switchHomeTab
+      couple.js             ← couple creation/joining/linking/offboarding, applyMode, startCoupleTypeListener, startMeetupDateListener, selectSettingsMode
+      ui.js                 ← startUI, showPage, switchHomeTab, updateMetricChips
       milestones.js, bucket.js, letters.js, memoryjar.js
       pulse.js, status.js, weather.js, presence.js, countdown.js
       settings.js, togethermode.js, places.js, avatar.js
