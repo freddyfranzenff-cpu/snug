@@ -238,7 +238,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v131` (PR 6 — Harden api/notify.js with Firebase ID token verification)
+- Current version: `ylc-v143` (× dismiss button on date night cards with confirmation card)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -347,6 +347,9 @@ All info icons use a single CSS class `info-btn` with no modifiers. Size and col
 | `_teardownSessionState()` | Centralised teardown — listeners, intervals, state reset. Called on auth logout and partner-delete |
 | `doDeleteAccount()` | Path 1 offboarding |
 | `doLinkingDeleteAccount()` | Path 2 offboarding (from linking screen) |
+| `openDnDismissConfirm()` | Dims the planner card and renders the dismiss confirmation card below it |
+| `closeDnDismissConfirm()` | Restores the dimmed planner card and removes the confirmation card |
+| `confirmDnDismiss()` | Clears `datePlan/{dateKey}`, `meetupDate`, and `activeMystery` for the current date |
 
 ---
 
@@ -456,6 +459,10 @@ First deploy from new machine: `npx firebase-tools login`. Console edits overwri
 - Password policy (min 8 + uppercase + numeric)
 - Storage rules tightened (MIME, size caps, coupleId-prefixed milestone paths)
 - `api/notify.js` hardened with Firebase ID token verification + couple membership check
+
+### Date night card polish (Apr 2026)
+- Field icons on the date night card are SVG strokes (not emoji), rendered inside `.dn-field-icon`. Coral colour flows via `currentColor` from the icon container.
+- Dismiss pattern: a single `×` button in the top-right corner of the planner card (class `.dn-dismiss-btn`) opens a confirmation card (`.dn-dismiss-confirm`) below while dimming the planner card. Only present on the planner-facing cards (`_renderOpenCard`, `_renderMysteryPlannerCard`) — never on `_renderMysteryPartnerCard`, since the non-planner must not cancel the planner's mystery.
 
 ### Phase 2 — Test Rollout (next)
 Roll out to ~10 couples. Watch: 7-day retention, MJ streak, notification open rate, Tonight's Mood completion, mystery date creation.
