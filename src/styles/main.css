@@ -765,7 +765,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-planner-heading .section-heading{margin:0;flex:1;}
   .dn-planner .dn-planner-header{display:none;}
   .dn-planner-label{font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--label-color);font-weight:700;}
-  .dn-planner-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
+  .dn-planner-card{position:relative;background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
   .dn-planner-date{font-size:.62rem;color:var(--k);font-weight:500;}
   .dn-planner-field{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
   .dn-planner-field:last-of-type{border-bottom:none;}
@@ -872,17 +872,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-done-btn{display:block;width:calc(100% - 1.8rem);margin:.2rem .9rem .85rem;background:var(--surface);color:var(--k);border:1px solid var(--k);border-radius:12px;padding:.65rem 1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .2s;}
   .dn-done-btn:hover{background:var(--kll);}
 
-  .dn-clear-link{background:none;border:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.45rem;margin:.3rem auto 0;display:block;opacity:.85;transition:opacity .15s;}
-  .dn-clear-link:hover{opacity:1;color:var(--k);}
+  .dn-dismiss-btn{position:absolute;top:.55rem;right:.55rem;width:28px;height:28px;border-radius:50%;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;opacity:.55;transition:opacity .15s, background .15s;z-index:2;}
+  .dn-dismiss-btn:hover{opacity:.95;background:rgba(200,85,58,0.06);}
+  .dn-dismiss-btn:focus-visible{outline:2px solid var(--k);outline-offset:2px;}
 
-  .dn-clear-confirm{background:rgba(232,98,42,0.08);border:1px solid var(--k);color:var(--k);font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;cursor:pointer;padding:.45rem .8rem;margin:.3rem auto 0;display:flex;align-items:center;justify-content:center;gap:.55rem;border-radius:20px;width:fit-content;animation:dnClearPulse 1.2s ease-in-out infinite;}
-  .dn-clear-confirm-text{font-weight:600;}
-  .dn-clear-confirm-x{font-size:1rem;line-height:1;opacity:.6;padding:0 .2rem;cursor:pointer;}
-  .dn-clear-confirm-x:hover{opacity:1;}
+  .dn-dismiss-confirm{background:var(--surface);border:1px solid rgba(200,85,58,0.2);border-radius:14px;padding:1rem 1.1rem;margin-top:.75rem;text-align:center;animation:dnDismissFadeIn .2s ease-out;}
+  .dn-dismiss-confirm-title{font-size:.95rem;font-weight:500;color:var(--text);margin-bottom:.3rem;}
+  .dn-dismiss-confirm-sub{font-size:.72rem;color:var(--muted);margin-bottom:.9rem;line-height:1.5;}
+  .dn-dismiss-confirm-actions{display:flex;gap:.6rem;justify-content:center;}
+  .dn-dismiss-cancel-btn{background:none;border:1px solid rgba(200,85,58,0.2);border-radius:20px;padding:.5rem 1.25rem;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:border-color .15s, color .15s;}
+  .dn-dismiss-cancel-btn:hover{border-color:var(--k);color:var(--k);}
+  .dn-dismiss-clear-btn{background:var(--k);border:none;border-radius:20px;padding:.5rem 1.25rem;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:opacity .15s;}
+  .dn-dismiss-clear-btn:hover{opacity:.9;}
+  .dn-dismiss-clear-btn:disabled{opacity:.55;cursor:not-allowed;}
 
-  @keyframes dnClearPulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(232,98,42,0.3);}
-    50%{box-shadow:0 0 0 4px rgba(232,98,42,0);}
+  @keyframes dnDismissFadeIn{
+    from{opacity:0;transform:translateY(-4px);}
+    to{opacity:1;transform:translateY(0);}
   }
   .dn-reveal-body{font-size:.74rem;color:var(--text);line-height:1.5;margin:0 0 .35rem;}
 

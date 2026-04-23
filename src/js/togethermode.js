@@ -45,6 +45,9 @@ function _renderOpenCard(d){
   // from a previous mystery run on this dateKey.
   return `
     <div class="dn-planner-card">
+      <button class="dn-dismiss-btn" onclick="openDnDismissConfirm()" aria-label="Dismiss date">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4 L12 12 M12 4 L4 12"/></svg>
+      </button>
       <div class="dn-display-row">
         <div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c3-4 5-6.5 5-9a5 5 0 0 0-10 0c0 2.5 2 5 5 9z"/><circle cx="8" cy="5.5" r="1.8"/></svg></div>
         <div style="flex:1;">
@@ -70,7 +73,6 @@ function _renderOpenCard(d){
         <button class="mj-add-btn" onclick="openDnSheet()">+ Update plan</button>
       </div>
       ${doneBtn}
-      <button class="dn-clear-link" id="dn-clear-link" onclick="dnClearFirstTap(this)">Just clear this date</button>
     </div>`;
 }
 
@@ -108,6 +110,9 @@ function _renderMysteryPlannerCard(d){
   const who   = d.who   ? _esc(d.who)   : '—';
   return `
     <div class="dn-planner-card dn-mystery-planner">
+      <button class="dn-dismiss-btn" onclick="openDnDismissConfirm()" aria-label="Dismiss date">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4 L12 12 M12 4 L4 12"/></svg>
+      </button>
       <div class="dn-mystery-badge">✨ Mystery date · you're planning</div>
       <div class="dn-display-row"><div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c3-4 5-6.5 5-9a5 5 0 0 0-10 0c0 2.5 2 5 5 9z"/><circle cx="8" cy="5.5" r="1.8"/></svg></div><div style="flex:1;"><div class="dn-field-label">Where</div><div class="${d.where?'dn-display-value':'dn-display-empty'}">${d.where?where:'Not set yet'}</div></div></div>
       <div class="dn-display-row"><div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 L9.2 6.8 L14 8 L9.2 9.2 L8 14 L6.8 9.2 L2 8 L6.8 6.8 Z"/></svg></div><div style="flex:1;"><div class="dn-field-label">What</div><div class="${d.what?'dn-display-value':'dn-display-empty'}">${d.what?what:'Not set yet'}</div></div></div>
@@ -915,47 +920,64 @@ window.saveDnDoneSheet = async function(){
   }
 };
 
-let _dnClearTimeout = null;
+// ── × dismiss → confirmation card ────────────────────────
+let _dnDismissConfirmOpen = false;
 
-window.dnClearFirstTap = function(btn){
-  if(!btn) return;
-  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
-  btn.classList.remove('dn-clear-link');
-  btn.classList.add('dn-clear-confirm');
-  btn.setAttribute('onclick', 'dnClearConfirm()');
-  btn.innerHTML = `
-    <span class="dn-clear-confirm-text">Tap again to clear</span>
-    <span class="dn-clear-confirm-x" onclick="event.stopPropagation();dnClearRevert(this.closest('.dn-clear-confirm'));">×</span>
+window.openDnDismissConfirm = function(){
+  const content = document.getElementById('dn-planner-content');
+  if(!content) return;
+  const card = content.querySelector('.dn-planner-card');
+  if(card){
+    card.style.opacity = '0.55';
+    card.style.pointerEvents = 'none';
+  }
+  const existing = document.getElementById('dn-dismiss-confirm-card');
+  if(existing) existing.remove();
+  const confirmEl = document.createElement('div');
+  confirmEl.id = 'dn-dismiss-confirm-card';
+  confirmEl.className = 'dn-dismiss-confirm';
+  confirmEl.innerHTML = `
+    <div class="dn-dismiss-confirm-title">Clear this date?</div>
+    <div class="dn-dismiss-confirm-sub">The plan, hints, and meetup time will be removed.<br>This can't be undone.</div>
+    <div class="dn-dismiss-confirm-actions">
+      <button class="dn-dismiss-cancel-btn" onclick="closeDnDismissConfirm()">Cancel</button>
+      <button class="dn-dismiss-clear-btn" id="dn-dismiss-clear-btn" onclick="confirmDnDismiss()">Clear date</button>
+    </div>
   `;
-  _dnClearTimeout = setTimeout(() => {
-    if(document.contains(btn)) window.dnClearRevert(btn);
-  }, 5000);
+  content.appendChild(confirmEl);
+  _dnDismissConfirmOpen = true;
 };
 
-window.dnClearRevert = function(btn){
-  if(!btn) return;
-  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
-  btn.classList.remove('dn-clear-confirm');
-  btn.classList.add('dn-clear-link');
-  btn.setAttribute('onclick', 'dnClearFirstTap(this)');
-  btn.textContent = 'Just clear this date';
+window.closeDnDismissConfirm = function(){
+  _dnDismissConfirmOpen = false;
+  const content = document.getElementById('dn-planner-content');
+  if(!content) return;
+  const card = content.querySelector('.dn-planner-card');
+  if(card){
+    card.style.opacity = '';
+    card.style.pointerEvents = '';
+  }
+  const confirmEl = document.getElementById('dn-dismiss-confirm-card');
+  if(confirmEl) confirmEl.remove();
 };
 
-window.dnClearConfirm = async function(){
-  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
+window.confirmDnDismiss = async function(){
+  const btn = document.getElementById('dn-dismiss-clear-btn');
+  if(btn) btn.disabled = true;
   try{
     const dateKey = R._dnDateKey();
-    if(!state.db || !state.coupleId) return;
+    if(!state.db || !state.coupleId){ window.closeDnDismissConfirm(); return; }
     try{
       if(dateKey){
         await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`));
       }
       await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
       await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
-    }catch(e){ console.warn('dnClearConfirm cleanup failed:', e); }
-    _dnDonePhotoFile = null;
+    }catch(e){ console.warn('confirmDnDismiss cleanup failed:', e); }
+    _dnDismissConfirmOpen = false;
   }catch(e){
-    console.error('dnClearConfirm failed:', e);
+    console.error('confirmDnDismiss failed:', e);
+    if(btn) btn.disabled = false;
   }
 };
 
