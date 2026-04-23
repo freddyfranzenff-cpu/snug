@@ -818,9 +818,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .together-sheet-save{width:calc(100% - 2.2rem);margin:.75rem 1.1rem .25rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:13px;padding:.85rem 1.5rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:block;transition:opacity .2s;}
   .together-sheet-save:hover{opacity:.88;}
   .together-sheet-cancel{display:block;width:calc(100% - 2.2rem);margin:.2rem 1.1rem .25rem;padding:.45rem;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-align:center;}
-  .dn-done-clear-link{background:none;border:none;color:var(--k);font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.5rem;margin:0 auto;display:block;opacity:.85;}
-  .dn-done-clear-link:hover{opacity:1;}
-  .dn-done-clear-link:disabled{opacity:.5;cursor:not-allowed;}
   /* dn-planner card — read-only display */
   .dn-display-row{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
   .dn-display-row:last-of-type{border-bottom:none;}
@@ -874,6 +871,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-reveal-btn:hover{opacity:.9;}
   .dn-done-btn{display:block;width:calc(100% - 1.8rem);margin:.2rem .9rem .85rem;background:var(--surface);color:var(--k);border:1px solid var(--k);border-radius:12px;padding:.65rem 1rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .2s;}
   .dn-done-btn:hover{background:var(--kll);}
+
+  .dn-clear-link{background:none;border:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.45rem;margin:.3rem auto 0;display:block;opacity:.85;transition:opacity .15s;}
+  .dn-clear-link:hover{opacity:1;color:var(--k);}
+
+  .dn-clear-confirm{background:rgba(232,98,42,0.08);border:1px solid var(--k);color:var(--k);font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;cursor:pointer;padding:.45rem .8rem;margin:.3rem auto 0;display:flex;align-items:center;justify-content:center;gap:.55rem;border-radius:20px;width:fit-content;animation:dnClearPulse 1.2s ease-in-out infinite;}
+  .dn-clear-confirm-text{font-weight:600;}
+  .dn-clear-confirm-x{font-size:1rem;line-height:1;opacity:.6;padding:0 .2rem;cursor:pointer;}
+  .dn-clear-confirm-x:hover{opacity:1;}
+
+  @keyframes dnClearPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,98,42,0.3);}
+    50%{box-shadow:0 0 0 4px rgba(232,98,42,0);}
+  }
   .dn-reveal-body{font-size:.74rem;color:var(--text);line-height:1.5;margin:0 0 .35rem;}
 
   /* ── Date done photo button */

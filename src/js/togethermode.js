@@ -70,6 +70,7 @@ function _renderOpenCard(d){
         <button class="mj-add-btn" onclick="openDnSheet()">+ Update plan</button>
       </div>
       ${doneBtn}
+      <button class="dn-clear-link" id="dn-clear-link" onclick="dnClearFirstTap(this)">Just clear this date</button>
     </div>`;
 }
 
@@ -914,30 +915,47 @@ window.saveDnDoneSheet = async function(){
   }
 };
 
-window.clearDnDateOnly = async function(){
-  const btn = document.getElementById('dn-done-clear-btn');
-  const saveBtn = document.getElementById('dn-done-save-btn');
-  if(btn) btn.disabled = true;
-  if(saveBtn) saveBtn.disabled = true;
+let _dnClearTimeout = null;
+
+window.dnClearFirstTap = function(btn){
+  if(!btn) return;
+  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
+  btn.classList.remove('dn-clear-link');
+  btn.classList.add('dn-clear-confirm');
+  btn.setAttribute('onclick', 'dnClearConfirm()');
+  btn.innerHTML = `
+    <span class="dn-clear-confirm-text">Tap again to clear</span>
+    <span class="dn-clear-confirm-x" onclick="event.stopPropagation();dnClearRevert(this.closest('.dn-clear-confirm'));">×</span>
+  `;
+  _dnClearTimeout = setTimeout(() => {
+    if(document.contains(btn)) window.dnClearRevert(btn);
+  }, 5000);
+};
+
+window.dnClearRevert = function(btn){
+  if(!btn) return;
+  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
+  btn.classList.remove('dn-clear-confirm');
+  btn.classList.add('dn-clear-link');
+  btn.setAttribute('onclick', 'dnClearFirstTap(this)');
+  btn.textContent = 'Just clear this date';
+};
+
+window.dnClearConfirm = async function(){
+  if(_dnClearTimeout){ clearTimeout(_dnClearTimeout); _dnClearTimeout = null; }
   try{
     const dateKey = R._dnDateKey();
-    if(!state.db || !state.coupleId){ window.closeDnDoneSheet(); return; }
-    // Clear datePlan/meetupDate/activeMystery — same as the end of saveDnDoneSheet
-    // but no milestone creation and no photo upload.
+    if(!state.db || !state.coupleId) return;
     try{
       if(dateKey){
         await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`));
       }
       await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
       await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
-    }catch(e){ console.warn('clearDnDateOnly cleanup failed:',e); }
+    }catch(e){ console.warn('dnClearConfirm cleanup failed:', e); }
     _dnDonePhotoFile = null;
-    window.closeDnDoneSheet();
   }catch(e){
-    console.error('clearDnDateOnly failed:',e);
-  }finally{
-    if(btn) btn.disabled = false;
-    if(saveBtn) saveBtn.disabled = false;
+    console.error('dnClearConfirm failed:', e);
   }
 };
 
