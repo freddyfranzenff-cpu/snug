@@ -46,21 +46,21 @@ function _renderOpenCard(d){
   return `
     <div class="dn-planner-card">
       <div class="dn-display-row">
-        <div class="dn-field-icon">📍</div>
+        <div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c3-4 5-6.5 5-9a5 5 0 0 0-10 0c0 2.5 2 5 5 9z"/><circle cx="8" cy="5.5" r="1.8"/></svg></div>
         <div style="flex:1;">
           <div class="dn-field-label">Where</div>
           <div class="${d.where?'dn-display-value':'dn-display-empty'}">${d.where?_esc(d.where):'Not set yet'}</div>
         </div>
       </div>
       <div class="dn-display-row">
-        <div class="dn-field-icon">✨</div>
+        <div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 L9.2 6.8 L14 8 L9.2 9.2 L8 14 L6.8 9.2 L2 8 L6.8 6.8 Z"/></svg></div>
         <div style="flex:1;">
           <div class="dn-field-label">What</div>
           <div class="${d.what?'dn-display-value':'dn-display-empty'}">${d.what?_esc(d.what):'Not set yet'}</div>
         </div>
       </div>
       <div class="dn-display-row">
-        <div class="dn-field-icon">🎫</div>
+        <div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 6.5 H14.5"/><path d="M3.5 10.5 H6.5"/></svg></div>
         <div style="flex:1;">
           <div class="dn-field-label">Who's booking</div>
           <div class="${d.who?'dn-display-value':'dn-display-empty'}">${d.who?_esc(d.who):'Not set yet'}</div>
@@ -108,9 +108,9 @@ function _renderMysteryPlannerCard(d){
   return `
     <div class="dn-planner-card dn-mystery-planner">
       <div class="dn-mystery-badge">✨ Mystery date · you're planning</div>
-      <div class="dn-display-row"><div class="dn-field-icon">📍</div><div style="flex:1;"><div class="dn-field-label">Where</div><div class="${d.where?'dn-display-value':'dn-display-empty'}">${d.where?where:'Not set yet'}</div></div></div>
-      <div class="dn-display-row"><div class="dn-field-icon">✨</div><div style="flex:1;"><div class="dn-field-label">What</div><div class="${d.what?'dn-display-value':'dn-display-empty'}">${d.what?what:'Not set yet'}</div></div></div>
-      <div class="dn-display-row"><div class="dn-field-icon">🎫</div><div style="flex:1;"><div class="dn-field-label">Who's booking</div><div class="${d.who?'dn-display-value':'dn-display-empty'}">${d.who?who:'Not set yet'}</div></div></div>
+      <div class="dn-display-row"><div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c3-4 5-6.5 5-9a5 5 0 0 0-10 0c0 2.5 2 5 5 9z"/><circle cx="8" cy="5.5" r="1.8"/></svg></div><div style="flex:1;"><div class="dn-field-label">Where</div><div class="${d.where?'dn-display-value':'dn-display-empty'}">${d.where?where:'Not set yet'}</div></div></div>
+      <div class="dn-display-row"><div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 L9.2 6.8 L14 8 L9.2 9.2 L8 14 L6.8 9.2 L2 8 L6.8 6.8 Z"/></svg></div><div style="flex:1;"><div class="dn-field-label">What</div><div class="${d.what?'dn-display-value':'dn-display-empty'}">${d.what?what:'Not set yet'}</div></div></div>
+      <div class="dn-display-row"><div class="dn-field-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 6.5 H14.5"/><path d="M3.5 10.5 H6.5"/></svg></div><div style="flex:1;"><div class="dn-field-label">Who's booking</div><div class="${d.who?'dn-display-value':'dn-display-empty'}">${d.who?who:'Not set yet'}</div></div></div>
       <div class="mj-input-row">
         <button class="mj-add-btn" onclick="openDnSheet()">+ Update plan</button>
       </div>
@@ -911,6 +911,33 @@ window.saveDnDoneSheet = async function(){
     console.error('saveDnDoneSheet failed:',e);
   }finally{
     if(btn) btn.disabled = false;
+  }
+};
+
+window.clearDnDateOnly = async function(){
+  const btn = document.getElementById('dn-done-clear-btn');
+  const saveBtn = document.getElementById('dn-done-save-btn');
+  if(btn) btn.disabled = true;
+  if(saveBtn) saveBtn.disabled = true;
+  try{
+    const dateKey = R._dnDateKey();
+    if(!state.db || !state.coupleId){ window.closeDnDoneSheet(); return; }
+    // Clear datePlan/meetupDate/activeMystery — same as the end of saveDnDoneSheet
+    // but no milestone creation and no photo upload.
+    try{
+      if(dateKey){
+        await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/datePlan/${dateKey}`));
+      }
+      await state.dbSet(state.dbRef(state.db,`couples/${state.coupleId}/meetupDate`), '');
+      await state.dbRemove(state.dbRef(state.db,`couples/${state.coupleId}/activeMystery`));
+    }catch(e){ console.warn('clearDnDateOnly cleanup failed:',e); }
+    _dnDonePhotoFile = null;
+    window.closeDnDoneSheet();
+  }catch(e){
+    console.error('clearDnDateOnly failed:',e);
+  }finally{
+    if(btn) btn.disabled = false;
+    if(saveBtn) saveBtn.disabled = false;
   }
 };
 

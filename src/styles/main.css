@@ -769,7 +769,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .dn-planner-date{font-size:.62rem;color:var(--k);font-weight:500;}
   .dn-planner-field{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
   .dn-planner-field:last-of-type{border-bottom:none;}
-  .dn-field-icon{width:28px;height:28px;border-radius:8px;background:rgba(232,98,42,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;}
+  .dn-field-icon{width:28px;height:28px;border-radius:8px;background:rgba(232,98,42,0.08);color:var(--k);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;}
   .dn-field-label{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.1rem;}
   .dn-field-input{width:100%;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;color:var(--text);outline:none;padding:0;}
   .dn-field-input::placeholder{color:var(--muted);}
@@ -818,6 +818,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .together-sheet-save{width:calc(100% - 2.2rem);margin:.75rem 1.1rem .25rem;background:linear-gradient(135deg,var(--k),var(--pk));color:white;border:none;border-radius:13px;padding:.85rem 1.5rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:block;transition:opacity .2s;}
   .together-sheet-save:hover{opacity:.88;}
   .together-sheet-cancel{display:block;width:calc(100% - 2.2rem);margin:.2rem 1.1rem .25rem;padding:.45rem;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-align:center;}
+  .dn-done-clear-link{background:none;border:none;color:var(--k);font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.5rem;margin:0 auto;display:block;opacity:.85;}
+  .dn-done-clear-link:hover{opacity:1;}
+  .dn-done-clear-link:disabled{opacity:.5;cursor:not-allowed;}
   /* dn-planner card — read-only display */
   .dn-display-row{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}
   .dn-display-row:last-of-type{border-bottom:none;}
