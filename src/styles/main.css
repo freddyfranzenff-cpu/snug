@@ -46,11 +46,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   /* ── MESH BACKGROUND ── */
   body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(ellipse 70% 50% at 5% 0%, rgba(248,239,217,0.55) 0%, transparent 60%),
-      radial-gradient(ellipse 55% 55% at 95% 10%, rgba(200,85,58,0.08) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 45% at 90% 95%, rgba(88,52,28,0.12) 0%, transparent 55%),
-      radial-gradient(ellipse 45% 40% at 8% 95%, rgba(88,52,28,0.08) 0%, transparent 55%),
-      linear-gradient(160deg, #e0d1b2 0%, #d8c9ad 50%, #cdbd9e 100%);}
+      radial-gradient(ellipse 80% 55% at 10% -5%, rgba(252,238,214,0.75) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 100% 5%, rgba(200,85,58,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 95% 100%, rgba(88,52,28,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 45% at 0% 100%, rgba(88,52,28,0.15) 0%, transparent 55%),
+      linear-gradient(170deg, #e8daba 0%, #d8c9ad 45%, #c9b995 100%);}
 
   /* corner brackets hidden in new design */
   .corner-bracket{display:none}
@@ -673,11 +673,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .settings-success{font-size:.62rem;color:var(--green,#2a9d5c);margin:.3rem 0 0;display:none;}
   .settings-error{font-size:.62rem;color:var(--error,#d63031);margin:.3rem 0 0;}
   /* ── Home tabs ─────────────────────────────────────────── */
-  .home-tabs{display:flex;background:transparent;border:none;border-bottom:0.5px solid var(--border);border-radius:0;margin:0 .95rem .75rem;flex-shrink:0;z-index:50;box-shadow:none;}
-  .home-tab{flex:1;padding:.58rem .4rem;font-size:.68rem;font-family:var(--font-sans);
-    text-align:center;color:var(--muted);border:none;background:none;
-    cursor:pointer;transition:all .18s;font-weight:500;letter-spacing:.01em;}
-  .home-tab.active{color:var(--k);font-weight:600;background:transparent;border-bottom:2px solid var(--k);margin-bottom:-0.5px;}
+  .home-tabs{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;box-shadow:0 1px 0 rgba(88,52,28,0.08);display:flex;margin:0 .95rem .75rem;flex-shrink:0;z-index:50;overflow:hidden;}
+  .home-tab{flex:1;padding:.58rem .4rem;font-size:.68rem;font-family:var(--font-sans);color:var(--muted);background:transparent;border:none;cursor:pointer;text-align:center;}
+  .home-tab.active{color:var(--k);font-weight:600;background:var(--kll);border-bottom:none;}
   .home-tab-panel{display:none;padding-left:.95rem;padding-right:.95rem;}
   .home-tab-panel.active{display:block;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:.75rem .95rem calc(3.5rem + env(safe-area-inset-bottom,0px));}
   /* home-greeting-row kept for backward compat but hidden */
