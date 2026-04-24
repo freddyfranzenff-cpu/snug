@@ -251,7 +251,7 @@ window.saveLetterContent = async function(){
     if(sub){
       const orig = sub.textContent;
       sub.textContent = "Please set a valid future meetup date on the home page first.";
-      sub.style.color = "#e8622a";
+      sub.style.color = "#c8553a";
       setTimeout(()=>{sub.textContent=orig;sub.style.color="";},3000);
     }
     return;
@@ -281,7 +281,7 @@ window.saveLetterContent = async function(){
     }catch(e){
       console.error('saveLetterContent failed:',e);
       const sub=document.getElementById('letter-modal-sub');
-      if(sub){const orig=sub.textContent;sub.textContent='Failed to save — check your connection.';sub.style.color='#e8622a';setTimeout(()=>{sub.textContent=orig;sub.style.color='';},3000);}
+      if(sub){const orig=sub.textContent;sub.textContent='Failed to save — check your connection.';sub.style.color='#c8553a';setTimeout(()=>{sub.textContent=orig;sub.style.color='';},3000);}
       return;
     }
   }

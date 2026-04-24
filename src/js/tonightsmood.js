@@ -103,6 +103,8 @@ function _renderPick(partnerHasPicked){
   pick.style.display = 'block';
   wait.style.display = 'none';
   rev.style.display  = 'none';
+  const cardInner = card.querySelector('.mood-card-inner');
+  if(cardInner) cardInner.classList.remove('mood-reveal-match');
 
   const hint = document.getElementById('mood-pick-hint');
   if(hint){
@@ -124,6 +126,8 @@ function _renderWaiting(myMood){
   pick.style.display = 'none';
   wait.style.display = 'block';
   rev.style.display  = 'none';
+  const cardInner = document.querySelector('#tonights-mood-card .mood-card-inner');
+  if(cardInner) cardInner.classList.remove('mood-reveal-match');
 
   const m = MOOD_BY_KEY[myMood];
   const pill = document.getElementById('mood-waiting-pill');
@@ -165,6 +169,8 @@ function _renderReveal(myKey, partnerKey){
 
   const banner = document.getElementById('mood-reveal-banner');
   const msg    = document.getElementById('mood-reveal-msg');
+  const cardInner = document.querySelector('#tonights-mood-card .mood-card-inner');
+  if(cardInner) cardInner.classList.toggle('mood-reveal-match', match);
   if(match){
     if(banner){
       banner.style.display = 'block';

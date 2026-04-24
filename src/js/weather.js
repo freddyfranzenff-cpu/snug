@@ -63,9 +63,9 @@ function initMap(myCo,oCo,myL,oL){
   const isMobile=window.innerWidth<680;state.mapInstance=L.map("map",{zoomControl:false,attributionControl:true,minZoom:1,worldCopyJump:false}).setView([(myCo[0]+oCo[0])/2,(myCo[1]+oCo[1])/2],isMobile?1:2);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap",subdomains:"abcd",maxZoom:18}).addTo(state.mapInstance);
   const mkI=color=>L.divIcon({className:"",html:`<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
-  state.myMarker=L.marker(myCo,{icon:mkI("#e8622a")}).addTo(state.mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
-  state.otherMarker=L.marker(oCo,{icon:mkI("#d4607a")}).addTo(state.mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
-  state.connectLine=L.polyline([myCo,oCo],{color:"#e8622a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(state.mapInstance);
+  state.myMarker=L.marker(myCo,{icon:mkI("#c8553a")}).addTo(state.mapInstance).bindTooltip(myL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+  state.otherMarker=L.marker(oCo,{icon:mkI("#c67b92")}).addTo(state.mapInstance).bindTooltip(oL,{permanent:true,direction:"top",offset:[0,-10],className:"map-tooltip"});
+  state.connectLine=L.polyline([myCo,oCo],{color:"#c8553a",weight:1.5,dashArray:"6,5",opacity:.65}).addTo(state.mapInstance);
 }
 function updateOtherMarker(coords,label){if(!state.mapInstance||!state.otherMarker||!coords)return;state.otherMarker.setLatLng(coords);state.otherMarker.setTooltipContent(label);if(state.connectLine&&state.myCoords)state.connectLine.setLatLngs([state.myCoords,coords]);}
 

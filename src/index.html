@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"/>
 
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -122,8 +122,8 @@
     <!-- Avatar upload — optional -->
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1.25rem;">
       <div id="onboard-avatar-wrap" onclick="window.triggerOnboardAvatarUpload()"
-           style="width:72px;height:72px;border-radius:50%;background:rgba(232,98,42,0.1);
-                  border:2px dashed rgba(232,98,42,0.3);display:flex;align-items:center;
+           style="width:72px;height:72px;border-radius:50%;background:rgba(200,85,58,0.1);
+                  border:2px dashed rgba(200,85,58,0.3);display:flex;align-items:center;
                   justify-content:center;cursor:pointer;overflow:hidden;position:relative;
                   transition:border-color .2s;flex-shrink:0;">
         <span id="onboard-avatar-icon" style="font-size:1.5rem;">🙂</span>
@@ -217,7 +217,7 @@
     <p class="login-eyebrow">share with your partner</p>
     <h1 class="login-title">Your invite <em>link</em></h1>
     <p style="font-size:.62rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Share this link with your partner so your partner can join your Snug.</p>
-    <p style="font-size:.58rem;color:var(--pk);background:rgba(232,98,42,0.07);border-radius:10px;padding:.6rem .8rem;line-height:1.6;margin-bottom:.75rem;">⚠️ Ask your partner to <strong>complete sign up in the browser first</strong> before installing the app to the home screen.</p>
+    <p style="font-size:.58rem;color:var(--pk);background:rgba(200,85,58,0.08);border-radius:10px;padding:.6rem .8rem;line-height:1.6;margin-bottom:.75rem;">⚠️ Ask your partner to <strong>complete sign up in the browser first</strong> before installing the app to the home screen.</p>
     <div class="invite-link-box" id="invite-link-display">—</div>
     <p style="font-size:.58rem;color:var(--muted);margin:.75rem 0 1rem;text-align:center;">Waiting for your partner to join…</p>
     <div class="invite-waiting-dots"><span></span><span></span><span></span></div>
@@ -287,7 +287,7 @@
           <span class="home-avatar-name" id="home-avatar-me-name">—</span>
         </div>
         <div class="home-avatar-heart">
-          <svg width="16" height="14" viewBox="0 0 20 18" fill="none"><path d="M10 16C10 16 2 10.5 2 5.5C2 3.3 3.8 1.5 6 1.5C7.6 1.5 9 2.4 10 3.7C11 2.4 12.4 1.5 14 1.5C16.2 1.5 18 3.3 18 5.5C18 10.5 10 16 10 16Z" fill="var(--kll)" stroke="rgba(200,85,58,0.25)" stroke-width="1.2"/></svg>
+          <svg width="16" height="14" viewBox="0 0 20 18" fill="none"><path d="M10 16C10 16 2 10.5 2 5.5C2 3.3 3.8 1.5 6 1.5C7.6 1.5 9 2.4 10 3.7C11 2.4 12.4 1.5 14 1.5C16.2 1.5 18 3.3 18 5.5C18 10.5 10 16 10 16Z" fill="var(--kll)" stroke="var(--k)" stroke-width="1.2"/></svg>
         </div>
         <div class="home-avatar-block">
           <div class="home-avatar home-avatar-other" id="home-avatar-other">
@@ -428,7 +428,7 @@
       <!-- Our List (Together mode only) -->
       <div id="our-list-card" style="display:none;">
         <p class="section-heading" style="justify-content:space-between;">
-          <span style="display:inline-flex;align-items:center;gap:5px;"><span>Our list</span><button class="info-btn" onclick="showTooltip('our-list')" aria-label="About this feature">i</button></span>
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span>Our <em>list</em></span><button class="info-btn" onclick="showTooltip('our-list')" aria-label="About this feature">i</button></span>
           <span class="ol-header-count"><span id="ol-header-count">0</span></span>
         </p>
         <div class="ol-card-inner">
@@ -455,7 +455,7 @@
 
       <!-- Tonight's Dinner (Together mode only) -->
       <div id="tonights-dinner-card" style="display:none;">
-        <p class="section-heading" style="justify-content:flex-start"><span>Tonight's dinner</span><button class="info-btn" onclick="showTooltip('tonights-dinner')" aria-label="About this feature">i</button></p>
+        <p class="section-heading" style="justify-content:flex-start"><span>Dinner <em>tonight</em></span><button class="info-btn" onclick="showTooltip('tonights-dinner')" aria-label="About this feature">i</button></p>
         <div class="td-card">
           <div id="tonights-dinner-body"></div>
         </div>
@@ -463,7 +463,7 @@
 
       <!-- Tonight's Mood (Together mode only) -->
       <div id="tonights-mood-card" style="display:none;">
-        <p class="section-heading" style="margin-top:0;justify-content:flex-start"><span>Tonight's Mood</span><button class="info-btn" onclick="showTooltip('tonights-mood')" aria-label="About this feature">i</button></p>
+        <p class="section-heading" style="margin-top:0;justify-content:flex-start"><span>Tonight's <em>mood</em></span><button class="info-btn" onclick="showTooltip('tonights-mood')" aria-label="About this feature">i</button></p>
         <div class="mood-card-inner">
           <div id="mood-pick-state">
             <p id="mood-pick-hint" class="mood-pick-hint" style="display:none;"></p>
@@ -515,7 +515,7 @@
     <div class="home-tab-panel" id="panel-us">
 
       <!-- Countdown -->
-      <p class="section-heading" style="margin-top:.25rem;" id="us-countdown-label">Next meetup</p>
+      <p class="section-heading" style="margin-top:.25rem;" id="us-countdown-label">Next <em>meetup</em></p>
       <div class="card home-cd-card" style="margin-bottom:.75rem;">
         <div class="cd-align-row">
           <div class="cd-row" style="margin-top:0;"><div><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">d</span></div><div><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">h</span></div><div><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">m</span></div><div><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">s</span></div></div>
@@ -539,7 +539,7 @@
       <!-- Your letters (current upcoming letter pair only) -->
       <div class="us-letters-wrap" id="us-letters-wrap" style="display:none;">
         <div class="section-heading" style="margin-top:.1rem;">
-          <span>Your letters</span>
+          <span>Your <em>letters</em></span>
           <button class="section-heading-see-all" onclick="showPage('letter')">See all</button>
         </div>
         <div class="us-letter-rows" id="us-letter-rows"></div>
@@ -547,7 +547,7 @@
 
       <!-- Memory Jar preview -->
       <div class="section-heading">
-        <span>Memory jar</span>
+        <span>Memory <em>jar</em></span>
         <button class="section-heading-see-all" onclick="showPage('memory')">See all</button>
       </div>
       <div class="mj-preview-card" id="mj-preview-card">
@@ -575,7 +575,7 @@
 
       <!-- Bucket list progress -->
       <div class="section-heading" style="margin-top:.75rem;">
-        <span>Bucket list</span>
+        <span>Bucket <em>list</em></span>
         <button class="section-heading-see-all" onclick="showPage('bucket')">See all</button>
       </div>
       <div class="home-bl-progress">
@@ -875,7 +875,7 @@
     <div class="places-popup" id="places-popup" style="display:none;">
       <div class="places-popup-header">
         <div class="places-popup-loc">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#e8622a" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#c8553a" stroke-width="1.3"><path d="M8 1a5 5 0 015 5c0 3.5-5 9-5 9S3 9.5 3 6a5 5 0 015-5z"/><circle cx="8" cy="6" r="1.8"/></svg>
           <span id="places-popup-loc-name">—</span>
         </div>
         <span class="places-popup-count" id="places-popup-count">—</span>

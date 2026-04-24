@@ -528,7 +528,7 @@ window.saveDnPickerSheet = async function(){
   const timeVal = isLDR ? '' : (document.getElementById('dn-picker-time')?.value||'').trim();
   if(!dateVal){
     const inp = document.getElementById('dn-picker-date');
-    if(inp){ inp.style.borderColor = '#e8622a'; setTimeout(()=>inp.style.borderColor='',2000); }
+    if(inp){ inp.style.borderColor = '#c8553a'; setTimeout(()=>inp.style.borderColor='',2000); }
     return;
   }
   // No-time picks default to start-of-day (00:00). Min date is tomorrow, so
@@ -537,7 +537,7 @@ window.saveDnPickerSheet = async function(){
   const effectiveDateTime = new Date(`${dateVal}T${compareTime}:00`);
   if(effectiveDateTime <= new Date()){
     const inp = document.getElementById('dn-picker-date');
-    if(inp){ inp.style.borderColor='#e8622a'; setTimeout(()=>inp.style.borderColor='',2000); }
+    if(inp){ inp.style.borderColor='#c8553a'; setTimeout(()=>inp.style.borderColor='',2000); }
     return;
   }
 

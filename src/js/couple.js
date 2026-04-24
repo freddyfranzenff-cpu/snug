@@ -39,7 +39,7 @@ function applyMode(type){
   const cdLabel = document.querySelector('#panel-us .card-label');
   if(cdLabel) cdLabel.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2l1.5 4h4l-3.5 2.5 1.5 4L8 10l-3.5 2.5 1.5-4L2.5 6h4z"/></svg>${isLDR ? 'Next meetup' : 'Next date night'}`;
   const usCountdownLabel = document.getElementById('us-countdown-label');
-  if(usCountdownLabel) usCountdownLabel.textContent = isLDR ? 'Next meetup' : 'Next date night';
+  if(usCountdownLabel) usCountdownLabel.innerHTML = isLDR ? 'Next <em>meetup</em>' : 'Next <em>date night</em>';
 
   // sidebar countdown label removed
   R.updateMetricChips&&R.updateMetricChips();
