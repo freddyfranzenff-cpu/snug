@@ -62,9 +62,11 @@ function applyMode(type){
   // Date night planner — Together mode, any time meetupDate is set (past or future).
   // Past dates stay visible so users can tap "Date done → save as milestone".
   const dnPlanner = document.getElementById('dn-planner');
+  const dnPlannerLabel = document.getElementById('dn-planner-label');
   if(dnPlanner){
     const show = isTogether && !!state.meetupDate;
     dnPlanner.classList.toggle('visible', show);
+    if(dnPlannerLabel) dnPlannerLabel.classList.toggle('visible', show);
     if(show){
       R.loadDnPlanner && R.loadDnPlanner();
     } else {
@@ -85,6 +87,41 @@ function applyMode(type){
       R.teardownTonightsMood && R.teardownTonightsMood();
     }
   }
+
+  // Our List — Together mode only
+  const ourListCard = document.getElementById('our-list-card');
+  if(ourListCard){
+    ourListCard.style.display = isTogether ? '' : 'none';
+    if(isTogether){
+      R.initOurList && R.initOurList();
+    } else {
+      R.teardownOurList && R.teardownOurList();
+    }
+  }
+
+  // Tonight's Dinner — Together mode only
+  const dinnerCard = document.getElementById('tonights-dinner-card');
+  if(dinnerCard){
+    dinnerCard.style.display = isTogether ? '' : 'none';
+    if(isTogether){
+      R.initTonightsDinner && R.initTonightsDinner();
+    } else {
+      R.teardownTonightsDinner && R.teardownTonightsDinner();
+    }
+  }
+
+  // Status card — compact one-liner in Together mode, full card in LDR.
+  const statusFull = document.getElementById('status-card');
+  const statusCompact = document.getElementById('status-card-compact');
+  const statusHeading = document.getElementById('status-section-heading');
+  if(statusFull && statusCompact){
+    statusFull.style.display = isTogether ? 'none' : '';
+    statusCompact.style.display = isTogether ? 'flex' : 'none';
+  }
+  if(statusHeading){
+    statusHeading.style.display = isTogether ? 'none' : '';
+  }
+  R.renderStatusCard && R.renderStatusCard();
 }
 
 function startCoupleTypeListener(){
@@ -128,9 +165,11 @@ function startMeetupDateListener(){
     R.renderUsLetterShortcut && R.renderUsLetterShortcut();
     // Toggle dn-planner visibility + rebind loadDnPlanner to new dateKey
     const dnPlanner = document.getElementById('dn-planner');
+    const dnPlannerLabel = document.getElementById('dn-planner-label');
     if(dnPlanner){
       const show = state.coupleType==='together' && !!state.meetupDate;
       dnPlanner.classList.toggle('visible', show);
+      if(dnPlannerLabel) dnPlannerLabel.classList.toggle('visible', show);
     }
     if(state.coupleType==='together' && newKey !== prevKey){
       R.loadDnPlanner && R.loadDnPlanner();

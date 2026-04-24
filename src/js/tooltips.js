@@ -65,6 +65,16 @@ const TOOLTIPS = {
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#c8553a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16l-7-13-7 13"/><path d="M3 12h18"/></svg>`,
     text: `A weekly or monthly digest of your activity together — how many pulses sent, memory jar entries written, status updates, and in Together mode how often your evening moods matched. Switch between this week and this month at the top.`
   },
+  'our-list': {
+    title: 'Our list',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#c8553a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>`,
+    text: `Groceries, home stuff, things to remember. Adds sync live — you'll see what they added and vice versa.`
+  },
+  'tonights-dinner': {
+    title: "Tonight's dinner",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#c8553a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M6 12h12"/><path d="M9 9l6 6M15 9l-6 6"/></svg>`,
+    text: `The most-repeated decision you two make. One proposes, the other accepts or counters. Tap + Ingredients to send what you need to Our list.`
+  },
   'relationship-type': {
     title: 'Relationship type',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="#c8553a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>`,

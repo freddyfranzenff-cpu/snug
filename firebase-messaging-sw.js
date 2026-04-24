@@ -46,12 +46,18 @@ const TRIGGER_ROUTES = {
   memoryJar: { page: 'memory'                    },
   meetup:    { page: 'home',      tab: 'us'      },
   dateNight: { page: 'home',      tab: 'us'      },
-  dnHint:    { page: 'home',      tab: 'now'     },
-  dnGuess:   { page: 'home',      tab: 'now'     },
-  dnCorrect: { page: 'home',      tab: 'now'     },
-  dnReveal:  { page: 'home',      tab: 'now'     },
+  // dn-* triggers deep-link to Us now that the date night planner lives there.
+  dnHint:    { page: 'home',      tab: 'us'      },
+  dnGuess:   { page: 'home',      tab: 'us'      },
+  dnCorrect: { page: 'home',      tab: 'us'      },
+  dnReveal:  { page: 'home',      tab: 'us'      },
   moodPick:  { page: 'home',      tab: 'now'     },
   moodMatch: { page: 'home',      tab: 'now'     },
+  moodReveal:{ page: 'home',      tab: 'now'     },
+  listItemAdded:   { page: 'home', tab: 'now' },
+  dinnerProposed:  { page: 'home', tab: 'now' },
+  dinnerCountered: { page: 'home', tab: 'now' },
+  dinnerAgreed:    { page: 'home', tab: 'now' },
 };
 
 self.addEventListener('notificationclick', event => {

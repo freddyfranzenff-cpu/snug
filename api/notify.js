@@ -49,14 +49,22 @@ const TRIGGERS = {
   moodPick:   { title: n => `${n} picked their mood 🌙`,     body: n => `${n} has picked — what's yours tonight?` },
   moodMatch:  { title: n => `It's a match! ✨`,              body: n => `You and ${n} both picked the same vibe — tap to see.` },
   moodReveal: { title: n => `You've both picked`,            body: n => `Tap to see tonight's vibe with ${n}.` },
+  listItemAdded:   { title: (n) => `${n} added to your list`, body: (n, extra) => extra || `Tap to see what ${n} added` },
+  dinnerProposed:  { title: (n) => `${n} suggested dinner`,   body: (n, extra) => extra || `Tap to accept or counter` },
+  dinnerCountered: { title: (n) => `${n} countered`,          body: (n, extra) => extra || `Tap to see the new suggestion` },
+  dinnerAgreed:    { title: ()  => `Dinner agreed ✓`,         body: (n, extra) => extra ? `Tonight: ${extra}` : `Tonight's dinner is set` },
 };
 
 // Some triggers share a single user-facing pref toggle.
-// e.g. both mood variants are gated by notificationPrefs.tonightsMood.
+// e.g. both mood variants are gated by notificationPrefs.tonightsMood, and
+// all three dinner variants share notificationPrefs.tonightsDinner.
 const PREF_ALIAS = {
-  moodPick:   'tonightsMood',
-  moodMatch:  'tonightsMood',
-  moodReveal: 'tonightsMood',
+  moodPick:        'tonightsMood',
+  moodMatch:       'tonightsMood',
+  moodReveal:      'tonightsMood',
+  dinnerProposed:  'tonightsDinner',
+  dinnerCountered: 'tonightsDinner',
+  dinnerAgreed:    'tonightsDinner',
 };
 
 let _cachedToken = null;
@@ -143,7 +151,7 @@ export default async function handler(req, res){
   }
 
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-  const { coupleId, recipientUid, trigger, senderName } = body;
+  const { coupleId, recipientUid, trigger, senderName, extra } = body;
   if(!coupleId || !recipientUid || !trigger){
     return res.status(400).json({ error: 'coupleId, recipientUid, trigger required' });
   }
@@ -207,8 +215,9 @@ export default async function handler(req, res){
     }
 
     const name = (senderName || 'Your partner').toString().slice(0, 40);
-    const title = tpl.title(name);
-    const bodyText = typeof tpl.body === 'function' ? tpl.body(name) : tpl.body;
+    const extraClean = (typeof extra === 'string' ? extra : '').toString().slice(0, 200);
+    const title = tpl.title(name, extraClean);
+    const bodyText = typeof tpl.body === 'function' ? tpl.body(name, extraClean) : tpl.body;
 
     const buildMessage = (tokenStr) => ({
       message: {

@@ -391,7 +391,14 @@
       </div><!-- end ldr-section-wrap -->
 
       <!-- Status + Mood card -->
-      <p class="section-heading" style="justify-content:flex-start"><span>What you're up to</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
+      <p class="section-heading" id="status-section-heading" style="justify-content:flex-start"><span>What you're up to</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
+      <!-- Compact status row (Together mode only — JS toggles display) -->
+      <div class="status-card-compact" id="status-card-compact" style="display:none;" onclick="openStatusSheet()">
+        <span class="status-compact-dot" id="status-compact-dot"></span>
+        <span class="status-compact-body" id="status-compact-body"></span>
+        <span class="status-compact-time" id="status-compact-time"></span>
+        <span class="status-compact-chev">›</span>
+      </div>
       <div class="status-card" id="status-card">
         <div class="status-person-row">
           <div class="status-accent status-accent-me"></div>
@@ -415,6 +422,42 @@
         </div>
         <div class="mj-input-row">
           <button class="mj-add-btn" onclick="openStatusSheet()">+ Update yours</button>
+        </div>
+      </div>
+
+      <!-- Our List (Together mode only) -->
+      <div id="our-list-card" style="display:none;">
+        <p class="section-heading" style="justify-content:space-between;">
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span>Our list</span><button class="info-btn" onclick="showTooltip('our-list')" aria-label="About this feature">i</button></span>
+          <span class="ol-header-count"><span id="ol-header-count">0</span></span>
+        </p>
+        <div class="ol-card-inner">
+          <div class="ol-filter-strip">
+            <button class="ol-filter-chip active" data-filter="all" onclick="setOurListFilter('all')">All <span id="ol-filter-all-count" class="ol-filter-count">0</span></button>
+            <button class="ol-filter-chip" data-filter="groceries" onclick="setOurListFilter('groceries')">Groceries <span id="ol-filter-groceries-count" class="ol-filter-count">0</span></button>
+            <button class="ol-filter-chip" data-filter="home" onclick="setOurListFilter('home')">Home <span id="ol-filter-home-count" class="ol-filter-count">0</span></button>
+            <button class="ol-filter-chip" data-filter="todo" onclick="setOurListFilter('todo')">To-do <span id="ol-filter-todo-count" class="ol-filter-count">0</span></button>
+          </div>
+          <div id="ol-list" class="ol-list"></div>
+          <div id="ol-empty" class="ol-empty" style="display:none;">Nothing here yet — add the first thing below.</div>
+          <button id="ol-see-all" class="ol-see-all-btn" onclick="openOurListSheet()" style="display:none;">See all →</button>
+          <div class="ol-input-row">
+            <input id="ol-input" type="text" class="ol-input" placeholder="Add something…" maxlength="200" />
+            <select id="ol-tag-input" class="ol-tag-input">
+              <option value="groceries">Groceries</option>
+              <option value="home">Home</option>
+              <option value="todo">To-do</option>
+            </select>
+            <button id="ol-add-btn" class="ol-add-btn" type="button">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tonight's Dinner (Together mode only) -->
+      <div id="tonights-dinner-card" style="display:none;">
+        <p class="section-heading" style="justify-content:flex-start"><span>Tonight's dinner</span><button class="info-btn" onclick="showTooltip('tonights-dinner')" aria-label="About this feature">i</button></p>
+        <div class="td-card">
+          <div id="tonights-dinner-body"></div>
         </div>
       </div>
 
@@ -447,16 +490,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Date night planner (Together mode only) -->
-      <div class="dn-planner" id="dn-planner">
-        <div class="section-heading" style="margin-top:0;">
-          <span id="dn-planner-heading">Date night plan</span>
-          <span class="dn-planner-date" id="dn-planner-date" style="font-size:.58rem;color:var(--k);font-weight:500;"></span>
-        </div>
-        <div id="dn-planner-content"></div>
-      </div>
-
 
       <!-- Metric chips -->
       <div class="home-metric-row" id="home-metric-row">
@@ -492,6 +525,15 @@
           </div>
         </div>
         <p class="cd-caption" id="cd-caption">—</p>
+      </div>
+
+      <!-- Date night planner (Together mode only) -->
+      <p class="section-heading dn-planner-label" id="dn-planner-label" style="margin-top:.85rem;justify-content:space-between;display:none;">
+        <span id="dn-planner-heading">Date night plan</span>
+        <span class="dn-planner-date" id="dn-planner-date" style="font-size:.58rem;color:var(--k);font-weight:500;letter-spacing:.04em;text-transform:none;"></span>
+      </p>
+      <div class="dn-planner" id="dn-planner">
+        <div id="dn-planner-content"></div>
       </div>
 
       <!-- Your letters (current upcoming letter pair only) -->
@@ -638,6 +680,74 @@
 
   <!-- SETTINGS PAGE -->
 
+
+    <!-- Our List — See all bottom sheet -->
+  <div class="together-sheet-overlay" id="ol-sheet-overlay" onclick="if(event.target===this)closeOurListSheet()">
+    <div class="together-sheet" id="ol-sheet">
+      <div class="together-sheet-handle"></div>
+      <div class="together-sheet-title">Our list</div>
+      <div class="ol-filter-strip ol-sheet-filter-strip">
+        <button class="ol-filter-chip active" data-filter="all" onclick="setOurListFilter('all')">All <span id="ol-sheet-filter-all-count" class="ol-filter-count">0</span></button>
+        <button class="ol-filter-chip" data-filter="groceries" onclick="setOurListFilter('groceries')">Groceries <span id="ol-sheet-filter-groceries-count" class="ol-filter-count">0</span></button>
+        <button class="ol-filter-chip" data-filter="home" onclick="setOurListFilter('home')">Home <span id="ol-sheet-filter-home-count" class="ol-filter-count">0</span></button>
+        <button class="ol-filter-chip" data-filter="todo" onclick="setOurListFilter('todo')">To-do <span id="ol-sheet-filter-todo-count" class="ol-filter-count">0</span></button>
+      </div>
+      <div id="ol-sheet-list" class="ol-list ol-sheet-list"></div>
+      <div id="ol-sheet-empty" class="ol-empty" style="display:none;">Nothing here yet.</div>
+      <div class="ol-input-row ol-sheet-input-row">
+        <input id="ol-sheet-input" type="text" class="ol-input" placeholder="Add something…" maxlength="200" />
+        <select id="ol-sheet-tag-input" class="ol-tag-input">
+          <option value="groceries">Groceries</option>
+          <option value="home">Home</option>
+          <option value="todo">To-do</option>
+        </select>
+        <button id="ol-sheet-add-btn" class="ol-add-btn" type="button">Add</button>
+      </div>
+      <button class="together-sheet-cancel" onclick="closeOurListSheet()">Close</button>
+    </div>
+  </div>
+
+    <!-- Tonight's Dinner — Propose sheet -->
+  <div class="together-sheet-overlay" id="td-propose-overlay" onclick="if(event.target===this)closeDinnerProposeSheet()">
+    <div class="together-sheet" id="td-propose-sheet">
+      <div class="together-sheet-handle"></div>
+      <div class="together-sheet-title">Tonight's dinner</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">What are you thinking?</label>
+        <input id="td-sheet-input" type="text" class="together-sheet-input" placeholder="e.g. pasta with pesto" maxlength="200" />
+      </div>
+      <button class="together-sheet-save" onclick="submitDinnerProposeSheet()">Suggest</button>
+      <button class="together-sheet-cancel" onclick="closeDinnerProposeSheet()">Cancel</button>
+    </div>
+  </div>
+
+    <!-- Tonight's Dinner — Counter sheet -->
+  <div class="together-sheet-overlay" id="td-counter-overlay" onclick="if(event.target===this)closeDinnerCounterSheet()">
+    <div class="together-sheet" id="td-counter-sheet">
+      <div class="together-sheet-handle"></div>
+      <div class="together-sheet-title">Counter-suggest</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Your counter-suggestion</label>
+        <input id="td-counter-input" type="text" class="together-sheet-input" placeholder="e.g. stir-fry" maxlength="200" />
+      </div>
+      <button class="together-sheet-save" onclick="submitDinnerCounterSheet()">Send counter</button>
+      <button class="together-sheet-cancel" onclick="closeDinnerCounterSheet()">Cancel</button>
+    </div>
+  </div>
+
+    <!-- Tonight's Dinner — Ingredients to list sheet -->
+  <div class="together-sheet-overlay" id="td-ing-overlay" onclick="if(event.target===this)closeDinnerIngredientsSheet()">
+    <div class="together-sheet" id="td-ing-sheet">
+      <div class="together-sheet-handle"></div>
+      <div class="together-sheet-title">Add ingredients to Our list</div>
+      <div class="together-sheet-body">
+        <label class="together-sheet-label">Comma-separated ingredients</label>
+        <textarea id="td-ing-input" class="together-sheet-input together-sheet-textarea" placeholder="tomatoes, basil, parmesan" maxlength="600"></textarea>
+      </div>
+      <button class="together-sheet-save" onclick="submitDinnerIngredientsSheet()">Add to groceries</button>
+      <button class="together-sheet-cancel" onclick="closeDinnerIngredientsSheet()">Cancel</button>
+    </div>
+  </div>
 
     <!-- Tonight's Mood bottom sheet -->
   <div class="together-sheet-overlay" id="mood-sheet-overlay" onclick="if(event.target===this)closeMoodSheet()">
@@ -1211,6 +1321,20 @@
               <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> picks their mood</div>
             </div>
             <label class="notif-toggle"><input type="checkbox" data-notif="tonightsMood"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Our list</div>
+              <div class="settings-row-muted">When <span class="partner-name-slot">your partner</span> adds to the shared list</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="listItemAdded"/><span></span></label>
+          </div>
+          <div class="settings-row-new">
+            <div style="flex:1;">
+              <div class="settings-row-label">Tonight's dinner</div>
+              <div class="settings-row-muted">Proposals, counters, and agreements</div>
+            </div>
+            <label class="notif-toggle"><input type="checkbox" data-notif="tonightsDinner"/><span></span></label>
           </div>
         </div>
         <p id="notif-saved-msg" style="display:none;font-size:.62rem;color:var(--muted);margin:.4rem 0 0;">Saved</p>

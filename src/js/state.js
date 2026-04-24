@@ -94,6 +94,13 @@ export const state = {
   _dnUnsub: null, _dnCurrentPlan: {},
   _tmInFlight: false,
 
+  // ── Our List (Together mode) ──────────────────────────────
+  _olUnsub: null, _olItems: [], _olFilter: 'all', _olInFlight: false,
+
+  // ── Tonight's Dinner (Together mode) ──────────────────────
+  _tdUnsub: null, _tdRollInterval: null, _tdDayKey: null,
+  _tdCurrent: null, _tdInFlight: false,
+
   // ── Status sheet selection ────────────────────────────────
   _selectedActivity: null, _selectedMood: null,
 

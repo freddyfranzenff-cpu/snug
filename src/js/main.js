@@ -21,6 +21,8 @@ import './letters.js';
 import './memoryjar.js';
 import './togethermode.js';
 import './tonightsmood.js';
+import './ourlist.js';
+import './tonightsdinner.js';
 import './summary.js';
 import './status.js';
 import './avatar.js';

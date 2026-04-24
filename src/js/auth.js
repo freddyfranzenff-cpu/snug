@@ -15,6 +15,7 @@ function _teardownSessionState(){
   // ── Listeners (unsub then null) ──
   const listeners = [
     '_coupleTypeUnsub','_meetupDateUnsub','_dnUnsub','_mjUnsub',
+    '_olUnsub','_tdUnsub',
     '_membersUnsub','_watchPartnerUnsub','_unsubWatchOther',
     '_myAvatarUnsub','_otherAvatarUnsub',
     'unsubMilestones','unsubBucket','unsubPulse',
@@ -27,7 +28,7 @@ function _teardownSessionState(){
   const intervals = [
     'clockInterval','distanceInterval','countdownInterval',
     'pulseTimeInterval','_metricInterval','statusRefreshInterval',
-    '_letterCountdownInterval',
+    '_letterCountdownInterval','_tdRollInterval',
   ];
   for(const k of intervals){
     if(state[k]){clearInterval(state[k]);state[k]=null;}
@@ -35,6 +36,8 @@ function _teardownSessionState(){
 
   // ── Module teardowns ──
   if(R.teardownTonightsMood){try{R.teardownTonightsMood();}catch(e){}}
+  if(R.teardownOurList){try{R.teardownOurList();}catch(e){}}
+  if(R.teardownTonightsDinner){try{R.teardownTonightsDinner();}catch(e){}}
   if(R.resetSummary){try{R.resetSummary();}catch(e){}}
   if(R.resetUsLetterShortcut){try{R.resetUsLetterShortcut();}catch(e){}}
   if(R._mjResetExpandedMonths){try{R._mjResetExpandedMonths();}catch(e){}}
@@ -62,6 +65,8 @@ function _teardownSessionState(){
   state._dnCurrentPlan={};state._dnTimeVal='19:00';
   state._selectedActivity=null;state._selectedMood=null;
   state._tmInFlight=false;state._inviteInFlight=false;
+  state._olItems=[];state._olFilter='all';state._olInFlight=false;
+  state._tdDayKey=null;state._tdCurrent=null;state._tdInFlight=false;
   state._onboardAvatarBlob=null;
   state._msRegistry.clear();
 

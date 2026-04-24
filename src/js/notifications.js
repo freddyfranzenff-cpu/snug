@@ -208,23 +208,29 @@ async function unregisterFcmToken(uid){
   }
 }
 
-async function notifyPartner(trigger){
+async function notifyPartner(trigger, opts){
   try{
     if(!state.coupleId || !state.partnerUid) return;
     if(!state.fbAuth?.currentUser) return;
     const idToken = await state.fbAuth.currentUser.getIdToken();
+    const body = {
+      coupleId: state.coupleId,
+      recipientUid: state.partnerUid,
+      trigger,
+      senderName: state.ME || 'Your partner',
+    };
+    // Optional `extra` — e.g. the list item text, dinner proposal — lets the
+    // server build a richer notification body. Trimmed server-side too.
+    if(opts && typeof opts.extra === 'string' && opts.extra){
+      body.extra = opts.extra.slice(0, 200);
+    }
     await fetch('/api/notify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`,
       },
-      body: JSON.stringify({
-        coupleId: state.coupleId,
-        recipientUid: state.partnerUid,
-        trigger,
-        senderName: state.ME || 'Your partner',
-      }),
+      body: JSON.stringify(body),
     });
   }catch(e){
     // Never let a notification failure break the UI
@@ -232,7 +238,11 @@ async function notifyPartner(trigger){
   }
 }
 
-const TRIGGER_KEYS = ['pulse','memoryJar','milestone','bucket','status','meetup','dateNight','dnHint','dnGuess','dnCorrect','dnReveal','tonightsMood'];
+const TRIGGER_KEYS = [
+  'pulse','memoryJar','milestone','bucket','status','meetup','dateNight',
+  'dnHint','dnGuess','dnCorrect','dnReveal','tonightsMood',
+  'listItemAdded','tonightsDinner',
+];
 
 async function initNotificationPrefs(){
   const unsupportedMsg = document.getElementById('notif-unsupported-msg');

@@ -132,6 +132,25 @@ couples/{coupleId}/
     mood        'cosy' | 'romantic' | 'adventurous' | 'netflix' | 'productive' | 'chaotic' | 'talky' | 'celebratory' | 'hungry'
     chosenAt    number (ms)
 
+  ourList/{pushId}/                 (Together mode shared list)
+    text        string · max 200 chars
+    tag         'groceries' | 'home' | 'todo'
+    addedBy     uid
+    addedAt     number (ms)
+    done        boolean (default false)
+    doneAt      number (ms)          · set when done flips true
+    doneBy      uid                   · set when done flips true
+
+  tonightsDinner/{dateKey}/          (one node per local calendar day)
+    proposal           string · max 200 chars — current live suggestion
+    proposedBy         uid            · most recent proposer
+    proposedAt         number (ms)    · most recent proposal time
+    firstProposedAt    number (ms)    · first proposal time (for seconds_to_agree)
+    previousProposal   string         · kept when a counter replaces a proposal
+    status             'proposed' | 'agreed' | 'countered'
+    counteredBy        uid            · present when status='countered'
+    agreedAt           number (ms)    · present when status='agreed'
+
 meta/
   userCount         integer — Phase 1 rollout cap (max 30). Incremented via transaction in doOnboarding; rule enforces <= 30.
 
@@ -149,9 +168,15 @@ invites/{code}/    coupleId, createdBy, createdAt, expiresAt (48h), used
 - **Account** — Profile / Notifications
 
 ### Home sub-tabs
-- **Now** — Pulse, Right Now (LDR clocks/weather/distance), Status, metric chips
-- **Us** — Countdown, Your letters (current upcoming letter pair only), Memory Jar preview, Bucket progress
+- **Now** — Pulse · Right Now (LDR mode only: clocks/weather/distance) · Status (full card in LDR, compact one-liner row in Together) · Our list (Together only) · Tonight's dinner (Together only) · Tonight's Mood (Together only) · metric chips
+- **Us** — Countdown · DATE NIGHT PLAN section + planner card (Together only, when a date is set) · Your letters (current upcoming letter pair only) · Memory Jar preview · Bucket progress
 - **Snugshot** — Insight card + grouped week/month stats: memory jar, longest streak, pulses, status updates, Tonight's Mood match rate (Together only). Panel ID stays `panel-summary`; `switchHomeTab('summary')` unchanged — display label only.
+
+### Together-mode Home/Now card order
+Greeting+days strip → avatar row → home sub-tabs → Pulse → (LDR-only: Right Now card) → Status (compact one-liner; tap to open status sheet) → Our list → Tonight's dinner → Tonight's Mood → Date night planner has been **moved to Home/Us** → metric chips.
+
+### Home/Us Together-mode addition
+`#dn-planner-label` (editorial ALL CAPS "DATE NIGHT PLAN" + formatted date) + `#dn-planner` render directly below the countdown card and above `#us-letters-wrap`. Both toggle via `.visible` class driven by `applyMode()` and `startMeetupDateListener()` — only shown when `coupleType === 'together'` AND `state.meetupDate` is set. The old inner section-heading inside `#dn-planner` was removed; `#dn-planner-heading` and `#dn-planner-date` now live on the outer editorial label so togethermode.js can continue writing textContent to them unchanged.
 
 ---
 
@@ -238,7 +263,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v143` (× dismiss button on date night cards with confirmation card)
+- Current version: `ylc-v144` (Together-mode v2 — Our list + Tonight's dinner + date night planner relocation)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -425,13 +450,13 @@ First deploy from new machine: `npx firebase-tools login`. Console edits overwri
 
 ## Push Notifications
 
-**Triggers:** pulse · memoryJar · status (only if changed) · milestone · bucket (awaits confirmed write) · meetup (LDR) · dateNight (Together) · dnHint · dnGuess · dnReveal · dnCorrect · moodPick · moodMatch · moodReveal. Title = partner name except moodMatch (match is the subject). Body trigger-specific.
+**Triggers:** pulse · memoryJar · status (only if changed) · milestone · bucket (awaits confirmed write) · meetup (LDR) · dateNight (Together) · dnHint · dnGuess · dnReveal · dnCorrect · moodPick · moodMatch · moodReveal · listItemAdded · dinnerProposed · dinnerCountered · dinnerAgreed. Title = partner name except moodMatch (match is the subject) and dinnerAgreed ("Dinner agreed ✓"). Body trigger-specific — `listItemAdded` and the three dinner triggers accept an `extra` field on the /api/notify body (clamped to 200 chars) that's rendered into the notification body.
 
-**Deep linking:** pulse/status → Now, milestone → Milestones, bucket → Bucket, memoryJar → Memory Jar, meetup/dateNight → Us, moodPick/moodMatch/moodReveal → Now. Works live (postMessage) and cold-start (sessionStorage + URL params).
+**Deep linking:** pulse/status → Now, milestone → Milestones, bucket → Bucket, memoryJar → Memory Jar, meetup/dateNight/dnHint/dnGuess/dnCorrect/dnReveal → Us (the dn-* flip landed with the planner's move to Us), moodPick/moodMatch/moodReveal → Now, listItemAdded → Now, dinnerProposed/Countered/Agreed → Now. Works live (postMessage) and cold-start (sessionStorage + URL params).
 
 **Tokens:** map at `users/{uid}/fcmTokens/{tokenHash}` (multi-device). Legacy `fcmToken` string still read; skipped if already in map.
 
-**Prefs:** per-trigger toggles at `notificationPrefs/`. `moodPick`/`moodMatch`/`moodReveal` share `tonightsMood` toggle via `PREF_ALIAS`. Defaults: all ON.
+**Prefs:** per-trigger toggles at `notificationPrefs/`. `moodPick`/`moodMatch`/`moodReveal` share `tonightsMood` via `PREF_ALIAS`. `dinnerProposed`/`dinnerCountered`/`dinnerAgreed` share `tonightsDinner` via `PREF_ALIAS`. `listItemAdded` is its own pref key. Defaults: all ON.
 
 **Server auth:** `api/notify.js` requires `Authorization: Bearer <ID token>`, verifies via firebase-admin, checks `email_verified`, validates couple membership. 401/403 on failure.
 
@@ -464,8 +489,26 @@ First deploy from new machine: `npx firebase-tools login`. Console edits overwri
 - Field icons on the date night card are SVG strokes (not emoji), rendered inside `.dn-field-icon`. Coral colour flows via `currentColor` from the icon container.
 - Dismiss pattern: a single `×` button in the top-right corner of the planner card (class `.dn-dismiss-btn`) opens a confirmation card (`.dn-dismiss-confirm`) below while dimming the planner card. Only present on the planner-facing cards (`_renderOpenCard`, `_renderMysteryPlannerCard`) — never on `_renderMysteryPartnerCard`, since the non-planner must not cancel the planner's mystery.
 
+### Together-mode v2 (Apr 2026)
+- **Our list** — shared grocery/home/to-do list at `couples/{coupleId}/ourList/{pushId}`. Card on Home/Now shows top 3 not-done items matching active filter (All / Groceries / Home / To-do), plus input row + tag dropdown. "See all →" opens a full bottom sheet. Checked items stay visible until end of local day, then filtered out on render (never deleted from DB). Render path: `ourlist.js` listens once on `/ourList`, reuses `R._esc` for XSS safety, writes via `dbPush`/`dbUpdate`.
+- **Tonight's dinner** — daily dinner decision at `couples/{coupleId}/tonightsDinner/{dateKey}`. State machine: propose → waiting / proposal-incoming → counter → agreed. "+ Ingredients to list" sheet pushes comma-separated items as `groceries`-tagged rows into Our list via `R.addOurListMany` (single summary notification, not one per item). dateKey uses the same local-day + 60s rollover pattern as Tonight's Mood.
+- **Date night planner relocation** — `#dn-planner` moved from `#panel-now` to `#panel-us`, rendered below countdown + date picker and above `#us-letters-wrap`. The old inner `.section-heading` inside `.dn-planner` was removed; the outer `#dn-planner-label` now carries both `#dn-planner-heading` and `#dn-planner-date` spans so togethermode.js's textContent writes continue to work unchanged. `applyMode()` + `startMeetupDateListener()` now toggle `.visible` on both `#dn-planner` and `#dn-planner-label`.
+- **Status card demotion (Together mode)** — `#status-card-compact` one-liner (● dot · name · activity · time ago · chevron) replaces the full two-row card on Together mode. Tap target still opens the existing `openStatusSheet()`. LDR mode unchanged.
+
+### Mixpanel event spec (Phase 3 — NOT yet wired)
+These are documented at the call sites in `ourlist.js` and `tonightsdinner.js` as comments. Wire them when Mixpanel lands in Phase 3.
+
+- `list_item_added` · props: `tag`, `added_by_role` ('me' | 'partner')
+- `list_item_checked` · props: `tag`, `checked_by_role`, `seconds_since_added`
+- `list_opened` · fired once per session when Our list card first renders on Now with items present
+- `list_see_all_tapped` · fired once per session when the See-all sheet opens
+- `dinner_proposed` · props: `role`
+- `dinner_countered` · props: `role`
+- `dinner_agreed` · props: `seconds_to_agree` (from `firstProposedAt` → `agreedAt`), `had_counter` (bool: final `status === 'countered'`)
+- `dinner_ingredients_added` · props: `item_count`
+
 ### Phase 2 — Test Rollout (next)
-Roll out to ~10 couples. Watch: 7-day retention, MJ streak, notification open rate, Tonight's Mood completion, mystery date creation.
+Roll out to ~10 couples. Watch: 7-day retention, MJ streak, notification open rate, Tonight's Mood completion, mystery date creation, Our list add rate, Tonight's dinner agreement rate.
 
 ### Session 5 — Domain + Branding (upcoming)
 Register domain, connect to Vercel, update manifest/meta/invite links, Firebase authorised domains. Fix Android monochrome notification icon.

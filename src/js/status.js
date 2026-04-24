@@ -65,7 +65,40 @@ const ACTIVITY_EMOJI = {
   'Music':'🎵','Sports':'⚽','Resting':'😴'
 };
 
+function _renderCompactStatus(){
+  const now = Date.now();
+  const compact = document.getElementById('status-card-compact');
+  if(!compact) return;
+  const dot  = document.getElementById('status-compact-dot');
+  const body = document.getElementById('status-compact-body');
+  const time = document.getElementById('status-compact-time');
+  const expired = !state.otherStatus
+    || !state.otherStatus.updatedAt
+    || (now - state.otherStatus.updatedAt > R.STATUS_EXPIRY_MS);
+  if(dot){
+    dot.classList.toggle('active', !expired);
+    dot.classList.toggle('stale', expired);
+  }
+  const otherName = state.OTHER || 'Partner';
+  if(body){
+    if(expired){
+      body.innerHTML = `<span class="status-compact-name">${R._esc(otherName)}</span><span class="status-compact-sep">·</span><span class="status-compact-empty">no status set</span>`;
+    } else {
+      const activity = state.otherStatus.activity || '';
+      const moodLine = state.otherStatus.mood ? ` · feeling ${state.otherStatus.mood}` : '';
+      body.innerHTML = `<span class="status-compact-name">${R._esc(otherName)}</span><span class="status-compact-sep">·</span>${R._esc(activity.toLowerCase())}${R._esc(moodLine)}`;
+    }
+  }
+  if(time){
+    time.textContent = expired ? '' : R.fmtStatusTime(state.otherStatus.updatedAt);
+  }
+}
+
 function renderStatusCard(){
+  // Compact path for Together mode stays live regardless of whether the full
+  // card is visible — cheap to render.
+  _renderCompactStatus();
+
   const now = Date.now();
   // Set names
   const myNameEl = document.getElementById('status-my-name');
