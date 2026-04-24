@@ -280,9 +280,22 @@ async function initNotificationPrefs(){
 
   const canReceive = supported && perm === 'granted';
   togglesGroup.style.opacity = canReceive ? '' : '.55';
+
+  // Hide Together-only triggers when the couple is in LDR mode — these
+  // notifications can never fire in LDR, so showing the toggles is a
+  // confusing no-op. Stored pref values are left untouched: a pref set
+  // as Together persists across a LDR → Together round-trip.
+  const TOGETHER_ONLY = [
+    'dateNight','dnHint','dnGuess','dnCorrect','dnReveal',
+    'tonightsMood','tonightsDinner','listItemAdded'
+  ];
+  const hideList = state.coupleType === 'together' ? [] : TOGETHER_ONLY;
+
   const inputs = togglesGroup.querySelectorAll('input[data-notif]');
   inputs.forEach(inp => {
     const k = inp.dataset.notif;
+    const row = inp.closest('.settings-row-new');
+    if(row) row.style.display = hideList.includes(k) ? 'none' : '';
     inp.checked = prefs[k] !== false; // default on
     inp.disabled = !canReceive;
     inp.onchange = async () => {

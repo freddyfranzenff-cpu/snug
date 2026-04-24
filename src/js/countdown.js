@@ -46,6 +46,16 @@ function startCountdown(){
 function greeting(name,tz){try{const h=parseInt(new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit"}));const g=h<12?"Good morning":h<18?"Good afternoon":"Good evening";return`${g}, <em>${R._esc(name)}</em>`;}catch(e){return`Good day, <em>${R._esc(name)}</em>`;}}
 function fmtTime(tz){try{return new Date().toLocaleTimeString("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"});}catch(e){return new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}}
 function fmtDate(tz){try{return new Date().toLocaleDateString("en-GB",{timeZone:tz,weekday:"long",day:"numeric",month:"long"});}catch(e){return new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});}}
+function fmtTs(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if(sameDay){
+    return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
 
 // Distance between two coords (Haversine)
 function calcDistance(lat1,lon1,lat2,lon2){
@@ -90,5 +100,6 @@ R.startCountdown = startCountdown;
 R.greeting = greeting;
 R.fmtTime = fmtTime;
 R.fmtDate = fmtDate;
+R.fmtTs = fmtTs;
 R.calcDistance = calcDistance;
 R.updateDistanceAndSleep = updateDistanceAndSleep;

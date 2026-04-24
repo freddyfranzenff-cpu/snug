@@ -126,6 +126,11 @@ function applyMode(type){
     statusCompactEyebrow.style.display = isTogether ? '' : 'none';
   }
   R.renderStatusCard && R.renderStatusCard();
+
+  // Re-run notification prefs rendering so Together-only toggle rows
+  // hide/show correctly when the mode flips. Cheap and idempotent —
+  // no subscribed listeners to worry about.
+  R.initNotificationPrefs && R.initNotificationPrefs();
 }
 
 function startCoupleTypeListener(){
