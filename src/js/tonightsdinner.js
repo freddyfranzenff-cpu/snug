@@ -47,6 +47,25 @@ function _nameFor(uid){
   return '';
 }
 
+// Mirror of tonightsmood.js _showSheetError / _clearSheetError. The counter
+// sheet uses the same .mood-sheet-error visual treatment.
+function _showCounterError(text){
+  const err = document.getElementById('td-counter-error');
+  if(!err) return;
+  err.textContent = text;
+  err.style.display = 'block';
+}
+function _clearCounterError(){
+  const err = document.getElementById('td-counter-error');
+  if(!err) return;
+  err.textContent = '';
+  err.style.display = 'none';
+}
+function _counterSheetOpen(){
+  const ov = document.getElementById('td-counter-overlay');
+  return !!(ov && ov.classList.contains('open'));
+}
+
 // ── Render ────────────────────────────────────────────────
 function _render(){
   const host = document.getElementById('tonights-dinner-body');
@@ -73,7 +92,7 @@ function _render(){
   if(isCounter){
     // Counterer is the LATEST proposer (d.proposedBy).
     if(mine){
-      host.innerHTML = _waitingHTML(d, { counterContext: true });
+      host.innerHTML = _waitingHTML(d);
     } else {
       host.innerHTML = _counterIncomingHTML(d);
     }
@@ -82,7 +101,7 @@ function _render(){
 
   // proposed
   if(mine){
-    host.innerHTML = _waitingHTML(d, { counterContext: false });
+    host.innerHTML = _waitingHTML(d);
   } else {
     host.innerHTML = _proposalIncomingHTML(d, partner);
   }
@@ -100,11 +119,9 @@ function _proposeHTML(){
     </div>`;
 }
 
-function _waitingHTML(d, { counterContext }){
+function _waitingHTML(d){
   const dish = R._esc(d.proposal || '');
-  const sub = counterContext
-    ? `Waiting for ${R._esc(state.OTHER || 'your partner')}…`
-    : `Waiting for ${R._esc(state.OTHER || 'your partner')}…`;
+  const sub = `Waiting for ${R._esc(state.OTHER || 'your partner')}…`;
   return `
     <div class="td-card-inner">
       <div class="td-dish-pill">${dish}</div>
@@ -205,6 +222,13 @@ async function _counter(text){
   if(!t) return;
   if(!state.db || !state.coupleId || !state.myUid) return;
   const d = state._tdCurrent || {};
+  // Guard: partner may have hit Accept while this sheet was open. Don't
+  // silently clobber an agreed state back to 'countered'.
+  if(d.status === 'agreed'){
+    _showCounterError('Dinner was agreed in the meantime.');
+    setTimeout(() => window.closeDinnerCounterSheet(), 1400);
+    return;
+  }
   if(state._tdInFlight) return;
   state._tdInFlight = true;
   try{
@@ -263,8 +287,18 @@ function _subscribe(){
   state._tdUnsub = state.fbOnValue(
     state.dbRef(state.db, `couples/${state.coupleId}/tonightsDinner/${state._tdDayKey}`),
     snap => {
-      state._tdCurrent = snap.val() || null;
+      const prev = state._tdCurrent;
+      const next = snap.val() || null;
+      const counterWasOpen = _counterSheetOpen();
+      state._tdCurrent = next;
       _render();
+      // If the remote just flipped to 'agreed' while the counter sheet is
+      // open, close the sheet — the user was about to overwrite an agreed
+      // state. Brief inline message then auto-close.
+      if(counterWasOpen && next && next.status === 'agreed' && (!prev || prev.status !== 'agreed')){
+        _showCounterError('Agreed in the meantime.');
+        setTimeout(() => window.closeDinnerCounterSheet(), 1400);
+      }
     }
   );
 }
@@ -329,6 +363,7 @@ window.submitDinnerProposeSheet = async function(){
 window.openDinnerCounterSheet = function(){
   const ov = document.getElementById('td-counter-overlay');
   if(!ov) return;
+  _clearCounterError();
   const input = document.getElementById('td-counter-input');
   if(input){
     input.value = '';
@@ -347,6 +382,7 @@ window.closeDinnerCounterSheet = function(){
   if(nav) nav.style.display = 'flex';
   const ov = document.getElementById('td-counter-overlay');
   if(ov) ov.classList.remove('open');
+  _clearCounterError();
 };
 
 window.submitDinnerCounterSheet = async function(){

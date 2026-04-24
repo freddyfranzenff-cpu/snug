@@ -760,13 +760,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .time-input:focus{border-color:var(--k);}
   /* ── Date night planner ───────────────────────────────────── */
   .dn-planner{display:none;margin-bottom:.65rem;}
-  .dn-planner-label{display:none;}
-  .dn-planner-label.visible{display:flex;}
+  .dn-planner-eyebrow{display:none;}
+  .dn-planner-eyebrow.visible{display:flex;}
   .dn-planner.visible{display:block;}
   .dn-planner-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
   .dn-planner-heading .section-heading{margin:0;flex:1;}
   .dn-planner .dn-planner-header{display:none;}
-  .dn-planner-label{font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--label-color);font-weight:700;}
   .dn-planner-card{position:relative;background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
   .dn-planner-date{font-size:.62rem;color:var(--k);font-weight:500;}
   .dn-planner-field{display:flex;align-items:center;gap:.65rem;padding:.6rem .9rem;border-bottom:1px solid var(--border);}

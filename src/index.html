@@ -528,7 +528,7 @@
       </div>
 
       <!-- Date night planner (Together mode only) -->
-      <p class="section-heading dn-planner-label" id="dn-planner-label" style="margin-top:.85rem;justify-content:space-between;display:none;">
+      <p class="section-heading dn-planner-eyebrow" id="dn-planner-label" style="margin-top:.85rem;justify-content:space-between;display:none;">
         <span id="dn-planner-heading">Date night plan</span>
         <span class="dn-planner-date" id="dn-planner-date" style="font-size:.58rem;color:var(--k);font-weight:500;letter-spacing:.04em;text-transform:none;"></span>
       </p>
@@ -730,6 +730,7 @@
         <label class="together-sheet-label">Your counter-suggestion</label>
         <input id="td-counter-input" type="text" class="together-sheet-input" placeholder="e.g. stir-fry" maxlength="200" />
       </div>
+      <p id="td-counter-error" class="mood-sheet-error" style="display:none;"></p>
       <button class="together-sheet-save" onclick="submitDinnerCounterSheet()">Send counter</button>
       <button class="together-sheet-cancel" onclick="closeDinnerCounterSheet()">Cancel</button>
     </div>
