@@ -391,10 +391,10 @@
       </div><!-- end ldr-section-wrap -->
 
       <!-- Status + Mood card -->
-      <p class="section-heading" id="status-section-heading" style="justify-content:flex-start"><span>What you're up to</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
+      <p class="section-heading" id="status-section-heading" style="justify-content:flex-start"><span>Status</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
       <!-- Compact status row (Together mode only — JS toggles display) -->
+      <p class="section-heading" id="status-compact-eyebrow" style="display:none;justify-content:flex-start"><span>Status</span><button class="info-btn" onclick="showTooltip('status')" aria-label="About this feature">i</button></p>
       <div class="status-card-compact" id="status-card-compact" style="display:none;" onclick="openStatusSheet()">
-        <span class="status-compact-dot" id="status-compact-dot"></span>
         <span class="status-compact-body" id="status-compact-body"></span>
         <span class="status-compact-time" id="status-compact-time"></span>
         <span class="status-compact-chev">›</span>
@@ -494,7 +494,7 @@
       <!-- Metric chips -->
       <div class="home-metric-row" id="home-metric-row">
         <div class="home-metric-chip home-metric-chip-meetup">
-          <span class="home-metric-icon">✈</span>
+          <span class="home-metric-icon" id="metric-meetup-icon">✈</span>
           <span class="home-metric-value" id="metric-meetup-val">—</span>
           <span class="home-metric-label" id="metric-meetup-label">Next meetup</span>
         </div>
@@ -765,7 +765,7 @@
   <div class="status-sheet-overlay" id="status-sheet-overlay" onclick="if(event.target===this)closeStatusSheet()">
     <div class="status-sheet" id="status-sheet">
       <div class="status-sheet-handle"></div>
-      <div class="status-sheet-title">What are you up to?</div>
+      <div class="status-sheet-title">Update your status</div>
       <div class="status-sheet-section">Activity</div>
       <div class="status-activity-grid" id="status-activity-grid">
         <div class="status-act-opt" data-activity="Working" onclick="selectActivity(this)"><span class="status-act-icon">💼</span><div class="status-act-label">Working</div></div>

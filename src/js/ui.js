@@ -134,7 +134,15 @@ function updateMetricChips(){
   // Next meetup
   const meetupLabel = document.getElementById('metric-meetup-label');
   const meetupVal   = document.getElementById('metric-meetup-val');
+  const meetupIcon  = document.getElementById('metric-meetup-icon');
   if(meetupLabel) meetupLabel.textContent = state.coupleType==='together' ? 'Date night' : 'Next meetup';
+  if(meetupIcon){
+    if(state.coupleType==='together'){
+      meetupIcon.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="11" height="10" rx="1.2"/><path d="M5.5 2v3M10.5 2v3M2.5 6.5h11"/></svg>';
+    } else {
+      meetupIcon.textContent = '✈';
+    }
+  }
   if(meetupVal){
     if(state.meetupDate){
       const m = state.meetupDate;

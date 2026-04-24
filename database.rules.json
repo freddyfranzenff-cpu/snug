@@ -139,6 +139,10 @@
         ".write": "auth != null && auth.token.email_verified === true && newData.isNumber() && newData.val() <= 30 && newData.val() === (data.exists() ? data.val() : 0) + 1"
       }
     },
+    "userNotifBatch": {
+      ".read": "false",
+      ".write": "false"
+    },
     "$other": {
       ".read": false,
       ".write": false

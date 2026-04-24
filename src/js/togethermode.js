@@ -131,19 +131,38 @@ function _renderMysteryPlannerCard(d){
 
 function _renderMysteryPartnerCard(d){
   const hints = _sortedHints(d.hints);
-  const activeHint = hints[hints.length-1] || null;
-  const alreadyGuessed = !!(activeHint && activeHint.guess);
+  const lastIdx = hints.length - 1;
   const timeLabel = d.time ? d.time : '';
   const dateStr = state.meetupDate ? _fmtDnDate(state.meetupDate) : '';
 
-  const hintBox = activeHint
-    ? `<div class="dn-hint-item">
-         <div class="dn-hint-num">Hint ${hints.length}</div>
-         <div class="dn-hint-text">${_esc(activeHint.text)}</div>
-         ${alreadyGuessed
-           ? `<div class="dn-guess-box"><div class="dn-guess-label">Your guess</div><div class="dn-guess-text">${_esc(activeHint.guess.text)}</div></div>`
-           : `<button class="mj-add-btn" style="margin-top:.5rem;" onclick="openDnGuessSheet()">Guess this hint</button>`}
-       </div>`
+  const hintsHtml = hints.map((h, i) => {
+    const guess = h.guess;
+    const correct = !!h.correct;
+    const correctBadge = correct ? `<span class="dn-correct-badge">✓ Correct</span>` : '';
+    let tail;
+    if(guess){
+      // Guess exists — show it. If planner marked correct, add the green hit line.
+      const hitLine = correct
+        ? `<div class="dn-guess-label" style="margin-top:.35rem;color:#2d8c4f;">You got it!</div>`
+        : '';
+      tail = `<div class="dn-guess-box"><div class="dn-guess-label">Your guess</div><div class="dn-guess-text">${_esc(guess.text)}</div>${hitLine}</div>`;
+    } else if(i === lastIdx){
+      // No guess yet on the latest hint — offer the guess button.
+      tail = `<button class="mj-add-btn" style="margin-top:.5rem;" onclick="openDnGuessSheet()">Guess this hint</button>`;
+    } else {
+      // Shouldn't happen under current flow — defensive render.
+      tail = `<div class="dn-guess-waiting">Skipped</div>`;
+    }
+    return `
+      <div class="dn-hint-item${correct?' correct':''}">
+        <div class="dn-hint-num">Hint ${i+1}${correctBadge}</div>
+        <div class="dn-hint-text">${_esc(h.text)}</div>
+        ${tail}
+      </div>`;
+  }).join('');
+
+  const hintsBlock = hints.length
+    ? `<div class="dn-hints-list">${hintsHtml}</div>`
     : `<p class="dn-picker-hint" style="margin:.2rem 0 0;">No hints yet — stay curious.</p>`;
 
   return `
@@ -152,8 +171,8 @@ function _renderMysteryPartnerCard(d){
       <div class="dn-mystery-big">${dateStr}${timeLabel?` · ${_esc(timeLabel)}`:''}</div>
       <p class="dn-mystery-sub">${_esc(state.OTHER || 'Your partner')} is planning something special. All you get are hints.</p>
       <div class="dn-hints-section">
-        <div class="dn-hints-heading">Current hint</div>
-        ${hintBox}
+        <div class="dn-hints-heading">Hints</div>
+        ${hintsBlock}
       </div>
     </div>`;
 }

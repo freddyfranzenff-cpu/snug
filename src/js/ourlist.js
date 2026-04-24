@@ -31,6 +31,9 @@ const FILTERS = [
 let _sessionOpenedFired = false;
 // Per-tab mixpanel spec: one fire per session.
 let _seeAllFiredThisSession = false;
+// Guards the 48h auto-trim pass — runs once per subscribe cycle.
+let _cleanupRan = false;
+const CHECKED_TTL_MS = 48 * 60 * 60 * 1000;
 
 function _todayStr(){
   const d = new Date();
@@ -208,6 +211,33 @@ function _renderSheet(){
 }
 
 // ── Listener ──────────────────────────────────────────────
+function _cleanupOldCheckedItems(items){
+  // One-shot trim: delete items that have been checked for >48h. Unchecked
+  // items are never touched. Legacy items missing doneAt are skipped
+  // defensively — this feature shipped with the field, but absent data
+  // shouldn't silently drop rows.
+  try{
+    const now = Date.now();
+    const staleKeys = [];
+    for(const it of items){
+      if(!it.done) continue;
+      if(typeof it.doneAt !== 'number') continue;
+      if((now - it.doneAt) > CHECKED_TTL_MS){
+        staleKeys.push(it._key);
+      }
+    }
+    if(!staleKeys.length) return;
+    const updates = {};
+    staleKeys.forEach(k => { updates[`ourList/${k}`] = null; });
+    state.dbUpdate(
+      state.dbRef(state.db, `couples/${state.coupleId}`),
+      updates
+    ).catch(e => console.warn('Our list cleanup failed:', e));
+  }catch(e){
+    console.warn('Our list cleanup threw:', e);
+  }
+}
+
 function _subscribe(){
   if(state._olUnsub){ try{ state._olUnsub(); }catch(e){} state._olUnsub = null; }
   if(!state.db || !state.fbOnValue || !state.coupleId) return;
@@ -216,6 +246,10 @@ function _subscribe(){
     snap => {
       const val = snap.val() || {};
       state._olItems = Object.entries(val).map(([k, v]) => ({ ...v, _key: k }));
+      if(!_cleanupRan){
+        _cleanupRan = true;
+        _cleanupOldCheckedItems(state._olItems);
+      }
       _renderCard();
       // Keep the sheet live if open.
       const ov = document.getElementById('ol-sheet-overlay');
@@ -237,6 +271,7 @@ function teardownOurList(){
   state._olFilter = 'all';
   _sessionOpenedFired = false;
   _seeAllFiredThisSession = false;
+  _cleanupRan = false;
 }
 
 // ── Filter switching (exposed on window for inline onclicks) ──

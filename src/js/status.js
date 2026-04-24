@@ -69,16 +69,11 @@ function _renderCompactStatus(){
   const now = Date.now();
   const compact = document.getElementById('status-card-compact');
   if(!compact) return;
-  const dot  = document.getElementById('status-compact-dot');
   const body = document.getElementById('status-compact-body');
   const time = document.getElementById('status-compact-time');
   const expired = !state.otherStatus
     || !state.otherStatus.updatedAt
     || (now - state.otherStatus.updatedAt > R.STATUS_EXPIRY_MS);
-  if(dot){
-    dot.classList.toggle('active', !expired);
-    dot.classList.toggle('stale', expired);
-  }
   const otherName = state.OTHER || 'Partner';
   if(body){
     if(expired){

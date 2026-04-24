@@ -176,6 +176,55 @@ export default async function handler(req, res){
       return res.status(403).json({ error: 'Recipient not in this couple' });
     }
 
+    // ── listItemAdded debounce (30s sliding window per sender→recipient) ──
+    // First item in a batch pushes immediately; subsequent items inside the
+    // window are suppressed and their text is accumulated under
+    // userNotifBatch/{recipientUid}/listItemAdded_{senderUid}. The next send
+    // after the window flushes pending + new into one combined body.
+    // Rules lock clients out of this node; admin service-account bypasses.
+    const LIST_DEBOUNCE_MS = 30 * 1000;
+    let combinedExtra = null; // non-null → use in place of raw `extra` below
+    if (trigger === 'listItemAdded') {
+      const batchPath = `userNotifBatch/${recipientUid}/listItemAdded_${decoded.uid}`;
+      const now = Date.now();
+      const batch = (await rtdbGet(dbUrl, batchPath, token)) || {};
+      const lastPushAt = typeof batch.lastPushAt === 'number' ? batch.lastPushAt : 0;
+      const pending = Array.isArray(batch.pendingItems) ? batch.pendingItems.slice(0, 100) : [];
+      const newItem = (typeof extra === 'string' ? extra : '').toString().slice(0, 200).trim();
+
+      if (lastPushAt && (now - lastPushAt) < LIST_DEBOUNCE_MS) {
+        if (newItem) pending.push(newItem);
+        await fetch(`${dbUrl}/${batchPath}.json?access_token=${token}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lastPushAt, pendingItems: pending }),
+        });
+        return res.status(202).json({ status: 'batched' });
+      }
+
+      const items = [...pending];
+      if (newItem) items.push(newItem);
+      if (items.length === 0) {
+        return res.status(200).json({ skipped: 'no items' });
+      }
+      if (items.length === 1) {
+        combinedExtra = items[0];
+      } else if (items.length === 2) {
+        combinedExtra = `${items[0]} and ${items[1]}`;
+      } else if (items.length <= 4) {
+        combinedExtra = items.slice(0, 3).join(', ');
+      } else {
+        combinedExtra = `${items[0]}, ${items[1]} and ${items.length - 2} more`;
+      }
+      combinedExtra = combinedExtra.slice(0, 200);
+
+      await fetch(`${dbUrl}/${batchPath}.json?access_token=${token}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lastPushAt: now, pendingItems: [] }),
+      });
+    }
+
     // fcmTokens is a map of tokenHash -> token string (multi-device).
     // Legacy single-string at fcmToken is read as a fallback for users who
     // registered before the map migration — treat it as one unnamed entry.
@@ -215,7 +264,9 @@ export default async function handler(req, res){
     }
 
     const name = (senderName || 'Your partner').toString().slice(0, 40);
-    const extraClean = (typeof extra === 'string' ? extra : '').toString().slice(0, 200);
+    const extraClean = combinedExtra !== null
+      ? combinedExtra
+      : (typeof extra === 'string' ? extra : '').toString().slice(0, 200);
     const title = tpl.title(name, extraClean);
     const bodyText = typeof tpl.body === 'function' ? tpl.body(name, extraClean) : tpl.body;
 

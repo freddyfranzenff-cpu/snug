@@ -155,6 +155,14 @@ meta/
   userCount         integer — Phase 1 rollout cap (max 30). Incremented via transaction in doOnboarding; rule enforces <= 30.
 
 invites/{code}/    coupleId, createdBy, createdAt, expiresAt (48h), used
+
+userNotifBatch/{recipientUid}/listItemAdded_{senderUid}/
+  lastPushAt        number (ms) — last time /api/notify sent a listItemAdded push
+  pendingItems      string[]    — items accumulated during the 30s window
+  (Admin-only. Rules hard-block all client reads/writes; service-account
+   bypass in api/notify.js is the only writer. Powers the Our list notification
+   debounce — one push per 30s per sender→recipient, rest accumulate into a
+   combined "x, y and N more" body.)
 ```
 
 ---
@@ -263,7 +271,7 @@ FIREBASE_DATABASE_URL         ← RTDB URL for server-side (api/notify.js reads 
 - File: `sw.js` in repo root (symlinked into `public/` for Vite)
 - **Bump `CACHE_VERSION` string on every production deploy** — forces mobile PWA clients to update
 - Current pattern: `ylc-v{number}` (e.g. `ylc-v112`)
-- Current version: `ylc-v144` (Together-mode v2 — Our list + Tonight's dinner + date night planner relocation)
+- Current version: `ylc-v145` (Together-mode v2 polish — status eyebrow + rename + chip icon + notify debounce + hint history + list trim)
 - `skipWaiting()` and `clients.claim()` present — SW activates immediately without tab reload
 
 ---
@@ -493,7 +501,16 @@ First deploy from new machine: `npx firebase-tools login`. Console edits overwri
 - **Our list** — shared grocery/home/to-do list at `couples/{coupleId}/ourList/{pushId}`. Card on Home/Now shows top 3 not-done items matching active filter (All / Groceries / Home / To-do), plus input row + tag dropdown. "See all →" opens a full bottom sheet. Checked items stay visible until end of local day, then filtered out on render (never deleted from DB). Render path: `ourlist.js` listens once on `/ourList`, reuses `R._esc` for XSS safety, writes via `dbPush`/`dbUpdate`.
 - **Tonight's dinner** — daily dinner decision at `couples/{coupleId}/tonightsDinner/{dateKey}`. State machine: propose → waiting / proposal-incoming → counter → agreed. "+ Ingredients to list" sheet pushes comma-separated items as `groceries`-tagged rows into Our list via `R.addOurListMany` (single summary notification, not one per item). dateKey uses the same local-day + 60s rollover pattern as Tonight's Mood.
 - **Date night planner relocation** — `#dn-planner` moved from `#panel-now` to `#panel-us`, rendered below countdown + date picker and above `#us-letters-wrap`. The old inner `.section-heading` inside `.dn-planner` was removed; the outer `#dn-planner-label` now carries both `#dn-planner-heading` and `#dn-planner-date` spans so togethermode.js's textContent writes continue to work unchanged. `applyMode()` + `startMeetupDateListener()` now toggle `.visible` on both `#dn-planner` and `#dn-planner-label`.
-- **Status card demotion (Together mode)** — `#status-card-compact` one-liner (● dot · name · activity · time ago · chevron) replaces the full two-row card on Together mode. Tap target still opens the existing `openStatusSheet()`. LDR mode unchanged.
+- **Status card demotion (Together mode)** — `#status-card-compact` one-liner (name · activity · time ago · chevron) replaces the full two-row card on Together mode. Tap target still opens the existing `openStatusSheet()`. LDR mode unchanged.
+
+### Together-mode v2 polish (Apr 2026)
+- **Status compact eyebrow** — a second "STATUS" `section-heading` lives above `#status-card-compact` with id `#status-compact-eyebrow`. `applyMode()` in `couple.js` toggles its display alongside the compact card (shown Together, hidden LDR). The original `#status-section-heading` (above the full LDR card) is hidden in Together mode and vice versa — exactly one heading is visible at a time.
+- **"What you're up to" → "Status" rename** — section heading text and the status bottom-sheet title were renamed. Heading reads "Status" in both modes; sheet title reads "Update your status". Tooltip body copy in `tooltips.js` still uses the phrase "what you're up to" descriptively — that's intentional.
+- **Compact status dot removed** — `.status-compact-dot` element and CSS (`.status-compact-dot`, `.active`, `.stale` variants) deleted. The "4m ago" timestamp already conveys freshness and the dot didn't match the editorial pattern.
+- **Date night chip icon** — in Together mode, the "Next meetup" metric chip re-labels to "Date night" AND its icon swaps from `✈` to a small inline calendar SVG (`#metric-meetup-icon`). Swap happens in `updateMetricChips()` in `ui.js`. LDR mode keeps the airplane.
+- **listItemAdded notification debounce** — server-side, 30s sliding window per (sender→recipient). First item fires a push; subsequent items within 30s are suppressed and accumulated into `userNotifBatch/{recipientUid}/listItemAdded_{senderUid}.pendingItems`. The next send after the window flushes pending + new into one combined body: 1 item → text; 2 → "a and b"; 3–4 → "a, b, c"; 5+ → "a, b and N more". Admin-only RTDB node — see Firebase Data Structure. Only applies to `listItemAdded`.
+- **Mystery hint history for the guesser** — `_renderMysteryPartnerCard` now renders the full hint chain (oldest → newest) mirroring `_renderMysteryPlannerCard`: hint numbers, correct badges, prior guesses (own, labelled "Your guess"), and a "You got it!" line when the planner marked a guess correct. The "Guess this hint" action still attaches only to the latest unguessed hint. Defensive "Skipped" marker renders for earlier un-guessed hints (shouldn't happen under the current flow where new hints unlock after previous guess). Pure render change — no data-model or guess-submission changes.
+- **Our list 48h auto-trim** — client-side one-shot pass in `ourlist.js`. On first RTDB snapshot per subscribe cycle, any item with `done === true` AND `(now - doneAt) > 48h` is batch-deleted via a single multi-location `dbUpdate` setting each stale key to `null`. Guarded by module-level `_cleanupRan` flag, reset in `teardownOurList` so it runs again on re-login. Unchecked items are never touched. Legacy items missing `doneAt` are skipped defensively.
 
 ### Mixpanel event spec (Phase 3 — NOT yet wired)
 These are documented at the call sites in `ourlist.js` and `tonightsdinner.js` as comments. Wire them when Mixpanel lands in Phase 3.

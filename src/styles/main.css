@@ -871,9 +871,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   /* ── Compact status (Together mode) ──────────────────────── */
   .status-card-compact{background:var(--surface);border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:.6rem;padding:.55rem .75rem;margin-bottom:.65rem;cursor:pointer;transition:background .15s;}
   .status-card-compact:hover{background:var(--kll);}
-  .status-compact-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
-  .status-compact-dot.active{background:var(--green);}
-  .status-compact-dot.stale{background:var(--muted);opacity:.55;}
   .status-compact-body{flex:1;min-width:0;font-size:.72rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .status-compact-name{font-weight:600;}
   .status-compact-sep{color:var(--muted);margin:0 .25rem;}

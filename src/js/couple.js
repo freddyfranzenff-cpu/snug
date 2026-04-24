@@ -114,12 +114,16 @@ function applyMode(type){
   const statusFull = document.getElementById('status-card');
   const statusCompact = document.getElementById('status-card-compact');
   const statusHeading = document.getElementById('status-section-heading');
+  const statusCompactEyebrow = document.getElementById('status-compact-eyebrow');
   if(statusFull && statusCompact){
     statusFull.style.display = isTogether ? 'none' : '';
     statusCompact.style.display = isTogether ? 'flex' : 'none';
   }
   if(statusHeading){
     statusHeading.style.display = isTogether ? 'none' : '';
+  }
+  if(statusCompactEyebrow){
+    statusCompactEyebrow.style.display = isTogether ? '' : 'none';
   }
   R.renderStatusCard && R.renderStatusCard();
 }
